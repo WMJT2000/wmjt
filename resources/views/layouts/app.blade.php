@@ -15,15 +15,7 @@
         @yield('title', 'Mi aplicación')
     </title>
 
-    @vite([
-        'resources/css/app.css',
-        'resources/css/form.css',
-        'resources/css/gestion.css',
-        'resources/css/technologies.css',
-        'resources/js/app.js',
-        'resources/js/form.js',
-        'resources/js/technologies.js'
-    ])
+ @vite('resources/js/app.js')
 
 </head>
 
