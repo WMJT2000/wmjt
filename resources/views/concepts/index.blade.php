@@ -6,142 +6,177 @@
 
 <div class="gestion-container">
 
-    <div class="gestion-header">
+{{-- HEADER --}}
 
-        <div>
-            <h1>Conceptos</h1>
-            <p>Administrar conceptos</p>
-        </div>
+<div class="gestion-header">
 
-        <button
-            type="button"
-            id="btnNuevoConcepto"
-            class="btn-primary"
-        >
-            + Nuevo concepto
-        </button>
+    <div>
+
+        <h1>
+            Conceptos
+        </h1>
+
+        <p>
+            Administrar conceptos técnicos
+        </p>
 
     </div>
 
 
-    {{-- FORMULARIO DINÁMICO --}}
-
-    <div
-        id="conceptFormContainer"
-        style="display: none;"
+    <button
+        type="button"
+        id="btnNuevoConcepto"
+        class="btn-primary"
     >
+        + Nuevo concepto
+    </button>
 
-        @include('layouts.form', [
+</div>
 
-            'title' => 'Nuevo concepto',
 
-            'action' => '/api/concepts',
+{{-- FORMULARIO --}}
 
-            'method' => 'POST',
+<div
+    id="conceptFormContainer"
+    style="display: none;"
+>
 
-            'buttonText' => 'Guardar',
+    @include('layouts.form', [
 
-            'fields' => [
+        'formId' => 'conceptForm',
 
-                [
-                    'name' => 'category_id',
-                    'label' => 'Categoría',
-                    'type' => 'select',
-                    'placeholder' => 'Selecciona una categoría',
-                    'options' => [],
-                    'required' => true
-                ],
+        'title' => 'Nuevo concepto',
 
-                [
-                    'name' => 'name',
-                    'label' => 'Nombre',
-                    'type' => 'text',
-                    'placeholder' => 'Ej: let',
-                    'required' => true,
-                    'maxlength' => 150
-                ],
+        'action' => '/api/concepts',
 
-                [
-                    'name' => 'slug',
-                    'label' => 'Slug',
-                    'type' => 'text',
-                    'placeholder' => 'Ej: let',
-                    'required' => true,
-                    'maxlength' => 150
-                ],
+        'method' => 'POST',
 
-                [
-                    'name' => 'type',
-                    'label' => 'Tipo',
-                    'type' => 'text',
-                    'placeholder' => 'Ej: variable',
-                    'required' => true,
-                    'maxlength' => 50
-                ],
+        'buttonText' => 'Guardar',
 
-                [
-                    'name' => 'description',
-                    'label' => 'Descripción',
-                    'type' => 'textarea',
-                    'placeholder' => 'Descripción del concepto',
-                    'required' => true
-                ],
+        'fields' => [
 
-                [
-                    'name' => 'how_to_use',
-                    'label' => 'Cómo utilizar',
-                    'type' => 'textarea',
-                    'placeholder' => 'Explica cómo utilizar este concepto',
-                    'required' => true
-                ],
+            [
+                'name' => 'category_id',
+                'label' => 'Categoría',
+                'type' => 'select',
+                'placeholder' => 'Seleccione una categoría',
+                'required' => true,
+                'options' => []
+            ],
 
-                [
-                    'name' => 'example',
-                    'label' => 'Ejemplo',
-                    'type' => 'textarea',
-                    'placeholder' => 'Ejemplo de código',
-                    'required' => true
-                ]
+            [
+                'name' => 'name',
+                'label' => 'Nombre',
+                'type' => 'text',
+                'placeholder' => 'Ej: map()',
+                'required' => true,
+                'maxlength' => 150
+            ],
 
+            [
+                'name' => 'slug',
+                'label' => 'Slug',
+                'type' => 'text',
+                'placeholder' => 'Ej: map',
+                'required' => true,
+                'maxlength' => 150
+            ],
+
+            [
+                'name' => 'type',
+                'label' => 'Tipo',
+                'type' => 'text',
+                'placeholder' => 'Ej: metodo',
+                'required' => true,
+                'maxlength' => 50
+            ],
+
+            [
+                'name' => 'description',
+                'label' => 'Descripción',
+                'type' => 'textarea',
+                'placeholder' => 'Descripción del concepto',
+                'required' => true
+            ],
+
+            [
+                'name' => 'how_to_use',
+                'label' => 'Cómo utilizarlo',
+                'type' => 'textarea',
+                'placeholder' => 'Explica cuándo y cómo utilizar este concepto',
+                'required' => true
+            ],
+
+            [
+                'name' => 'example',
+                'label' => 'Ejemplo',
+                'type' => 'textarea',
+                'placeholder' => 'Ejemplo de código',
+                'required' => true
             ]
 
-        ])
+        ]
 
-    </div>
+    ])
+
+</div>
 
 
-    {{-- LISTADO --}}
+{{-- TABLA --}}
 
-    <div class="table-container">
+<div class="table-container">
 
-        <table>
+    <table>
 
-            <thead>
+        <thead>
 
-                <tr>
-                    <th>ID</th>
-                    <th>Categoría</th>
-                    <th>Nombre</th>
-                    <th>Slug</th>
-                    <th>Tipo</th>
-                    <th>Acciones</th>
-                </tr>
+            <tr>
 
-            </thead>
+                <th>
+                    ID
+                </th>
 
-            <tbody id="conceptsTable">
+                <th>
+                    Nombre
+                </th>
 
-                <tr>
-                    <td colspan="6">
-                        Cargando...
-                    </td>
-                </tr>
+                <th>
+                    Categoría
+                </th>
 
-            </tbody>
+                <th>
+                    Tipo
+                </th>
 
-        </table>
+                <th>
+                    Descripción
+                </th>
 
-    </div>
+                <th>
+                    Acciones
+                </th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody id="conceptsTable">
+
+            <tr>
+
+                <td colspan="6">
+                    Cargando...
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
 
 </div>
 

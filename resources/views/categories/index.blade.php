@@ -6,107 +6,140 @@
 
 <div class="gestion-container">
 
-    <div class="gestion-header">
 
-        <div>
-            <h1>Categorías</h1>
-            <p>Administrar categorías</p>
-        </div>
+{{-- HEADER --}}
 
-        <button
-            type="button"
-            id="btnNuevaCategoria"
-            class="btn-primary"
-        >
-            + Nueva categoría
-        </button>
+<div class="gestion-header">
+
+    <div>
+
+        <h1>
+            Categorías
+        </h1>
+
+        <p>
+            Administrar categorías
+        </p>
 
     </div>
 
 
-    {{-- FORMULARIO DINÁMICO --}}
-
-    <div
-        id="categoryFormContainer"
-        style="display: none;"
+    <button
+        type="button"
+        id="btnNuevaCategoria"
+        class="btn-primary"
     >
+        + Nueva categoría
+    </button>
 
-        @include('layouts.form', [
+</div>
 
-            'title' => 'Nueva categoría',
 
-            'action' => '/api/categories',
+{{-- FORMULARIO --}}
 
-            'method' => 'POST',
+<div
+    id="categoryFormContainer"
+    style="display: none;"
+>
 
-            'buttonText' => 'Guardar',
+    @include('layouts.form', [
 
-            'fields' => [
+        'formId' => 'categoryForm',
 
-                [
-                    'name' => 'technology_id',
-                    'label' => 'Tecnología',
-                    'type' => 'select',
-                    'placeholder' => 'Selecciona una tecnología',
-                    'options' => [],
-                    'required' => true
-                ],
+        'title' => 'Nueva categoría',
 
-                [
-                    'name' => 'name',
-                    'label' => 'Nombre',
-                    'type' => 'text',
-                    'placeholder' => 'Ej: Variables',
-                    'required' => true,
-                    'maxlength' => 100
-                ],
+        'action' => '/api/categories',
 
-                [
-                    'name' => 'description',
-                    'label' => 'Descripción',
-                    'type' => 'textarea',
-                    'placeholder' => 'Descripción de la categoría',
-                    'required' => true
-                ]
+        'method' => 'POST',
 
+        'buttonText' => 'Guardar',
+
+        'fields' => [
+
+            [
+                'name' => 'technology_id',
+                'label' => 'Tecnología',
+                'type' => 'select',
+                'placeholder' => 'Seleccione una tecnología',
+                'required' => true,
+                'options' => []
+            ],
+
+            [
+                'name' => 'name',
+                'label' => 'Nombre',
+                'type' => 'text',
+                'placeholder' => 'Ej: Variables',
+                'required' => true,
+                'maxlength' => 100
+            ],
+
+            [
+                'name' => 'description',
+                'label' => 'Descripción',
+                'type' => 'textarea',
+                'placeholder' => 'Descripción de la categoría',
+                'required' => true
             ]
 
-        ])
+        ]
 
-    </div>
+    ])
+
+</div>
 
 
-    {{-- LISTADO --}}
+{{-- TABLA --}}
 
-    <div class="table-container">
+<div class="table-container">
 
-        <table>
+    <table>
 
-            <thead>
+        <thead>
 
-                <tr>
-                    <th>ID</th>
-                    <th>Tecnología</th>
-                    <th>Nombre</th>
-                    <th>Descripción</th>
-                    <th>Acciones</th>
-                </tr>
+            <tr>
 
-            </thead>
+                <th>
+                    ID
+                </th>
 
-            <tbody id="categoriesTable">
+                <th>
+                    Tecnología
+                </th>
 
-                <tr>
-                    <td colspan="5">
-                        Cargando...
-                    </td>
-                </tr>
+                <th>
+                    Nombre
+                </th>
 
-            </tbody>
+                <th>
+                    Descripción
+                </th>
 
-        </table>
+                <th>
+                    Acciones
+                </th>
 
-    </div>
+            </tr>
+
+        </thead>
+
+
+        <tbody id="categoriesTable">
+
+            <tr>
+
+                <td colspan="5">
+                    Cargando...
+                </td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>
+
 
 </div>
 

@@ -9,3 +9,5 @@ import '../css/technologies.css';
 // JavaScript
 import './form.js';
 import './technologies.js';
+import './concepts.js';
+import './categories.js';
