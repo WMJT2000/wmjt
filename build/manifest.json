@@ -1,0 +1,43 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-CtynVt1K.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/form.css": {
+    "file": "assets/form-Cv6mzsgo.css",
+    "src": "resources/css/form.css",
+    "isEntry": true
+  },
+  "resources/css/gestion.css": {
+    "file": "assets/gestion-W5B0iiY2.css",
+    "src": "resources/css/gestion.css",
+    "isEntry": true
+  },
+  "resources/css/technologies.css": {
+    "file": "assets/technologies-C3bRLrha.css",
+    "src": "resources/css/technologies.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-u1KP742G.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "css": [
+      "assets/app-BTX5Mgni.css"
+    ]
+  },
+  "resources/js/form.js": {
+    "file": "assets/form-CCf01pq_.js",
+    "name": "form",
+    "src": "resources/js/form.js",
+    "isEntry": true
+  },
+  "resources/js/technologies.js": {
+    "file": "assets/technologies-DQn1SaBs.js",
+    "name": "technologies",
+    "src": "resources/js/technologies.js",
+    "isEntry": true
+  }
+}

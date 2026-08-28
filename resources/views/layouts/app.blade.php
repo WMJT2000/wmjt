@@ -22,7 +22,6 @@
         'resources/css/technologies.css',
         'resources/js/app.js',
         'resources/js/form.js',
-        'resources/js/gestion.js',
         'resources/js/technologies.js'
     ])
 
