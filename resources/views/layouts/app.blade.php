@@ -12,10 +12,12 @@
     >
 
     <title>
-        @yield('title', 'Mi aplicación')
+        @yield('title', 'Base de conocimiento')
     </title>
 
- @vite('resources/js/app.js')
+    @vite('resources/js/app.js')
+
+    @stack('styles')
 
 </head>
 
@@ -26,6 +28,8 @@
         @yield('content')
 
     </main>
+
+    @stack('scripts')
 
 </body>
 
