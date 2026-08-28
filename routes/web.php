@@ -1,43 +1,56 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use App\Models\Comentario;
+
 
 Route::get('/', function () {
-    return '<h1>Laravel funciona correctamente</h1>';
+
+    return view('inicio');
+
 });
 
-Route::get('/testdb', function () {
-    return 'RUTA TESTDB';
-});
+/*
+|--------------------------------------------------------------------------
+| GESTIÓN DE TECNOLOGÍAS
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/categorias', function () {
+Route::get('/gestion/technologies', function () {
 
-    $categorias = DB::table('categorias')
-        ->orderBy('orden')
-        ->get();
+    return view(
+        'technologies.index'
+    );
 
-    return view('categorias', [
-        'categorias' => $categorias
-    ]);
-});
-
-Route::get('/categoria/{id}', function ($id) {
-
-    $categoria = DB::table('categorias')
-        ->where('id', $id)
-        ->first();
-
-    if (!$categoria) {
-        abort(404);
-    }
-
-    return view('categoria', [
-        'categoria' => $categoria
-    ]);
 });
 
 
-Route::get('/hola', function () {
-    return 'HOLA';
+/*
+|--------------------------------------------------------------------------
+| GESTIÓN DE CATEGORÍAS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/gestion/categories', function () {
+
+    return view(
+        'categories.index'
+    );
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| GESTIÓN DE CONCEPTOS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/gestion/concepts', function () {
+
+    return view(
+        'concepts.index'
+    );
+
 });
