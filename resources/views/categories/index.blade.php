@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', 'Categorías')
@@ -7,140 +8,176 @@
 <div class="gestion-container">
 
 
-{{-- HEADER --}}
+    {{-- 
+    |--------------------------------------------------------------------------
+    | HEADER
+    |--------------------------------------------------------------------------
+    --}}
 
-<div class="gestion-header">
+    <div class="gestion-header">
 
-    <div>
+        <div>
 
-        <h1>
-            Categorías
-        </h1>
+            <h1>
+                Categorías
+            </h1>
 
-        <p>
-            Administrar categorías
-        </p>
+            <p>
+                Administrar categorías
+            </p>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="btnNuevaCategoria"
+            class="btn-primary"
+        >
+            + Nueva categoría
+        </button>
 
     </div>
 
 
-    <button
-        type="button"
-        id="btnNuevaCategoria"
-        class="btn-primary"
+
+    {{-- 
+    |--------------------------------------------------------------------------
+    | FORMULARIO
+    |--------------------------------------------------------------------------
+    --}}
+
+    <div
+        id="categoryFormContainer"
+        style="display: none;"
     >
-        + Nueva categoría
-    </button>
 
-</div>
+        @include('layouts.form', [
 
+            'formId' => 'categoryForm',
 
-{{-- FORMULARIO --}}
+            'title' => 'Nueva categoría',
 
-<div
-    id="categoryFormContainer"
-    style="display: none;"
->
+            'action' => '/api/categories',
 
-    @include('layouts.form', [
+            'method' => 'POST',
 
-        'formId' => 'categoryForm',
+            'buttonText' => 'Guardar',
 
-        'title' => 'Nueva categoría',
+            'fields' => [
 
-        'action' => '/api/categories',
+                [
+                    'name' => 'technology_id',
 
-        'method' => 'POST',
+                    'label' => 'Tecnología',
 
-        'buttonText' => 'Guardar',
+                    'type' => 'select',
 
-        'fields' => [
+                    'placeholder' =>
+                        'Seleccione una tecnología',
 
-            [
-                'name' => 'technology_id',
-                'label' => 'Tecnología',
-                'type' => 'select',
-                'placeholder' => 'Seleccione una tecnología',
-                'required' => true,
-                'options' => []
-            ],
+                    'required' => true,
 
-            [
-                'name' => 'name',
-                'label' => 'Nombre',
-                'type' => 'text',
-                'placeholder' => 'Ej: Variables',
-                'required' => true,
-                'maxlength' => 100
-            ],
+                    'options' => []
+                ],
 
-            [
-                'name' => 'description',
-                'label' => 'Descripción',
-                'type' => 'textarea',
-                'placeholder' => 'Descripción de la categoría',
-                'required' => true
+                [
+                    'name' => 'name',
+
+                    'label' => 'Nombre',
+
+                    'type' => 'text',
+
+                    'placeholder' =>
+                        'Ej: Variables',
+
+                    'required' => true,
+
+                    'maxlength' => 100
+                ],
+
+                [
+                    'name' => 'description',
+
+                    'label' => 'Descripción',
+
+                    'type' => 'textarea',
+
+                    'placeholder' =>
+                        'Descripción de la categoría',
+
+                    'required' => true
+                ]
+
             ]
+
+        ])
+
+    </div>
+
+
+
+    {{-- 
+    |--------------------------------------------------------------------------
+    | TABLA GESTIÓN
+    |--------------------------------------------------------------------------
+    |
+    | La tabla es reutilizable.
+    |
+    | categories.js solamente proporciona:
+    |
+    | - datos
+    | - columnas
+    | - acciones
+    |
+    | TablaGestion se encarga del renderizado.
+    |
+    --}}
+
+    @include('components.tabla-gestion', [
+
+        'id' => 'categoriesTable',
+
+        'columns' => [
+
+            [
+                'key' => 'id',
+
+                'label' => 'ID'
+            ],
+
+            [
+                'key' => 'technology.name',
+
+                'label' => 'Tecnología'
+            ],
+
+            [
+                'key' => 'name',
+
+                'label' => 'Nombre'
+            ],
+
+            [
+                'key' => 'description',
+
+                'label' => 'Descripción'
+            ]
+
+        ],
+
+        'actions' => [
+
+            'edit' => true,
+
+            'delete' => true
 
         ]
 
     ])
 
-</div>
-
-
-{{-- TABLA --}}
-
-<div class="table-container">
-
-    <table>
-
-        <thead>
-
-            <tr>
-
-                <th>
-                    ID
-                </th>
-
-                <th>
-                    Tecnología
-                </th>
-
-                <th>
-                    Nombre
-                </th>
-
-                <th>
-                    Descripción
-                </th>
-
-                <th>
-                    Acciones
-                </th>
-
-            </tr>
-
-        </thead>
-
-
-        <tbody id="categoriesTable">
-
-            <tr>
-
-                <td colspan="5">
-                    Cargando...
-                </td>
-
-            </tr>
-
-        </tbody>
-
-    </table>
-
-</div>
-
 
 </div>
 
 @endsection
+

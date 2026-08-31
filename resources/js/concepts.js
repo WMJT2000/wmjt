@@ -1,993 +1,1031 @@
-document.addEventListener('DOMContentLoaded', () => {
+
+import { TablaGestion } from './tabla-gestion.js';
 
 
-/*
-|--------------------------------------------------------------------------
-| ELEMENTOS
-|--------------------------------------------------------------------------
-*/
-
-const botonNuevo =
-    document.getElementById(
-        'btnNuevoConcepto'
-    );
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
 
 
-const formularioContainer =
-    document.getElementById(
-        'conceptFormContainer'
-    );
+        /*
+        |--------------------------------------------------------------------------
+        | ELEMENTOS
+        |--------------------------------------------------------------------------
+        */
 
-
-const formulario =
-    document.getElementById(
-        'conceptForm'
-    );
-
-
-const tabla =
-    document.getElementById(
-        'conceptsTable'
-    );
-
-
-/*
-|--------------------------------------------------------------------------
-| VALIDAR
-|--------------------------------------------------------------------------
-*/
-
-if (
-    !botonNuevo ||
-    !formularioContainer ||
-    !formulario ||
-    !tabla
-) {
-
-    console.error(
-        'No se encontraron los elementos de conceptos.'
-    );
-
-    return;
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| URLS
-|--------------------------------------------------------------------------
-*/
-
-const API_URL =
-    '/api/concepts';
-
-const CATEGORIES_API_URL =
-    '/api/categories';
-
-
-/*
-|--------------------------------------------------------------------------
-| NUEVO / CERRAR FORMULARIO
-|--------------------------------------------------------------------------
-*/
-
-botonNuevo.addEventListener(
-    'click',
-    async () => {
-
-        const formularioEstaCerrado =
-            formularioContainer.style.display === 'none' ||
-            formularioContainer.style.display === '';
-
-
-        if (formularioEstaCerrado) {
-
-            /*
-            |------------------------------------------------------------------
-            | ABRIR
-            |------------------------------------------------------------------
-            */
-
-            formularioContainer.style.display =
-                'block';
-
-
-            formulario.reset();
-
-
-            formulario.setAttribute(
-                'action',
-                API_URL
+        const botonNuevo =
+            document.getElementById(
+                'btnNuevoConcepto'
             );
 
 
-            formulario.setAttribute(
-                'method',
-                'POST'
+        const formularioContainer =
+            document.getElementById(
+                'conceptFormContainer'
             );
 
 
-            await cargarCategorias();
+        const formulario =
+            document.getElementById(
+                'conceptForm'
+            );
 
 
-            const titulo =
-                formularioContainer.querySelector(
-                    'h2'
-                );
+        const tablaContainer =
+            document.getElementById(
+                'conceptsTable'
+            );
 
 
-            if (titulo) {
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDAR
+        |--------------------------------------------------------------------------
+        */
 
-                titulo.textContent =
-                    'Nuevo concepto';
+        if (
+            !botonNuevo ||
+            !formularioContainer ||
+            !formulario ||
+            !tablaContainer
+        ) {
 
-            }
+            console.error(
+                'No se encontraron los elementos de conceptos.'
+            );
 
-
-            const boton =
-                formulario.querySelector(
-                    '.form-button'
-                );
-
-
-            if (boton) {
-
-                boton.textContent =
-                    'Guardar';
-
-            }
-
-
-            botonNuevo.textContent =
-                '− Cerrar formulario';
-
-
-        } else {
-
-            /*
-            |------------------------------------------------------------------
-            | CERRAR
-            |------------------------------------------------------------------
-            */
-
-            formularioContainer.style.display =
-                'none';
-
-
-            botonNuevo.textContent =
-                '+ Nuevo concepto';
+            return;
 
         }
 
-    }
-);
+
+        /*
+        |--------------------------------------------------------------------------
+        | API
+        |--------------------------------------------------------------------------
+        */
+
+        const API_URL =
+            '/api/concepts';
 
 
-/*
-|--------------------------------------------------------------------------
-| CARGAR CATEGORÍAS
-|--------------------------------------------------------------------------
-*/
+        const CATEGORIES_API_URL =
+            '/api/categories';
 
-async function cargarCategorias(
-    categoriaSeleccionada = null
-) {
 
-    const select =
-        formulario.querySelector(
-            '[name="category_id"]'
+
+        /*
+        |--------------------------------------------------------------------------
+        | TABLA GESTIÓN
+        |--------------------------------------------------------------------------
+        |
+        | Exactamente la misma arquitectura utilizada
+        | en technologies.js.
+        |
+        */
+
+        const tabla =
+            new TablaGestion({
+
+                container:
+                    tablaContainer,
+
+                columns: [
+
+                    {
+                        key: 'id',
+
+                        label: 'ID'
+                    },
+
+                    {
+                        key: 'name',
+
+                        label: 'Nombre'
+                    },
+
+                    {
+                        key: 'category.name',
+
+                        label: 'Categoría'
+                    },
+
+                    {
+                        key: 'type',
+
+                        label: 'Tipo'
+                    },
+
+                    {
+                        key: 'description',
+
+                        label: 'Descripción'
+                    }
+
+                ],
+
+                actions: {
+
+                    edit: true,
+
+                    delete: true
+
+                },
+
+                emptyMessage:
+                    'No hay conceptos.',
+
+                loadingMessage:
+                    'Cargando conceptos.',
+
+                errorMessage:
+                    'Error cargando conceptos.'
+
+            });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | EVENTO EDITAR
+        |--------------------------------------------------------------------------
+        |
+        | TablaGestion solamente notifica.
+        |
+        | concepts.js decide qué hacer.
+        |
+        */
+
+        tablaContainer.addEventListener(
+            'tabla-gestion:edit',
+            async event => {
+
+                const concepto =
+                    event.detail;
+
+
+                if (!concepto) {
+
+                    return;
+
+                }
+
+
+                await editarConcepto(
+                    concepto.id
+                );
+
+            }
         );
 
 
-    if (!select) {
 
-        return;
+        /*
+        |--------------------------------------------------------------------------
+        | EVENTO ELIMINAR
+        |--------------------------------------------------------------------------
+        |
+        | TablaGestion solamente notifica.
+        |
+        | concepts.js decide qué hacer.
+        |
+        */
 
-    }
+        tablaContainer.addEventListener(
+            'tabla-gestion:delete',
+            async event => {
+
+                const concepto =
+                    event.detail;
 
 
-    select.innerHTML = `
+                if (!concepto) {
 
-        <option value="">
-            Cargando categorías...
-        </option>
+                    return;
 
-    `;
-
-
-    try {
-
-        const response =
-            await fetch(
-                CATEGORIES_API_URL,
-                {
-                    method: 'GET',
-
-                    headers: {
-                        'Accept':
-                            'application/json'
-                    }
                 }
-            );
 
 
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.message ||
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const categorias =
-            Array.isArray(data)
-                ? data
-                : data.data ?? [];
-
-
-        select.innerHTML = `
-
-            <option value="">
-                Seleccione una categoría
-            </option>
-
-        `;
-
-
-        categorias.forEach(
-            categoria => {
-
-                const option =
-                    document.createElement(
-                        'option'
+                const confirmar =
+                    confirm(
+                        `¿Seguro que deseas eliminar el concepto "${concepto.name}"?`
                     );
 
 
-                option.value =
-                    categoria.id;
+                if (!confirmar) {
 
-
-                option.textContent =
-                    categoria.name;
-
-
-                if (
-                    categoriaSeleccionada &&
-                    Number(categoria.id) ===
-                    Number(categoriaSeleccionada)
-                ) {
-
-                    option.selected =
-                        true;
+                    return;
 
                 }
 
 
-                select.appendChild(
-                    option
+                await eliminarConcepto(
+                    concepto.id
                 );
 
             }
         );
 
 
-    } catch (error) {
 
-        console.error(
-            'Error cargando categorías:',
-            error
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | NUEVO / CERRAR FORMULARIO
+        |--------------------------------------------------------------------------
+        */
 
+        botonNuevo.addEventListener(
+            'click',
+            async () => {
 
-        select.innerHTML = `
-
-            <option value="">
-                Error cargando categorías
-            </option>
-
-        `;
-
-    }
-
-}
+                const formularioEstaCerrado =
+                    formularioContainer.style.display === 'none' ||
+                    formularioContainer.style.display === '';
 
 
-/*
-|--------------------------------------------------------------------------
-| CARGAR CONCEPTOS
-|--------------------------------------------------------------------------
-*/
+                if (
+                    formularioEstaCerrado
+                ) {
 
-async function cargarConceptos() {
+                    /*
+                    |------------------------------------------------------------------
+                    | ABRIR
+                    |------------------------------------------------------------------
+                    */
 
-    tabla.innerHTML = `
-
-        <tr>
-
-            <td colspan="6">
-                Cargando...
-            </td>
-
-        </tr>
-
-    `;
+                    formularioContainer.style.display =
+                        'block';
 
 
-    try {
+                    formulario.reset();
 
-        const response =
-            await fetch(
-                API_URL,
-                {
-                    method: 'GET',
 
-                    headers: {
-                        'Accept':
-                            'application/json'
+                    formulario.setAttribute(
+                        'action',
+                        API_URL
+                    );
+
+
+                    formulario.setAttribute(
+                        'method',
+                        'POST'
+                    );
+
+
+                    /*
+                    |------------------------------------------------------------------
+                    | CARGAR CATEGORÍAS
+                    |------------------------------------------------------------------
+                    */
+
+                    await cargarCategorias();
+
+
+                    /*
+                    |------------------------------------------------------------------
+                    | TÍTULO
+                    |------------------------------------------------------------------
+                    */
+
+                    const titulo =
+                        formularioContainer.querySelector(
+                            'h2'
+                        );
+
+
+                    if (titulo) {
+
+                        titulo.textContent =
+                            'Nuevo concepto';
+
                     }
+
+
+                    /*
+                    |------------------------------------------------------------------
+                    | BOTÓN
+                    |------------------------------------------------------------------
+                    */
+
+                    const boton =
+                        formulario.querySelector(
+                            '.form-button'
+                        );
+
+
+                    if (boton) {
+
+                        boton.textContent =
+                            'Guardar';
+
+                    }
+
+
+                    botonNuevo.textContent =
+                        '− Cerrar formulario';
+
+
+                } else {
+
+                    /*
+                    |------------------------------------------------------------------
+                    | CERRAR
+                    |------------------------------------------------------------------
+                    */
+
+                    formularioContainer.style.display =
+                        'none';
+
+
+                    botonNuevo.textContent =
+                        '+ Nuevo concepto';
+
                 }
-            );
 
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.message ||
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const conceptos =
-            Array.isArray(data)
-                ? data
-                : data.data ?? [];
-
-
-        pintarTabla(
-            conceptos
+            }
         );
 
 
-    } catch (error) {
 
-        console.error(
-            'Error cargando conceptos:',
-            error
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | CARGAR CATEGORÍAS
+        |--------------------------------------------------------------------------
+        */
 
+        async function cargarCategorias(
+            categoriaSeleccionada = null
+        ) {
 
-        tabla.innerHTML = `
-
-            <tr>
-
-                <td colspan="6">
-
-                    Error cargando conceptos.
-
-                    <br>
-
-                    ${escapeHtml(
-                        error.message
-                    )}
-
-                </td>
-
-            </tr>
-
-        `;
-
-    }
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| PINTAR TABLA
-|--------------------------------------------------------------------------
-*/
-
-function pintarTabla(
-    conceptos
-) {
-
-    tabla.innerHTML = '';
-
-
-    if (
-        !conceptos ||
-        conceptos.length === 0
-    ) {
-
-        tabla.innerHTML = `
-
-            <tr>
-
-                <td colspan="6">
-
-                    No hay conceptos.
-
-                </td>
-
-            </tr>
-
-        `;
-
-        return;
-
-    }
-
-
-    conceptos.forEach(
-        concepto => {
-
-            const fila =
-                document.createElement(
-                    'tr'
+            const select =
+                formulario.querySelector(
+                    '[name="category_id"]'
                 );
 
 
-            fila.innerHTML = `
+            if (!select) {
 
-                <td>
-                    ${concepto.id}
-                </td>
+                return;
 
-                <td>
-                    ${escapeHtml(
-                        concepto.name ?? ''
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                        concepto.category?.name ??
-                        concepto.category_name ??
-                        ''
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                        concepto.type ?? ''
-                    )}
-                </td>
-
-                <td>
-                    ${escapeHtml(
-                        concepto.description ?? ''
-                    )}
-                </td>
-
-                <td>
-
-                    <button
-                        type="button"
-                        class="btn-edit"
-                        data-id="${concepto.id}"
-                    >
-                        Editar
-                    </button>
+            }
 
 
-                    <button
-                        type="button"
-                        class="btn-delete"
-                        data-id="${concepto.id}"
-                    >
-                        Eliminar
-                    </button>
+            select.innerHTML = `
 
-                </td>
+                <option value="">
+                    Cargando categorías...
+                </option>
 
             `;
 
 
-            tabla.appendChild(
-                fila
-            );
+            try {
 
-        }
-    );
+                const response =
+                    await fetch(
+                        CATEGORIES_API_URL,
+                        {
+                            method: 'GET',
 
-}
+                            headers: {
 
+                                'Accept':
+                                    'application/json'
 
-/*
-|--------------------------------------------------------------------------
-| EDITAR
-|--------------------------------------------------------------------------
-*/
-
-tabla.addEventListener(
-    'click',
-    async event => {
-
-        const boton =
-            event.target.closest(
-                '.btn-edit'
-            );
+                            }
+                        }
+                    );
 
 
-        if (!boton) {
-
-            return;
-
-        }
+                const data =
+                    await response.json();
 
 
-        const id =
-            boton.dataset.id;
+                if (!response.ok) {
 
+                    throw new Error(
+                        data.message ||
+                        `HTTP ${response.status}`
+                    );
 
-        await editarConcepto(
-            id
-        );
-
-    }
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| OBTENER UN CONCEPTO
-|--------------------------------------------------------------------------
-*/
-
-async function editarConcepto(
-    id
-) {
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_URL}/${id}`,
-                {
-                    method: 'GET',
-
-                    headers: {
-                        'Accept':
-                            'application/json'
-                    }
                 }
-            );
 
 
-        const data =
-            await response.json();
+                const categorias =
+                    Array.isArray(data)
+                        ? data
+                        : data.data ?? [];
 
 
-        if (!response.ok) {
+                select.innerHTML = `
 
-            throw new Error(
-                data.message ||
-                'No se pudo obtener el concepto.'
-            );
+                    <option value="">
+                        Seleccione una categoría
+                    </option>
 
-        }
+                `;
 
 
-        const concepto =
-            data.data ?? data;
+                categorias.forEach(
+                    categoria => {
 
+                        const option =
+                            document.createElement(
+                                'option'
+                            );
 
-        /*
-        |------------------------------------------------------------------
-        | MOSTRAR FORMULARIO
-        |------------------------------------------------------------------
-        */
 
-        formularioContainer.style.display =
-            'block';
+                        option.value =
+                            categoria.id;
 
 
-        botonNuevo.textContent =
-            '− Cerrar formulario';
+                        option.textContent =
+                            categoria.name;
 
 
-        /*
-        |------------------------------------------------------------------
-        | CONFIGURAR FORMULARIO
-        |------------------------------------------------------------------
-        */
+                        if (
+                            categoriaSeleccionada &&
+                            Number(categoria.id) ===
+                            Number(categoriaSeleccionada)
+                        ) {
 
-        formulario.setAttribute(
-            'action',
-            `${API_URL}/${id}`
-        );
+                            option.selected =
+                                true;
 
+                        }
 
-        formulario.setAttribute(
-            'method',
-            'PUT'
-        );
 
+                        select.appendChild(
+                            option
+                        );
 
-        /*
-        |------------------------------------------------------------------
-        | CARGAR CATEGORÍAS
-        |------------------------------------------------------------------
-        */
-
-        await cargarCategorias(
-            concepto.category_id
-        );
-
-
-        /*
-        |------------------------------------------------------------------
-        | CARGAR CAMPOS
-        |------------------------------------------------------------------
-        */
-
-        const campoNombre =
-            formulario.querySelector(
-                '[name="name"]'
-            );
-
-
-        const campoSlug =
-            formulario.querySelector(
-                '[name="slug"]'
-            );
-
-
-        const campoTipo =
-            formulario.querySelector(
-                '[name="type"]'
-            );
-
-
-        const campoDescripcion =
-            formulario.querySelector(
-                '[name="description"]'
-            );
-
-
-        const campoComoUsar =
-            formulario.querySelector(
-                '[name="how_to_use"]'
-            );
-
-
-        const campoEjemplo =
-            formulario.querySelector(
-                '[name="example"]'
-            );
-
-
-        if (campoNombre) {
-
-            campoNombre.value =
-                concepto.name ?? '';
-
-        }
-
-
-        if (campoSlug) {
-
-            campoSlug.value =
-                concepto.slug ?? '';
-
-        }
-
-
-        if (campoTipo) {
-
-            campoTipo.value =
-                concepto.type ?? '';
-
-        }
-
-
-        if (campoDescripcion) {
-
-            campoDescripcion.value =
-                concepto.description ?? '';
-
-        }
-
-
-        if (campoComoUsar) {
-
-            campoComoUsar.value =
-                concepto.how_to_use ?? '';
-
-        }
-
-
-        if (campoEjemplo) {
-
-            campoEjemplo.value =
-                concepto.example ?? '';
-
-        }
-
-
-        /*
-        |------------------------------------------------------------------
-        | TÍTULO
-        |------------------------------------------------------------------
-        */
-
-        const titulo =
-            formularioContainer.querySelector(
-                'h2'
-            );
-
-
-        if (titulo) {
-
-            titulo.textContent =
-                'Editar concepto';
-
-        }
-
-
-        /*
-        |------------------------------------------------------------------
-        | BOTÓN
-        |------------------------------------------------------------------
-        */
-
-        const boton =
-            formulario.querySelector(
-                '.form-button'
-            );
-
-
-        if (boton) {
-
-            boton.textContent =
-                'Actualizar';
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            'Error obteniendo concepto:',
-            error
-        );
-
-
-        alert(
-            error.message
-        );
-
-    }
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| ELIMINAR
-|--------------------------------------------------------------------------
-*/
-
-tabla.addEventListener(
-    'click',
-    async event => {
-
-        const boton =
-            event.target.closest(
-                '.btn-delete'
-            );
-
-
-        if (!boton) {
-
-            return;
-
-        }
-
-
-        const id =
-            boton.dataset.id;
-
-
-        const confirmar =
-            confirm(
-                '¿Seguro que deseas eliminar este concepto?'
-            );
-
-
-        if (!confirmar) {
-
-            return;
-
-        }
-
-
-        await eliminarConcepto(
-            id
-        );
-
-    }
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| DELETE
-|--------------------------------------------------------------------------
-*/
-
-async function eliminarConcepto(
-    id
-) {
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_URL}/${id}`,
-                {
-                    method: 'DELETE',
-
-                    headers: {
-                        'Accept':
-                            'application/json'
                     }
-                }
-            );
+                );
 
 
-        const data =
-            await response.json();
+            } catch (error) {
+
+                console.error(
+                    'Error cargando categorías:',
+                    error
+                );
 
 
-        if (!response.ok) {
+                select.innerHTML = `
 
-            throw new Error(
-                data.message ||
-                'No se pudo eliminar.'
-            );
+                    <option value="">
+                        Error cargando categorías
+                    </option>
+
+                `;
+
+            }
 
         }
 
-
-        console.log(
-            'Eliminado:',
-            data
-        );
-
-
-        await cargarConceptos();
-
-
-    } catch (error) {
-
-        console.error(
-            'Error eliminando:',
-            error
-        );
-
-
-        alert(
-            error.message
-        );
-
-    }
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| FORM SUCCESS
-|--------------------------------------------------------------------------
-*/
-
-formulario.addEventListener(
-    'form:success',
-    async () => {
-
-        await cargarConceptos();
 
 
         /*
-        |------------------------------------------------------------------
-        | VOLVER A MODO NUEVO
-        |------------------------------------------------------------------
+        |--------------------------------------------------------------------------
+        | CARGAR CONCEPTOS
+        |--------------------------------------------------------------------------
         */
 
-        formulario.reset();
+        async function cargarConceptos() {
+
+            tabla.mostrarCargando();
 
 
-        formulario.setAttribute(
-            'action',
-            API_URL
-        );
+            try {
+
+                const response =
+                    await fetch(
+                        API_URL,
+                        {
+                            method: 'GET',
+
+                            headers: {
+
+                                'Accept':
+                                    'application/json'
+
+                            }
+                        }
+                    );
 
 
-        formulario.setAttribute(
-            'method',
-            'POST'
-        );
+                const data =
+                    await response.json();
 
 
-        await cargarCategorias();
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        `HTTP ${response.status}`
+                    );
+
+                }
 
 
-        const titulo =
-            formularioContainer.querySelector(
-                'h2'
-            );
+                const conceptos =
+                    Array.isArray(data)
+                        ? data
+                        : data.data ?? [];
 
 
-        if (titulo) {
+                /*
+                |------------------------------------------------------------------
+                | ENTREGAR DATOS AL COMPONENTE
+                |------------------------------------------------------------------
+                */
 
-            titulo.textContent =
-                'Nuevo concepto';
+                tabla.establecerDatos(
+                    conceptos
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error cargando conceptos:',
+                    error
+                );
+
+
+                tabla.mostrarError(
+                    `Error cargando conceptos: ${error.message}`
+                );
+
+            }
 
         }
 
 
-        const boton =
-            formulario.querySelector(
-                '.form-button'
-            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | EDITAR CONCEPTO
+        |--------------------------------------------------------------------------
+        */
+
+        async function editarConcepto(
+            id
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/${id}`,
+                        {
+                            method: 'GET',
+
+                            headers: {
+
+                                'Accept':
+                                    'application/json'
+
+                            }
+                        }
+                    );
 
 
-        if (boton) {
+                const data =
+                    await response.json();
 
-            boton.textContent =
-                'Guardar';
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        'No se pudo obtener el concepto.'
+                    );
+
+                }
+
+
+                const concepto =
+                    data.data ?? data;
+
+
+                /*
+                |------------------------------------------------------------------
+                | MOSTRAR FORMULARIO
+                |------------------------------------------------------------------
+                */
+
+                formularioContainer.style.display =
+                    'block';
+
+
+                botonNuevo.textContent =
+                    '− Cerrar formulario';
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | CONFIGURAR FORMULARIO
+                |------------------------------------------------------------------
+                */
+
+                formulario.setAttribute(
+                    'action',
+                    `${API_URL}/${id}`
+                );
+
+
+                formulario.setAttribute(
+                    'method',
+                    'PUT'
+                );
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | CARGAR CATEGORÍAS
+                |------------------------------------------------------------------
+                */
+
+                await cargarCategorias(
+                    concepto.category_id
+                );
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | CAMPOS
+                |--------------------------------------------------------------------------
+                */
+
+                const campoNombre =
+                    formulario.querySelector(
+                        '[name="name"]'
+                    );
+
+
+                const campoSlug =
+                    formulario.querySelector(
+                        '[name="slug"]'
+                    );
+
+
+                const campoTipo =
+                    formulario.querySelector(
+                        '[name="type"]'
+                    );
+
+
+                const campoDescripcion =
+                    formulario.querySelector(
+                        '[name="description"]'
+                    );
+
+
+                const campoComoUsar =
+                    formulario.querySelector(
+                        '[name="how_to_use"]'
+                    );
+
+
+                const campoEjemplo =
+                    formulario.querySelector(
+                        '[name="example"]'
+                    );
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | NOMBRE
+                |------------------------------------------------------------------
+                */
+
+                if (campoNombre) {
+
+                    campoNombre.value =
+                        concepto.name ?? '';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | SLUG
+                |------------------------------------------------------------------
+                */
+
+                if (campoSlug) {
+
+                    campoSlug.value =
+                        concepto.slug ?? '';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | TIPO
+                |------------------------------------------------------------------
+                */
+
+                if (campoTipo) {
+
+                    campoTipo.value =
+                        concepto.type ?? '';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | DESCRIPCIÓN
+                |------------------------------------------------------------------
+                */
+
+                if (campoDescripcion) {
+
+                    campoDescripcion.value =
+                        concepto.description ?? '';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | CÓMO UTILIZAR
+                |------------------------------------------------------------------
+                */
+
+                if (campoComoUsar) {
+
+                    campoComoUsar.value =
+                        concepto.how_to_use ?? '';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | EJEMPLO
+                |------------------------------------------------------------------
+                */
+
+                if (campoEjemplo) {
+
+                    campoEjemplo.value =
+                        concepto.example ?? '';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | TÍTULO
+                |------------------------------------------------------------------
+                */
+
+                const titulo =
+                    formularioContainer.querySelector(
+                        'h2'
+                    );
+
+
+                if (titulo) {
+
+                    titulo.textContent =
+                        'Editar concepto';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | BOTÓN
+                |------------------------------------------------------------------
+                */
+
+                const boton =
+                    formulario.querySelector(
+                        '.form-button'
+                    );
+
+
+                if (boton) {
+
+                    boton.textContent =
+                        'Actualizar';
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error obteniendo concepto:',
+                    error
+                );
+
+
+                alert(
+                    error.message
+                );
+
+            }
 
         }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELIMINAR CONCEPTO
+        |--------------------------------------------------------------------------
+        */
+
+        async function eliminarConcepto(
+            id
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/${id}`,
+                        {
+                            method: 'DELETE',
+
+                            headers: {
+
+                                'Accept':
+                                    'application/json'
+
+                            }
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        'No se pudo eliminar.'
+                    );
+
+                }
+
+
+                console.log(
+                    'Eliminado:',
+                    data
+                );
+
+
+                /*
+                |------------------------------------------------------------------
+                | RECARGAR TABLA
+                |------------------------------------------------------------------
+                */
+
+                await cargarConceptos();
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error eliminando:',
+                    error
+                );
+
+
+                alert(
+                    error.message
+                );
+
+            }
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FORM SUCCESS
+        |--------------------------------------------------------------------------
+        */
+
+        formulario.addEventListener(
+            'form:success',
+            async () => {
+
+                /*
+                |------------------------------------------------------------------
+                | RECARGAR TABLA
+                |------------------------------------------------------------------
+                */
+
+                await cargarConceptos();
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | VOLVER A MODO NUEVO
+                |------------------------------------------------------------------
+                */
+
+                formulario.reset();
+
+
+                formulario.setAttribute(
+                    'action',
+                    API_URL
+                );
+
+
+                formulario.setAttribute(
+                    'method',
+                    'POST'
+                );
+
+
+                /*
+                |------------------------------------------------------------------
+                | RECARGAR CATEGORÍAS
+                |------------------------------------------------------------------
+                */
+
+                await cargarCategorias();
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | TÍTULO
+                |------------------------------------------------------------------
+                */
+
+                const titulo =
+                    formularioContainer.querySelector(
+                        'h2'
+                    );
+
+
+                if (titulo) {
+
+                    titulo.textContent =
+                        'Nuevo concepto';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | BOTÓN
+                |--------------------------------------------------------------------------
+                */
+
+                const boton =
+                    formulario.querySelector(
+                        '.form-button'
+                    );
+
+
+                if (boton) {
+
+                    boton.textContent =
+                        'Guardar';
+
+                }
+
+            }
+        );
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | INICIAR
+        |--------------------------------------------------------------------------
+        */
+
+        cargarConceptos();
 
     }
 );
 
-
-/*
-|--------------------------------------------------------------------------
-| ESCAPAR HTML
-|--------------------------------------------------------------------------
-*/
-
-function escapeHtml(
-    text
-) {
-
-    const div =
-        document.createElement(
-            'div'
-        );
-
-
-    div.textContent =
-        text;
-
-
-    return div.innerHTML;
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| CARGAR AL INICIAR
-|--------------------------------------------------------------------------
-*/
-
-cargarConceptos();
-
-
-});

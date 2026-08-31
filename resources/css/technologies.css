@@ -1,3 +1,4 @@
+
 /* =========================================================
    TECHNOLOGIES
    ========================================================= */
@@ -68,81 +69,6 @@
 
 
 /* =========================================================
-   TABLA
-   ========================================================= */
-
-.table-container {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    overflow-x: auto;
-}
-
-.table-container table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table-container th {
-    background: #f9fafb;
-    color: #374151;
-    font-size: 13px;
-    font-weight: 600;
-    text-align: left;
-    padding: 14px 16px;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.table-container td {
-    padding: 14px 16px;
-    font-size: 14px;
-    color: #4b5563;
-    border-bottom: 1px solid #f1f5f9;
-}
-
-.table-container tbody tr:hover {
-    background: #f8fafc;
-}
-
-.table-container tbody tr:last-child td {
-    border-bottom: none;
-}
-
-
-/* =========================================================
-   ACCIONES
-   ========================================================= */
-
-.btn-edit,
-.btn-delete {
-    border: none;
-    padding: 7px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    cursor: pointer;
-    margin-right: 6px;
-}
-
-.btn-edit {
-    background: #eff6ff;
-    color: #2563eb;
-}
-
-.btn-edit:hover {
-    background: #dbeafe;
-}
-
-.btn-delete {
-    background: #fef2f2;
-    color: #dc2626;
-}
-
-.btn-delete:hover {
-    background: #fee2e2;
-}
-
-
-/* =========================================================
    RESPONSIVE
    ========================================================= */
 
@@ -162,5 +88,5 @@
     .btn-primary {
         width: 100%;
     }
-
 }
+

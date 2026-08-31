@@ -1,102 +1,647 @@
+import { TablaGestion } from './tabla-gestion.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | ELEMENTOS
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | ELEMENTOS
+        |--------------------------------------------------------------------------
+        */
 
-    const botonNueva =
-        document.getElementById(
-            'btnNuevaTecnologia'
+        const botonNueva =
+            document.getElementById(
+                'btnNuevaTecnologia'
+            );
+
+
+        const formularioContainer =
+            document.getElementById(
+                'technologyFormContainer'
+            );
+
+
+        const formulario =
+            document.getElementById(
+                'technologyForm'
+            );
+
+
+        const tablaContainer =
+            document.getElementById(
+                'technologiesTable'
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDAR
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !botonNueva ||
+            !formularioContainer ||
+            !formulario ||
+            !tablaContainer
+        ) {
+
+            console.error(
+                'No se encontraron los elementos de tecnologías.'
+            );
+
+            return;
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | API
+        |--------------------------------------------------------------------------
+        */
+
+        const API_URL =
+            '/api/technologies';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TABLA GESTIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        const tabla =
+            new TablaGestion({
+
+                container:
+                    tablaContainer,
+
+                columns: [
+
+                    {
+                        key: 'id',
+
+                        label: 'ID'
+                    },
+
+                    {
+                        key: 'name',
+
+                        label: 'Nombre'
+                    },
+
+                    {
+                        key: 'description',
+
+                        label: 'Descripción'
+                    }
+
+                ],
+
+                actions: {
+
+                    edit: true,
+
+                    delete: true
+
+                },
+
+                emptyMessage:
+                    'No hay tecnologías.',
+
+                loadingMessage:
+                    'Cargando tecnologías.',
+
+                errorMessage:
+                    'Error cargando tecnologías.'
+
+            });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | EVENTO EDITAR
+        |--------------------------------------------------------------------------
+        |
+        | TablaGestion NO sabe cómo editar.
+        |
+        | Solamente notifica:
+        |
+        | tabla-gestion:edit
+        |
+        |--------------------------------------------------------------------------
+        */
+
+        tablaContainer.addEventListener(
+            'tabla-gestion:edit',
+            async event => {
+
+                const tecnologia =
+                    event.detail;
+
+
+                if (!tecnologia) {
+
+                    return;
+
+                }
+
+
+                await editarTecnologia(
+                    tecnologia.id
+                );
+
+            }
         );
 
 
-    const formularioContainer =
-        document.getElementById(
-            'technologyFormContainer'
+        /*
+        |--------------------------------------------------------------------------
+        | EVENTO ELIMINAR
+        |--------------------------------------------------------------------------
+        |
+        | TablaGestion NO elimina.
+        |
+        | technologies.js decide qué hacer.
+        |
+        |--------------------------------------------------------------------------
+        */
+
+        tablaContainer.addEventListener(
+            'tabla-gestion:delete',
+            async event => {
+
+                const tecnologia =
+                    event.detail;
+
+
+                if (!tecnologia) {
+
+                    return;
+
+                }
+
+
+                const confirmar =
+                    confirm(
+                        `¿Seguro que deseas eliminar la tecnología "${tecnologia.name}"?`
+                    );
+
+
+                if (!confirmar) {
+
+                    return;
+
+                }
+
+
+                await eliminarTecnologia(
+                    tecnologia.id
+                );
+
+            }
         );
 
 
-    const formulario =
-        document.getElementById(
-            'technologyForm'
+        /*
+        |--------------------------------------------------------------------------
+        | NUEVA / CERRAR FORMULARIO
+        |--------------------------------------------------------------------------
+        */
+
+        botonNueva.addEventListener(
+            'click',
+            () => {
+
+                const formularioEstaCerrado =
+                    formularioContainer.style.display === 'none' ||
+                    formularioContainer.style.display === '';
+
+
+                if (
+                    formularioEstaCerrado
+                ) {
+
+                    /*
+                    |------------------------------------------------------------------
+                    | ABRIR
+                    |------------------------------------------------------------------
+                    */
+
+                    formularioContainer.style.display =
+                        'block';
+
+
+                    formulario.reset();
+
+
+                    formulario.setAttribute(
+                        'action',
+                        API_URL
+                    );
+
+
+                    formulario.setAttribute(
+                        'method',
+                        'POST'
+                    );
+
+
+                    const titulo =
+                        formularioContainer.querySelector(
+                            'h2'
+                        );
+
+
+                    if (titulo) {
+
+                        titulo.textContent =
+                            'Nueva tecnología';
+
+                    }
+
+
+                    const boton =
+                        formulario.querySelector(
+                            '.form-button'
+                        );
+
+
+                    if (boton) {
+
+                        boton.textContent =
+                            'Guardar';
+
+                    }
+
+
+                    botonNueva.textContent =
+                        '− Cerrar formulario';
+
+
+                } else {
+
+                    /*
+                    |------------------------------------------------------------------
+                    | CERRAR
+                    |------------------------------------------------------------------
+                    */
+
+                    formularioContainer.style.display =
+                        'none';
+
+
+                    botonNueva.textContent =
+                        '+ Nueva tecnología';
+
+                }
+
+            }
         );
 
 
-    const tabla =
-        document.getElementById(
-            'technologiesTable'
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | CARGAR TECNOLOGÍAS
+        |--------------------------------------------------------------------------
+        */
+
+        async function cargarTecnologias() {
+
+            tabla.mostrarCargando();
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | VALIDAR
-    |--------------------------------------------------------------------------
-    */
+            try {
 
-    if (
-        !botonNueva ||
-        !formularioContainer ||
-        !formulario ||
-        !tabla
-    ) {
+                const response =
+                    await fetch(
+                        API_URL,
+                        {
+                            method: 'GET',
 
-        console.error(
-            'No se encontraron los elementos de tecnologías.'
-        );
-
-        return;
-
-    }
+                            headers: {
+                                'Accept':
+                                    'application/json'
+                            }
+                        }
+                    );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | URL BASE
-    |--------------------------------------------------------------------------
-    */
-
-    const API_URL =
-        '/api/technologies';
+                const data =
+                    await response.json();
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | NUEVA / CERRAR FORMULARIO
-    |--------------------------------------------------------------------------
-    |
-    | Un solo clic:
-    |
-    | Cerrado -> abre
-    | Abierto -> cierra
-    |
-    |--------------------------------------------------------------------------
-    */
+                if (!response.ok) {
 
-    botonNueva.addEventListener(
-        'click',
-        () => {
+                    throw new Error(
+                        data.message
+                        || `HTTP ${response.status}`
+                    );
 
-            const formularioEstaCerrado =
-                formularioContainer.style.display === 'none' ||
-                formularioContainer.style.display === '';
+                }
 
 
-            if (formularioEstaCerrado) {
+                const tecnologias =
+                    Array.isArray(data)
+                        ? data
+                        : data.data ?? [];
+
 
                 /*
-                |------------------------------------------------------------------
-                | ABRIR FORMULARIO
-                |------------------------------------------------------------------
+                |--------------------------------------------------------------------------
+                | ENTREGAR DATOS AL COMPONENTE
+                |--------------------------------------------------------------------------
+                */
+
+                tabla.establecerDatos(
+                    tecnologias
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error cargando tecnologías:',
+                    error
+                );
+
+
+                tabla.mostrarError(
+                    `Error cargando tecnologías: ${error.message}`
+                );
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | EDITAR TECNOLOGÍA
+        |--------------------------------------------------------------------------
+        */
+
+        async function editarTecnologia(
+            id
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/${id}`,
+                        {
+                            method: 'GET',
+
+                            headers: {
+                                'Accept':
+                                    'application/json'
+                            }
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message
+                        || 'No se pudo obtener la tecnología.'
+                    );
+
+                }
+
+
+                const tecnologia =
+                    data.data ?? data;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | MOSTRAR FORMULARIO
+                |--------------------------------------------------------------------------
                 */
 
                 formularioContainer.style.display =
                     'block';
 
+
+                botonNueva.textContent =
+                    '− Cerrar formulario';
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CONFIGURAR FORMULARIO
+                |--------------------------------------------------------------------------
+                */
+
+                formulario.setAttribute(
+                    'action',
+                    `${API_URL}/${id}`
+                );
+
+
+                formulario.setAttribute(
+                    'method',
+                    'PUT'
+                );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CARGAR NOMBRE
+                |--------------------------------------------------------------------------
+                */
+
+                const campoNombre =
+                    formulario.querySelector(
+                        '[name="name"]'
+                    );
+
+
+                if (campoNombre) {
+
+                    campoNombre.value =
+                        tecnologia.name ?? '';
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CARGAR DESCRIPCIÓN
+                |--------------------------------------------------------------------------
+                */
+
+                const campoDescripcion =
+                    formulario.querySelector(
+                        '[name="description"]'
+                    );
+
+
+                if (campoDescripcion) {
+
+                    campoDescripcion.value =
+                        tecnologia.description ?? '';
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CAMBIAR TÍTULO
+                |--------------------------------------------------------------------------
+                */
+
+                const titulo =
+                    formularioContainer.querySelector(
+                        'h2'
+                    );
+
+
+                if (titulo) {
+
+                    titulo.textContent =
+                        'Editar tecnología';
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CAMBIAR BOTÓN
+                |--------------------------------------------------------------------------
+                */
+
+                const boton =
+                    formulario.querySelector(
+                        '.form-button'
+                    );
+
+
+                if (boton) {
+
+                    boton.textContent =
+                        'Actualizar';
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error obteniendo tecnología:',
+                    error
+                );
+
+
+                alert(
+                    error.message
+                );
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELIMINAR TECNOLOGÍA
+        |--------------------------------------------------------------------------
+        */
+
+        async function eliminarTecnologia(
+            id
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/${id}`,
+                        {
+                            method: 'DELETE',
+
+                            headers: {
+                                'Accept':
+                                    'application/json'
+                            }
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message
+                        || 'No se pudo eliminar.'
+                    );
+
+                }
+
+
+                console.log(
+                    'Eliminado:',
+                    data
+                );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | RECARGAR
+                |--------------------------------------------------------------------------
+                */
+
+                await cargarTecnologias();
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error eliminando:',
+                    error
+                );
+
+
+                alert(
+                    error.message
+                );
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FORM.JS TERMINÓ POST / PUT
+        |--------------------------------------------------------------------------
+        */
+
+        formulario.addEventListener(
+            'form:success',
+            async () => {
+
+                await cargarTecnologias();
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | VOLVER A MODO NUEVO
+                |--------------------------------------------------------------------------
+                */
 
                 formulario.reset();
 
@@ -140,638 +685,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 }
 
-
-                botonNueva.textContent =
-                    '− Cerrar formulario';
-
-
-            } else {
-
-                /*
-                |------------------------------------------------------------------
-                | CERRAR FORMULARIO
-                |------------------------------------------------------------------
-                */
-
-                formularioContainer.style.display =
-                    'none';
-
-
-                botonNueva.textContent =
-                    '+ Nueva tecnología';
-
-            }
-
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CARGAR TECNOLOGÍAS
-    |--------------------------------------------------------------------------
-    */
-
-    async function cargarTecnologias() {
-
-        tabla.innerHTML = `
-
-            <tr>
-
-                <td colspan="4">
-                    Cargando...
-                </td>
-
-            </tr>
-
-        `;
-
-
-        try {
-
-            const response =
-                await fetch(
-                    API_URL,
-                    {
-                        method: 'GET',
-
-                        headers: {
-                            'Accept':
-                                'application/json'
-                        }
-                    }
-                );
-
-
-            const data =
-                await response.json();
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    data.message
-                    || `HTTP ${response.status}`
-                );
-
-            }
-
-
-            const tecnologias =
-                Array.isArray(data)
-                    ? data
-                    : data.data ?? [];
-
-
-            pintarTabla(
-                tecnologias
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                'Error cargando tecnologías:',
-                error
-            );
-
-
-            tabla.innerHTML = `
-
-                <tr>
-
-                    <td colspan="4">
-
-                        Error cargando tecnologías.
-
-                        <br>
-
-                        ${escapeHtml(
-                            error.message
-                        )}
-
-                    </td>
-
-                </tr>
-
-            `;
-
-        }
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PINTAR TABLA
-    |--------------------------------------------------------------------------
-    */
-
-    function pintarTabla(
-        tecnologias
-    ) {
-
-        tabla.innerHTML = '';
-
-
-        if (
-            !tecnologias ||
-            tecnologias.length === 0
-        ) {
-
-            tabla.innerHTML = `
-
-                <tr>
-
-                    <td colspan="4">
-
-                        No hay tecnologías.
-
-                    </td>
-
-                </tr>
-
-            `;
-
-            return;
-
-        }
-
-
-        tecnologias.forEach(
-            tecnologia => {
-
-                const fila =
-                    document.createElement(
-                        'tr'
-                    );
-
-
-                fila.innerHTML = `
-
-                    <td>
-                        ${tecnologia.id}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                            tecnologia.name
-                            ?? ''
-                        )}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                            tecnologia.description
-                            ?? ''
-                        )}
-                    </td>
-
-                    <td>
-
-                        <button
-                            type="button"
-                            class="btn-edit"
-                            data-id="${tecnologia.id}"
-                        >
-                            Editar
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="btn-delete"
-                            data-id="${tecnologia.id}"
-                        >
-                            Eliminar
-                        </button>
-
-                    </td>
-
-                `;
-
-
-                tabla.appendChild(
-                    fila
-                );
-
             }
         );
 
-    }
 
+        /*
+        |--------------------------------------------------------------------------
+        | INICIAR
+        |--------------------------------------------------------------------------
+        */
 
-    /*
-    |--------------------------------------------------------------------------
-    | EDITAR
-    |--------------------------------------------------------------------------
-    */
-
-    tabla.addEventListener(
-        'click',
-        async event => {
-
-            const boton =
-                event.target.closest(
-                    '.btn-edit'
-                );
-
-
-            if (!boton) {
-
-                return;
-
-            }
-
-
-            const id =
-                boton.dataset.id;
-
-
-            await editarTecnologia(
-                id
-            );
-
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | OBTENER UNA TECNOLOGÍA
-    |--------------------------------------------------------------------------
-    */
-
-    async function editarTecnologia(
-        id
-    ) {
-
-        try {
-
-            const response =
-                await fetch(
-                    `${API_URL}/${id}`,
-                    {
-                        method: 'GET',
-
-                        headers: {
-                            'Accept':
-                                'application/json'
-                        }
-                    }
-                );
-
-
-            const data =
-                await response.json();
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    data.message
-                    || 'No se pudo obtener la tecnología.'
-                );
-
-            }
-
-
-            const tecnologia =
-                data.data ?? data;
-
-
-            /*
-            |------------------------------------------------------------------
-            | MOSTRAR FORMULARIO
-            |------------------------------------------------------------------
-            */
-
-            formularioContainer.style.display =
-                'block';
-
-
-            botonNueva.textContent =
-                '− Cerrar formulario';
-
-
-            /*
-            |------------------------------------------------------------------
-            | CONFIGURAR FORMULARIO
-            |------------------------------------------------------------------
-            */
-
-            formulario.setAttribute(
-                'action',
-                `${API_URL}/${id}`
-            );
-
-
-            formulario.setAttribute(
-                'method',
-                'PUT'
-            );
-
-
-            /*
-            |------------------------------------------------------------------
-            | CARGAR VALORES
-            |------------------------------------------------------------------
-            */
-
-            const campoNombre =
-                formulario.querySelector(
-                    '[name="name"]'
-                );
-
-
-            const campoDescripcion =
-                formulario.querySelector(
-                    '[name="description"]'
-                );
-
-
-            if (campoNombre) {
-
-                campoNombre.value =
-                    tecnologia.name ?? '';
-
-            }
-
-
-            if (campoDescripcion) {
-
-                campoDescripcion.value =
-                    tecnologia.description ?? '';
-
-            }
-
-
-            /*
-            |------------------------------------------------------------------
-            | CAMBIAR TÍTULO
-            |------------------------------------------------------------------
-            */
-
-            const titulo =
-                formularioContainer.querySelector(
-                    'h2'
-                );
-
-
-            if (titulo) {
-
-                titulo.textContent =
-                    'Editar tecnología';
-
-            }
-
-
-            /*
-            |------------------------------------------------------------------
-            | CAMBIAR BOTÓN
-            |------------------------------------------------------------------
-            */
-
-            const boton =
-                formulario.querySelector(
-                    '.form-button'
-                );
-
-
-            if (boton) {
-
-                boton.textContent =
-                    'Actualizar';
-
-            }
-
-
-        } catch (error) {
-
-            console.error(
-                'Error obteniendo tecnología:',
-                error
-            );
-
-
-            alert(
-                error.message
-            );
-
-        }
+        cargarTecnologias();
 
     }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ELIMINAR
-    |--------------------------------------------------------------------------
-    */
-
-    tabla.addEventListener(
-        'click',
-        async event => {
-
-            const boton =
-                event.target.closest(
-                    '.btn-delete'
-                );
-
-
-            if (!boton) {
-
-                return;
-
-            }
-
-
-            const id =
-                boton.dataset.id;
-
-
-            const confirmar =
-                confirm(
-                    '¿Seguro que deseas eliminar esta tecnología?'
-                );
-
-
-            if (!confirmar) {
-
-                return;
-
-            }
-
-
-            await eliminarTecnologia(
-                id
-            );
-
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | DELETE
-    |--------------------------------------------------------------------------
-    */
-
-    async function eliminarTecnologia(
-        id
-    ) {
-
-        try {
-
-            const response =
-                await fetch(
-                    `${API_URL}/${id}`,
-                    {
-                        method: 'DELETE',
-
-                        headers: {
-                            'Accept':
-                                'application/json'
-                        }
-                    }
-                );
-
-
-            const data =
-                await response.json();
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    data.message
-                    || 'No se pudo eliminar.'
-                );
-
-            }
-
-
-            console.log(
-                'Eliminado:',
-                data
-            );
-
-
-            await cargarTecnologias();
-
-
-        } catch (error) {
-
-            console.error(
-                'Error eliminando:',
-                error
-            );
-
-
-            alert(
-                error.message
-            );
-
-        }
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CUANDO FORM.JS TERMINA UN POST / PUT
-    |--------------------------------------------------------------------------
-    */
-
-    formulario.addEventListener(
-        'form:success',
-        async () => {
-
-            await cargarTecnologias();
-
-
-            /*
-            |------------------------------------------------------------------
-            | VOLVER A MODO NUEVO
-            |------------------------------------------------------------------
-            */
-
-            formulario.reset();
-
-
-            formulario.setAttribute(
-                'action',
-                API_URL
-            );
-
-
-            formulario.setAttribute(
-                'method',
-                'POST'
-            );
-
-
-            const titulo =
-                formularioContainer.querySelector(
-                    'h2'
-                );
-
-
-            if (titulo) {
-
-                titulo.textContent =
-                    'Nueva tecnología';
-
-            }
-
-
-            const boton =
-                formulario.querySelector(
-                    '.form-button'
-                );
-
-
-            if (boton) {
-
-                boton.textContent =
-                    'Guardar';
-
-            }
-
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ESCAPAR HTML
-    |--------------------------------------------------------------------------
-    */
-
-    function escapeHtml(text) {
-
-        const div =
-            document.createElement(
-                'div'
-            );
-
-
-        div.textContent =
-            text;
-
-
-        return div.innerHTML;
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CARGAR AL INICIAR
-    |--------------------------------------------------------------------------
-    */
-
-    cargarTecnologias();
-
-});
-
+);

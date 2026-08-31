@@ -1,0 +1,713 @@
+css
+/* =========================================================
+   TABLA DE GESTIÓN
+   Diseño responsive:
+   PC / Laptop / Tablet = tabla
+   Móvil = tarjetas
+   ========================================================= */
+
+
+/* =========================================================
+   WRAPPER
+   ========================================================= */
+
+.tabla-gestion-wrapper {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+
+/* =========================================================
+   CONTENEDOR
+   ========================================================= */
+
+.tabla-gestion-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    /*
+     * No queremos scroll horizontal.
+     */
+    overflow: visible;
+}
+
+
+/* =========================================================
+   TABLA
+   ========================================================= */
+
+.tabla-gestion {
+    width: 100%;
+    max-width: 100%;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    table-layout: fixed;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.tabla-gestion thead {
+    background: #f8fafc;
+}
+
+.tabla-gestion th {
+    padding: 14px 16px;
+
+    text-align: left;
+    vertical-align: middle;
+
+    color: #475569;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    line-height: 1.4;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    white-space: normal;
+
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   CUERPO
+   ========================================================= */
+
+.tabla-gestion tbody {
+    width: 100%;
+}
+
+
+/* =========================================================
+   FILAS
+   ========================================================= */
+
+.tabla-gestion tbody tr {
+    width: 100%;
+
+    transition: background-color 0.15s ease;
+}
+
+.tabla-gestion tbody tr:hover {
+    background: #fafafa;
+}
+
+
+/* =========================================================
+   CELDAS
+   ========================================================= */
+
+.tabla-gestion td {
+    padding: 14px 16px;
+
+    vertical-align: middle;
+
+    color: #475569;
+
+    font-size: 14px;
+
+    line-height: 1.5;
+
+    border-bottom: 1px solid #f1f5f9;
+
+    /*
+     * El texto nunca debe generar
+     * desbordamiento horizontal.
+     */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+
+/* =========================================================
+   ÚLTIMA FILA
+   ========================================================= */
+
+.tabla-gestion tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* =========================================================
+   ACCIONES
+   ========================================================= */
+
+.tabla-gestion-actions {
+    white-space: normal;
+
+    vertical-align: middle;
+}
+
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
+.tabla-gestion-btn {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #e2e8f0;
+
+    background: #ffffff;
+
+    color: #475569;
+
+    padding: 7px 11px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+    font-weight: 500;
+
+    line-height: 1.2;
+
+    margin-right: 6px;
+    margin-bottom: 4px;
+
+    white-space: nowrap;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.1s ease;
+}
+
+.tabla-gestion-btn:last-child {
+    margin-right: 0;
+}
+
+.tabla-gestion-btn:active {
+    transform: translateY(1px);
+}
+
+
+/* =========================================================
+   EDITAR
+   ========================================================= */
+
+.tabla-gestion-btn-edit {
+    color: #2563eb;
+
+    background: #f8fbff;
+
+    border-color: #dbeafe;
+}
+
+.tabla-gestion-btn-edit:hover {
+    background: #eff6ff;
+
+    border-color: #bfdbfe;
+}
+
+
+/* =========================================================
+   ELIMINAR
+   ========================================================= */
+
+.tabla-gestion-btn-delete {
+    color: #dc2626;
+
+    background: #fffafa;
+
+    border-color: #fee2e2;
+}
+
+.tabla-gestion-btn-delete:hover {
+    background: #fef2f2;
+
+    border-color: #fecaca;
+}
+
+
+/* =========================================================
+   ESTADOS
+   ========================================================= */
+
+.tabla-gestion-loading,
+.tabla-gestion-empty,
+.tabla-gestion-error {
+    width: 100%;
+
+    padding: 24px;
+
+    text-align: center;
+
+    color: #64748b;
+
+    font-size: 14px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   TABLET
+   769px - 1024px
+   ========================================================= */
+
+@media (max-width: 1024px) {
+
+    .tabla-gestion th {
+        padding: 13px 12px;
+
+        font-size: 13px;
+    }
+
+    .tabla-gestion td {
+        padding: 13px 12px;
+
+        font-size: 13px;
+    }
+
+    .tabla-gestion-btn {
+        padding: 7px 9px;
+
+        font-size: 12px;
+    }
+}
+
+
+/* =========================================================
+   TABLET PEQUEÑA
+   601px - 768px
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .tabla-gestion {
+        table-layout: fixed;
+    }
+
+    .tabla-gestion th {
+        padding: 11px 9px;
+
+        font-size: 12px;
+    }
+
+    .tabla-gestion td {
+        padding: 11px 9px;
+
+        font-size: 13px;
+    }
+
+    .tabla-gestion-btn {
+        padding: 6px 8px;
+
+        font-size: 12px;
+    }
+}
+
+
+/* =========================================================
+   MÓVIL
+   600px o menos
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    /*
+     * -------------------------------------------------------
+     * CONTENEDOR
+     * -------------------------------------------------------
+     */
+
+    .tabla-gestion-container {
+        width: 100%;
+
+        overflow: visible;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * TABLA
+     * -------------------------------------------------------
+     *
+     * Dejamos de comportarnos como una tabla tradicional.
+     */
+
+    .tabla-gestion {
+
+        display: block;
+
+        width: 100%;
+        max-width: 100%;
+
+        border: none;
+
+        background: transparent;
+
+        border-spacing: 0;
+
+        overflow: visible;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * HEADER
+     * -------------------------------------------------------
+     *
+     * En móvil no necesitamos el encabezado horizontal,
+     * porque cada dato tendrá su propio label.
+     */
+
+    .tabla-gestion thead {
+        display: none;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * TBODY
+     * -------------------------------------------------------
+     */
+
+    .tabla-gestion tbody {
+        display: block;
+
+        width: 100%;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * CADA REGISTRO = TARJETA
+     * -------------------------------------------------------
+     */
+
+    .tabla-gestion tbody tr {
+
+        display: block;
+
+        width: 100%;
+
+        margin: 0 0 12px 0;
+
+        padding: 14px;
+
+        box-sizing: border-box;
+
+        background: #ffffff;
+
+        border: 1px solid #e5e7eb;
+
+        border-radius: 10px;
+
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * ÚLTIMA TARJETA
+     * -------------------------------------------------------
+     */
+
+    .tabla-gestion tbody tr:last-child {
+        margin-bottom: 0;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * CELDAS
+     * -------------------------------------------------------
+     *
+     * Cada TD se convierte en:
+     *
+     * LABEL       VALOR
+     * ID          1
+     * Nombre      JavaScript
+     * Descripción Lenguaje...
+     */
+
+    .tabla-gestion tbody td {
+
+        display: grid;
+
+        grid-template-columns: 105px minmax(0, 1fr);
+
+        align-items: start;
+
+        width: 100%;
+
+        padding: 10px 0;
+
+        box-sizing: border-box;
+
+        font-size: 13px;
+
+        line-height: 1.5;
+
+        border-bottom: 1px solid #f1f5f9;
+
+        overflow-wrap: anywhere;
+
+        word-break: break-word;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * ÚLTIMA CELDA
+     * -------------------------------------------------------
+     */
+
+    .tabla-gestion tbody td:last-child {
+        border-bottom: none;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * LABEL
+     * -------------------------------------------------------
+     */
+
+    .tabla-gestion tbody td::before {
+
+        content: attr(data-label);
+
+        display: block;
+
+        padding-right: 10px;
+
+        color: #64748b;
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+        line-height: 1.5;
+
+        overflow-wrap: break-word;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * VALOR
+     * -------------------------------------------------------
+     */
+
+    .tabla-gestion tbody td {
+
+        color: #334155;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * ACCIONES
+     * -------------------------------------------------------
+     */
+
+    .tabla-gestion tbody td.tabla-gestion-actions {
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        align-items: center;
+
+        gap: 7px;
+
+        padding-top: 12px;
+    }
+
+
+    /*
+     * El label "Acciones" ocupa toda la línea.
+     */
+
+    .tabla-gestion tbody td.tabla-gestion-actions::before {
+
+        flex: 0 0 100%;
+
+        width: 100%;
+
+        padding-right: 0;
+
+        margin-bottom: 2px;
+    }
+
+
+    /*
+     * -------------------------------------------------------
+     * BOTONES MÓVIL
+     * -------------------------------------------------------
+     */
+
+    .tabla-gestion-btn {
+
+        flex: 1 1 100px;
+
+        min-width: 0;
+
+        margin: 0;
+
+        padding: 8px 10px;
+
+        font-size: 12px;
+    }
+}
+
+
+/* =========================================================
+   TELÉFONO PEQUEÑO
+   400px o menos
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+    .tabla-gestion tbody tr {
+
+        padding: 12px;
+
+        margin-bottom: 10px;
+
+        border-radius: 9px;
+    }
+
+
+    .tabla-gestion tbody td {
+
+        grid-template-columns: 90px minmax(0, 1fr);
+
+        padding: 9px 0;
+
+        font-size: 12px;
+    }
+
+
+    .tabla-gestion tbody td::before {
+
+        font-size: 10px;
+
+        padding-right: 8px;
+    }
+
+
+    .tabla-gestion-btn {
+
+        flex: 1 1 90px;
+
+        padding: 7px 8px;
+
+        font-size: 11px;
+    }
+}
+
+
+/* =========================================================
+   TELÉFONO MUY PEQUEÑO
+   340px o menos
+   ========================================================= */
+
+@media (max-width: 340px) {
+
+    .tabla-gestion tbody tr {
+
+        padding: 10px;
+
+        border-radius: 8px;
+    }
+
+
+    /*
+     * En pantallas extremadamente pequeñas
+     * colocamos label y valor verticalmente.
+     *
+     * Esto evita deformar la información.
+     */
+
+    .tabla-gestion tbody td {
+
+        display: block;
+
+        padding: 8px 0;
+
+        font-size: 12px;
+    }
+
+
+    .tabla-gestion tbody td::before {
+
+        display: block;
+
+        width: 100%;
+
+        margin-bottom: 3px;
+
+        padding: 0;
+
+        font-size: 10px;
+
+        font-weight: 600;
+    }
+
+
+    /*
+     * Acciones
+     */
+
+    .tabla-gestion tbody td.tabla-gestion-actions {
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: stretch;
+
+        gap: 6px;
+    }
+
+
+    .tabla-gestion tbody td.tabla-gestion-actions::before {
+
+        flex: none;
+
+        width: 100%;
+
+        margin-bottom: 2px;
+    }
+
+
+    .tabla-gestion-btn {
+
+        width: 100%;
+
+        min-width: 0;
+
+        flex: none;
+
+        padding: 8px;
+
+        font-size: 11px;
+    }
+}
+

@@ -5,10 +5,15 @@
 
 @section('content')
 
+
 <div class="gestion-container">
 
 
-    {{-- HEADER --}}
+    {{-- 
+    |--------------------------------------------------------------------------
+    | HEADER
+    |--------------------------------------------------------------------------
+    --}}
 
     <div class="gestion-header">
 
@@ -36,7 +41,12 @@
     </div>
 
 
-    {{-- FORMULARIO --}}
+
+    {{-- 
+    |--------------------------------------------------------------------------
+    | FORMULARIO
+    |--------------------------------------------------------------------------
+    --}}
 
     <div
         id="technologyFormContainer"
@@ -59,19 +69,29 @@
 
                 [
                     'name' => 'name',
+
                     'label' => 'Nombre',
+
                     'type' => 'text',
-                    'placeholder' => 'Ej: JavaScript',
+
+                    'placeholder' =>
+                        'Ej: JavaScript',
+
                     'required' => true,
+
                     'maxlength' => 100
                 ],
 
                 [
                     'name' => 'description',
+
                     'label' => 'Descripción',
+
                     'type' => 'textarea',
+
                     'placeholder' =>
                         'Descripción de la tecnología',
+
                     'required' => true
                 ]
 
@@ -82,56 +102,51 @@
     </div>
 
 
-    {{-- TABLA --}}
 
-    <div class="table-container">
+    {{-- 
+    |--------------------------------------------------------------------------
+    | TABLA GESTIÓN
+    |--------------------------------------------------------------------------
+    --}}
 
-        <table>
+    @include('components.tabla-gestion', [
 
-            <thead>
+        'id' => 'technologiesTable',
 
-                <tr>
+        'columns' => [
 
-                    <th>
-                        ID
-                    </th>
+            [
+                'key' => 'id',
 
-                    <th>
-                        Nombre
-                    </th>
+                'label' => 'ID'
+            ],
 
-                    <th>
-                        Descripción
-                    </th>
+            [
+                'key' => 'name',
 
-                    <th>
-                        Acciones
-                    </th>
+                'label' => 'Nombre'
+            ],
 
-                </tr>
+            [
+                'key' => 'description',
 
-            </thead>
+                'label' => 'Descripción'
+            ]
 
+        ],
 
-            <tbody id="technologiesTable">
+        'actions' => [
 
-                <tr>
+            'edit' => true,
 
-                    <td colspan="4">
-                        Cargando...
-                    </td>
+            'delete' => true
 
-                </tr>
+        ]
 
-            </tbody>
-
-        </table>
-
-    </div>
+    ])
 
 
 </div>
-
 
 
 @endsection

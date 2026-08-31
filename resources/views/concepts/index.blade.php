@@ -6,178 +6,234 @@
 
 <div class="gestion-container">
 
-{{-- HEADER --}}
 
-<div class="gestion-header">
+    {{-- 
+    |--------------------------------------------------------------------------
+    | HEADER
+    |--------------------------------------------------------------------------
+    --}}
 
-    <div>
+    <div class="gestion-header">
 
-        <h1>
-            Conceptos
-        </h1>
+        <div>
 
-        <p>
-            Administrar conceptos técnicos
-        </p>
+            <h1>
+                Conceptos
+            </h1>
+
+            <p>
+                Administrar conceptos técnicos
+            </p>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="btnNuevoConcepto"
+            class="btn-primary"
+        >
+            + Nuevo concepto
+        </button>
 
     </div>
 
 
-    <button
-        type="button"
-        id="btnNuevoConcepto"
-        class="btn-primary"
+
+    {{-- 
+    |--------------------------------------------------------------------------
+    | FORMULARIO
+    |--------------------------------------------------------------------------
+    --}}
+
+    <div
+        id="conceptFormContainer"
+        style="display: none;"
     >
-        + Nuevo concepto
-    </button>
 
-</div>
+        @include('layouts.form', [
 
+            'formId' => 'conceptForm',
 
-{{-- FORMULARIO --}}
+            'title' => 'Nuevo concepto',
 
-<div
-    id="conceptFormContainer"
-    style="display: none;"
->
+            'action' => '/api/concepts',
 
-    @include('layouts.form', [
+            'method' => 'POST',
 
-        'formId' => 'conceptForm',
+            'buttonText' => 'Guardar',
 
-        'title' => 'Nuevo concepto',
+            'fields' => [
 
-        'action' => '/api/concepts',
+                [
+                    'name' => 'category_id',
 
-        'method' => 'POST',
+                    'label' => 'Categoría',
 
-        'buttonText' => 'Guardar',
+                    'type' => 'select',
 
-        'fields' => [
+                    'placeholder' =>
+                        'Seleccione una categoría',
 
-            [
-                'name' => 'category_id',
-                'label' => 'Categoría',
-                'type' => 'select',
-                'placeholder' => 'Seleccione una categoría',
-                'required' => true,
-                'options' => []
-            ],
+                    'required' => true,
 
-            [
-                'name' => 'name',
-                'label' => 'Nombre',
-                'type' => 'text',
-                'placeholder' => 'Ej: map()',
-                'required' => true,
-                'maxlength' => 150
-            ],
+                    'options' => []
+                ],
 
-            [
-                'name' => 'slug',
-                'label' => 'Slug',
-                'type' => 'text',
-                'placeholder' => 'Ej: map',
-                'required' => true,
-                'maxlength' => 150
-            ],
+                [
+                    'name' => 'name',
 
-            [
-                'name' => 'type',
-                'label' => 'Tipo',
-                'type' => 'text',
-                'placeholder' => 'Ej: metodo',
-                'required' => true,
-                'maxlength' => 50
-            ],
+                    'label' => 'Nombre',
 
-            [
-                'name' => 'description',
-                'label' => 'Descripción',
-                'type' => 'textarea',
-                'placeholder' => 'Descripción del concepto',
-                'required' => true
-            ],
+                    'type' => 'text',
 
-            [
-                'name' => 'how_to_use',
-                'label' => 'Cómo utilizarlo',
-                'type' => 'textarea',
-                'placeholder' => 'Explica cuándo y cómo utilizar este concepto',
-                'required' => true
-            ],
+                    'placeholder' =>
+                        'Ej: map()',
 
-            [
-                'name' => 'example',
-                'label' => 'Ejemplo',
-                'type' => 'textarea',
-                'placeholder' => 'Ejemplo de código',
-                'required' => true
+                    'required' => true,
+
+                    'maxlength' => 150
+                ],
+
+                [
+                    'name' => 'slug',
+
+                    'label' => 'Slug',
+
+                    'type' => 'text',
+
+                    'placeholder' =>
+                        'Ej: map',
+
+                    'required' => true,
+
+                    'maxlength' => 150
+                ],
+
+                [
+                    'name' => 'type',
+
+                    'label' => 'Tipo',
+
+                    'type' => 'text',
+
+                    'placeholder' =>
+                        'Ej: metodo',
+
+                    'required' => true,
+
+                    'maxlength' => 50
+                ],
+
+                [
+                    'name' => 'description',
+
+                    'label' => 'Descripción',
+
+                    'type' => 'textarea',
+
+                    'placeholder' =>
+                        'Descripción del concepto',
+
+                    'required' => true
+                ],
+
+                [
+                    'name' => 'how_to_use',
+
+                    'label' => 'Cómo utilizarlo',
+
+                    'type' => 'textarea',
+
+                    'placeholder' =>
+                        'Explica cuándo y cómo utilizar este concepto',
+
+                    'required' => true
+                ],
+
+                [
+                    'name' => 'example',
+
+                    'label' => 'Ejemplo',
+
+                    'type' => 'textarea',
+
+                    'placeholder' =>
+                        'Ejemplo de código',
+
+                    'required' => true
+                ]
+
             ]
+
+        ])
+
+    </div>
+
+
+
+    {{-- 
+    |--------------------------------------------------------------------------
+    | TABLA GESTIÓN
+    |--------------------------------------------------------------------------
+    |
+    | Utilizamos exactamente el mismo componente
+    | reutilizable que utiliza Tecnologías.
+    |
+    | La tabla NO conoce la lógica de conceptos.
+    |
+    --}}
+
+    @include('components.tabla-gestion', [
+
+        'id' => 'conceptsTable',
+
+        'columns' => [
+
+            [
+                'key' => 'id',
+
+                'label' => 'ID'
+            ],
+
+            [
+                'key' => 'name',
+
+                'label' => 'Nombre'
+            ],
+
+            [
+                'key' => 'category.name',
+
+                'label' => 'Categoría'
+            ],
+
+            [
+                'key' => 'type',
+
+                'label' => 'Tipo'
+            ],
+
+            [
+                'key' => 'description',
+
+                'label' => 'Descripción'
+            ]
+
+        ],
+
+        'actions' => [
+
+            'edit' => true,
+
+            'delete' => true
 
         ]
 
     ])
 
-</div>
-
-
-{{-- TABLA --}}
-
-<div class="table-container">
-
-    <table>
-
-        <thead>
-
-            <tr>
-
-                <th>
-                    ID
-                </th>
-
-                <th>
-                    Nombre
-                </th>
-
-                <th>
-                    Categoría
-                </th>
-
-                <th>
-                    Tipo
-                </th>
-
-                <th>
-                    Descripción
-                </th>
-
-                <th>
-                    Acciones
-                </th>
-
-            </tr>
-
-        </thead>
-
-
-        <tbody id="conceptsTable">
-
-            <tr>
-
-                <td colspan="6">
-                    Cargando...
-                </td>
-
-            </tr>
-
-        </tbody>
-
-    </table>
-
-</div>
-
 
 </div>
 
 @endsection
+

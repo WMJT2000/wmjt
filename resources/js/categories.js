@@ -1,954 +1,951 @@
-document.addEventListener('DOMContentLoaded', () => {
+
+import { TablaGestion } from './tabla-gestion.js';
 
 
-/*
-|--------------------------------------------------------------------------
-| ELEMENTOS
-|--------------------------------------------------------------------------
-*/
-
-const botonNueva =
-    document.getElementById(
-        'btnNuevaCategoria'
-    );
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
 
 
-const formularioContainer =
-    document.getElementById(
-        'categoryFormContainer'
-    );
+        /*
+        |--------------------------------------------------------------------------
+        | ELEMENTOS
+        |--------------------------------------------------------------------------
+        */
 
-
-const formulario =
-    document.getElementById(
-        'categoryForm'
-    );
-
-
-const tabla =
-    document.getElementById(
-        'categoriesTable'
-    );
-
-
-/*
-|--------------------------------------------------------------------------
-| VALIDAR
-|--------------------------------------------------------------------------
-*/
-
-if (
-    !botonNueva ||
-    !formularioContainer ||
-    !formulario ||
-    !tabla
-) {
-
-    console.error(
-        'No se encontraron los elementos de categorías.'
-    );
-
-    return;
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| URLS
-|--------------------------------------------------------------------------
-*/
-
-const API_URL =
-    '/api/categories';
-
-
-const TECHNOLOGIES_API_URL =
-    '/api/technologies';
-
-
-/*
-|--------------------------------------------------------------------------
-| NUEVA / CERRAR FORMULARIO
-|--------------------------------------------------------------------------
-*/
-
-botonNueva.addEventListener(
-    'click',
-    async () => {
-
-        const formularioEstaCerrado =
-            formularioContainer.style.display === 'none' ||
-            formularioContainer.style.display === '';
-
-
-        if (formularioEstaCerrado) {
-
-            /*
-            |------------------------------------------------------------------
-            | ABRIR FORMULARIO
-            |------------------------------------------------------------------
-            */
-
-            formularioContainer.style.display =
-                'block';
-
-
-            formulario.reset();
-
-
-            formulario.setAttribute(
-                'action',
-                API_URL
+        const botonNueva =
+            document.getElementById(
+                'btnNuevaCategoria'
             );
 
 
-            formulario.setAttribute(
-                'method',
-                'POST'
+        const formularioContainer =
+            document.getElementById(
+                'categoryFormContainer'
             );
 
 
-            /*
-            |------------------------------------------------------------------
-            | CARGAR TECNOLOGÍAS
-            |------------------------------------------------------------------
-            */
-
-            await cargarTecnologias();
+        const formulario =
+            document.getElementById(
+                'categoryForm'
+            );
 
 
-            /*
-            |------------------------------------------------------------------
-            | TÍTULO
-            |------------------------------------------------------------------
-            */
-
-            const titulo =
-                formularioContainer.querySelector(
-                    'h2'
-                );
+        const tablaContainer =
+            document.getElementById(
+                'categoriesTable'
+            );
 
 
-            if (titulo) {
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDAR
+        |--------------------------------------------------------------------------
+        */
 
-                titulo.textContent =
-                    'Nueva categoría';
+        if (
+            !botonNueva ||
+            !formularioContainer ||
+            !formulario ||
+            !tablaContainer
+        ) {
 
-            }
+            console.error(
+                'No se encontraron los elementos de categorías.'
+            );
 
-
-            /*
-            |------------------------------------------------------------------
-            | BOTÓN
-            |------------------------------------------------------------------
-            */
-
-            const boton =
-                formulario.querySelector(
-                    '.form-button'
-                );
-
-
-            if (boton) {
-
-                boton.textContent =
-                    'Guardar';
-
-            }
-
-
-            botonNueva.textContent =
-                '− Cerrar formulario';
-
-
-        } else {
-
-            /*
-            |------------------------------------------------------------------
-            | CERRAR FORMULARIO
-            |------------------------------------------------------------------
-            */
-
-            formularioContainer.style.display =
-                'none';
-
-
-            botonNueva.textContent =
-                '+ Nueva categoría';
+            return;
 
         }
 
-    }
-);
+
+        /*
+        |--------------------------------------------------------------------------
+        | API
+        |--------------------------------------------------------------------------
+        */
+
+        const API_URL =
+            '/api/categories';
 
 
-/*
-|--------------------------------------------------------------------------
-| CARGAR TECNOLOGÍAS
-|--------------------------------------------------------------------------
-*/
+        const TECHNOLOGIES_API_URL =
+            '/api/technologies';
 
-async function cargarTecnologias(
-    tecnologiaSeleccionada = null
-) {
 
-    const select =
-        formulario.querySelector(
-            '[name="technology_id"]'
+
+        /*
+        |--------------------------------------------------------------------------
+        | TABLA GESTIÓN
+        |--------------------------------------------------------------------------
+        |
+        | La tabla NO sabe nada sobre categorías.
+        |
+        | Solamente recibe:
+        |
+        | - columnas
+        | - datos
+        | - acciones
+        |
+        */
+
+        const tabla =
+            new TablaGestion({
+
+                container:
+                    tablaContainer,
+
+                columns: [
+
+                    {
+                        key: 'id',
+
+                        label: 'ID'
+                    },
+
+                    {
+                        key: 'technology.name',
+
+                        label: 'Tecnología'
+                    },
+
+                    {
+                        key: 'name',
+
+                        label: 'Nombre'
+                    },
+
+                    {
+                        key: 'description',
+
+                        label: 'Descripción'
+                    }
+
+                ],
+
+                actions: {
+
+                    edit: true,
+
+                    delete: true
+
+                },
+
+                emptyMessage:
+                    'No hay categorías.',
+
+                loadingMessage:
+                    'Cargando categorías.',
+
+                errorMessage:
+                    'Error cargando categorías.'
+
+            });
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | EVENTO EDITAR
+        |--------------------------------------------------------------------------
+        |
+        | TablaGestion NO sabe cómo editar.
+        |
+        | Solamente informa:
+        |
+        | tabla-gestion:edit
+        |
+        */
+
+        tablaContainer.addEventListener(
+            'tabla-gestion:edit',
+            async event => {
+
+                const categoria =
+                    event.detail;
+
+
+                if (!categoria) {
+
+                    return;
+
+                }
+
+
+                await editarCategoria(
+                    categoria.id
+                );
+
+            }
         );
 
 
-    if (!select) {
 
-        return;
+        /*
+        |--------------------------------------------------------------------------
+        | EVENTO ELIMINAR
+        |--------------------------------------------------------------------------
+        |
+        | TablaGestion NO elimina.
+        |
+        | categories.js decide qué hacer.
+        |
+        */
 
-    }
+        tablaContainer.addEventListener(
+            'tabla-gestion:delete',
+            async event => {
+
+                const categoria =
+                    event.detail;
 
 
-    select.innerHTML = `
+                if (!categoria) {
 
-        <option value="">
-            Cargando tecnologías...
-        </option>
+                    return;
 
-    `;
-
-
-    try {
-
-        const response =
-            await fetch(
-                TECHNOLOGIES_API_URL,
-                {
-                    method: 'GET',
-
-                    headers: {
-                        'Accept':
-                            'application/json'
-                    }
                 }
-            );
 
 
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.message ||
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const tecnologias =
-            Array.isArray(data)
-                ? data
-                : data.data ?? [];
-
-
-        select.innerHTML = `
-
-            <option value="">
-                Seleccione una tecnología
-            </option>
-
-        `;
-
-
-        tecnologias.forEach(
-            tecnologia => {
-
-                const option =
-                    document.createElement(
-                        'option'
+                const confirmar =
+                    confirm(
+                        `¿Seguro que deseas eliminar la categoría "${categoria.name}"?`
                     );
 
 
-                option.value =
-                    tecnologia.id;
+                if (!confirmar) {
 
-
-                option.textContent =
-                    tecnologia.name;
-
-
-                if (
-                    tecnologiaSeleccionada &&
-                    Number(tecnologia.id) ===
-                    Number(tecnologiaSeleccionada)
-                ) {
-
-                    option.selected =
-                        true;
+                    return;
 
                 }
 
 
-                select.appendChild(
-                    option
+                await eliminarCategoria(
+                    categoria.id
                 );
 
             }
         );
 
 
-    } catch (error) {
 
-        console.error(
-            'Error cargando tecnologías:',
-            error
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | NUEVA / CERRAR FORMULARIO
+        |--------------------------------------------------------------------------
+        */
 
+        botonNueva.addEventListener(
+            'click',
+            async () => {
 
-        select.innerHTML = `
-
-            <option value="">
-                Error cargando tecnologías
-            </option>
-
-        `;
-
-    }
-
-}
+                const formularioEstaCerrado =
+                    formularioContainer.style.display === 'none' ||
+                    formularioContainer.style.display === '';
 
 
-/*
-|--------------------------------------------------------------------------
-| CARGAR CATEGORÍAS
-|--------------------------------------------------------------------------
-*/
+                if (
+                    formularioEstaCerrado
+                ) {
 
-async function cargarCategorias() {
+                    /*
+                    |------------------------------------------------------------------
+                    | ABRIR
+                    |------------------------------------------------------------------
+                    */
 
-    tabla.innerHTML = `
-
-        <tr>
-
-            <td colspan="5">
-                Cargando...
-            </td>
-
-        </tr>
-
-    `;
+                    formularioContainer.style.display =
+                        'block';
 
 
-    try {
+                    formulario.reset();
 
-        const response =
-            await fetch(
-                API_URL,
-                {
-                    method: 'GET',
 
-                    headers: {
-                        'Accept':
-                            'application/json'
+                    formulario.setAttribute(
+                        'action',
+                        API_URL
+                    );
+
+
+                    formulario.setAttribute(
+                        'method',
+                        'POST'
+                    );
+
+
+                    /*
+                    |------------------------------------------------------------------
+                    | CARGAR TECNOLOGÍAS
+                    |------------------------------------------------------------------
+                    */
+
+                    await cargarTecnologias();
+
+
+
+                    /*
+                    |------------------------------------------------------------------
+                    | TÍTULO
+                    |------------------------------------------------------------------
+                    */
+
+                    const titulo =
+                        formularioContainer.querySelector(
+                            'h2'
+                        );
+
+
+                    if (titulo) {
+
+                        titulo.textContent =
+                            'Nueva categoría';
+
                     }
+
+
+
+                    /*
+                    |------------------------------------------------------------------
+                    | BOTÓN
+                    |------------------------------------------------------------------
+                    */
+
+                    const boton =
+                        formulario.querySelector(
+                            '.form-button'
+                        );
+
+
+                    if (boton) {
+
+                        boton.textContent =
+                            'Guardar';
+
+                    }
+
+
+                    botonNueva.textContent =
+                        '− Cerrar formulario';
+
+
+                } else {
+
+                    /*
+                    |------------------------------------------------------------------
+                    | CERRAR
+                    |------------------------------------------------------------------
+                    */
+
+                    formularioContainer.style.display =
+                        'none';
+
+
+                    botonNueva.textContent =
+                        '+ Nueva categoría';
+
                 }
-            );
 
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data.message ||
-                `HTTP ${response.status}`
-            );
-
-        }
-
-
-        const categorias =
-            Array.isArray(data)
-                ? data
-                : data.data ?? [];
-
-
-        pintarTabla(
-            categorias
+            }
         );
 
 
-    } catch (error) {
 
-        console.error(
-            'Error cargando categorías:',
-            error
-        );
+        /*
+        |--------------------------------------------------------------------------
+        | CARGAR TECNOLOGÍAS
+        |--------------------------------------------------------------------------
+        */
 
+        async function cargarTecnologias(
+            tecnologiaSeleccionada = null
+        ) {
 
-        tabla.innerHTML = `
-
-            <tr>
-
-                <td colspan="5">
-
-                    Error cargando categorías.
-
-                    <br>
-
-                    ${escapeHtml(
-                        error.message
-                    )}
-
-                </td>
-
-            </tr>
-
-        `;
-
-    }
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| PINTAR TABLA
-|--------------------------------------------------------------------------
-*/
-
-function pintarTabla(
-    categorias
-) {
-
-    tabla.innerHTML = '';
-
-
-    if (
-        !categorias ||
-        categorias.length === 0
-    ) {
-
-        tabla.innerHTML = `
-
-            <tr>
-
-                <td colspan="5">
-
-                    No hay categorías.
-
-                </td>
-
-            </tr>
-
-        `;
-
-        return;
-
-    }
-
-
-    categorias.forEach(
-        categoria => {
-
-            const fila =
-                document.createElement(
-                    'tr'
+            const select =
+                formulario.querySelector(
+                    '[name="technology_id"]'
                 );
 
 
-            fila.innerHTML = `
+            if (!select) {
 
-                <td>
-                    ${categoria.id}
-                </td>
+                return;
 
-
-                <td>
-                    ${escapeHtml(
-                        categoria.technology?.name ??
-                        categoria.technology_name ??
-                        ''
-                    )}
-                </td>
+            }
 
 
-                <td>
-                    ${escapeHtml(
-                        categoria.name ?? ''
-                    )}
-                </td>
+            select.innerHTML = `
 
-
-                <td>
-                    ${escapeHtml(
-                        categoria.description ?? ''
-                    )}
-                </td>
-
-
-                <td>
-
-                    <button
-                        type="button"
-                        class="btn-edit"
-                        data-id="${categoria.id}"
-                    >
-                        Editar
-                    </button>
-
-
-                    <button
-                        type="button"
-                        class="btn-delete"
-                        data-id="${categoria.id}"
-                    >
-                        Eliminar
-                    </button>
-
-                </td>
+                <option value="">
+                    Cargando tecnologías...
+                </option>
 
             `;
 
 
-            tabla.appendChild(
-                fila
-            );
+            try {
 
-        }
-    );
+                const response =
+                    await fetch(
+                        TECHNOLOGIES_API_URL,
+                        {
+                            method: 'GET',
 
-}
+                            headers: {
 
+                                'Accept':
+                                    'application/json'
 
-/*
-|--------------------------------------------------------------------------
-| EDITAR
-|--------------------------------------------------------------------------
-*/
-
-tabla.addEventListener(
-    'click',
-    async event => {
-
-        const boton =
-            event.target.closest(
-                '.btn-edit'
-            );
+                            }
+                        }
+                    );
 
 
-        if (!boton) {
-
-            return;
-
-        }
+                const data =
+                    await response.json();
 
 
-        const id =
-            boton.dataset.id;
+                if (!response.ok) {
 
+                    throw new Error(
+                        data.message ||
+                        `HTTP ${response.status}`
+                    );
 
-        await editarCategoria(
-            id
-        );
-
-    }
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| OBTENER UNA CATEGORÍA
-|--------------------------------------------------------------------------
-*/
-
-async function editarCategoria(
-    id
-) {
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_URL}/${id}`,
-                {
-                    method: 'GET',
-
-                    headers: {
-                        'Accept':
-                            'application/json'
-                    }
                 }
-            );
 
 
-        const data =
-            await response.json();
+                const tecnologias =
+                    Array.isArray(data)
+                        ? data
+                        : data.data ?? [];
 
 
-        if (!response.ok) {
+                select.innerHTML = `
 
-            throw new Error(
-                data.message ||
-                'No se pudo obtener la categoría.'
-            );
+                    <option value="">
+                        Seleccione una tecnología
+                    </option>
 
-        }
+                `;
 
 
-        const categoria =
-            data.data ?? data;
+                tecnologias.forEach(
+                    tecnologia => {
 
+                        const option =
+                            document.createElement(
+                                'option'
+                            );
 
-        /*
-        |------------------------------------------------------------------
-        | MOSTRAR FORMULARIO
-        |------------------------------------------------------------------
-        */
 
-        formularioContainer.style.display =
-            'block';
+                        option.value =
+                            tecnologia.id;
 
 
-        botonNueva.textContent =
-            '− Cerrar formulario';
+                        option.textContent =
+                            tecnologia.name;
 
 
-        /*
-        |------------------------------------------------------------------
-        | CONFIGURAR FORMULARIO
-        |------------------------------------------------------------------
-        */
+                        if (
+                            tecnologiaSeleccionada &&
+                            Number(tecnologia.id) ===
+                            Number(tecnologiaSeleccionada)
+                        ) {
 
-        formulario.setAttribute(
-            'action',
-            `${API_URL}/${id}`
-        );
+                            option.selected =
+                                true;
 
+                        }
 
-        formulario.setAttribute(
-            'method',
-            'PUT'
-        );
 
+                        select.appendChild(
+                            option
+                        );
 
-        /*
-        |------------------------------------------------------------------
-        | CARGAR TECNOLOGÍAS
-        |------------------------------------------------------------------
-        */
-
-        await cargarTecnologias(
-            categoria.technology_id
-        );
-
-
-        /*
-        |------------------------------------------------------------------
-        | CARGAR CAMPOS
-        |------------------------------------------------------------------
-        */
-
-        const campoNombre =
-            formulario.querySelector(
-                '[name="name"]'
-            );
-
-
-        const campoDescripcion =
-            formulario.querySelector(
-                '[name="description"]'
-            );
-
-
-        if (campoNombre) {
-
-            campoNombre.value =
-                categoria.name ?? '';
-
-        }
-
-
-        if (campoDescripcion) {
-
-            campoDescripcion.value =
-                categoria.description ?? '';
-
-        }
-
-
-        /*
-        |------------------------------------------------------------------
-        | TÍTULO
-        |------------------------------------------------------------------
-        */
-
-        const titulo =
-            formularioContainer.querySelector(
-                'h2'
-            );
-
-
-        if (titulo) {
-
-            titulo.textContent =
-                'Editar categoría';
-
-        }
-
-
-        /*
-        |------------------------------------------------------------------
-        | BOTÓN
-        |------------------------------------------------------------------
-        */
-
-        const boton =
-            formulario.querySelector(
-                '.form-button'
-            );
-
-
-        if (boton) {
-
-            boton.textContent =
-                'Actualizar';
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            'Error obteniendo categoría:',
-            error
-        );
-
-
-        alert(
-            error.message
-        );
-
-    }
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| ELIMINAR
-|--------------------------------------------------------------------------
-*/
-
-tabla.addEventListener(
-    'click',
-    async event => {
-
-        const boton =
-            event.target.closest(
-                '.btn-delete'
-            );
-
-
-        if (!boton) {
-
-            return;
-
-        }
-
-
-        const id =
-            boton.dataset.id;
-
-
-        const confirmar =
-            confirm(
-                '¿Seguro que deseas eliminar esta categoría?'
-            );
-
-
-        if (!confirmar) {
-
-            return;
-
-        }
-
-
-        await eliminarCategoria(
-            id
-        );
-
-    }
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| DELETE
-|--------------------------------------------------------------------------
-*/
-
-async function eliminarCategoria(
-    id
-) {
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_URL}/${id}`,
-                {
-                    method: 'DELETE',
-
-                    headers: {
-                        'Accept':
-                            'application/json'
                     }
-                }
-            );
+                );
 
 
-        const data =
-            await response.json();
+            } catch (error) {
+
+                console.error(
+                    'Error cargando tecnologías:',
+                    error
+                );
 
 
-        if (!response.ok) {
+                select.innerHTML = `
 
-            throw new Error(
-                data.message ||
-                'No se pudo eliminar.'
-            );
+                    <option value="">
+                        Error cargando tecnologías
+                    </option>
+
+                `;
+
+            }
 
         }
 
-
-        console.log(
-            'Eliminado:',
-            data
-        );
-
-
-        await cargarCategorias();
-
-
-    } catch (error) {
-
-        console.error(
-            'Error eliminando:',
-            error
-        );
-
-
-        alert(
-            error.message
-        );
-
-    }
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| FORM SUCCESS
-|--------------------------------------------------------------------------
-*/
-
-formulario.addEventListener(
-    'form:success',
-    async () => {
-
-        await cargarCategorias();
 
 
         /*
-        |------------------------------------------------------------------
-        | VOLVER A MODO NUEVO
-        |------------------------------------------------------------------
+        |--------------------------------------------------------------------------
+        | CARGAR CATEGORÍAS
+        |--------------------------------------------------------------------------
         */
 
-        formulario.reset();
+        async function cargarCategorias() {
+
+            tabla.mostrarCargando();
 
 
-        formulario.setAttribute(
-            'action',
-            API_URL
-        );
+            try {
+
+                const response =
+                    await fetch(
+                        API_URL,
+                        {
+                            method: 'GET',
+
+                            headers: {
+
+                                'Accept':
+                                    'application/json'
+
+                            }
+                        }
+                    );
 
 
-        formulario.setAttribute(
-            'method',
-            'POST'
-        );
+                const data =
+                    await response.json();
 
 
-        await cargarTecnologias();
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        `HTTP ${response.status}`
+                    );
+
+                }
 
 
-        const titulo =
-            formularioContainer.querySelector(
-                'h2'
-            );
+                const categorias =
+                    Array.isArray(data)
+                        ? data
+                        : data.data ?? [];
 
 
-        if (titulo) {
+                /*
+                |------------------------------------------------------------------
+                | ENTREGAR DATOS A TablaGestion
+                |------------------------------------------------------------------
+                */
 
-            titulo.textContent =
-                'Nueva categoría';
+                tabla.establecerDatos(
+                    categorias
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error cargando categorías:',
+                    error
+                );
+
+
+                tabla.mostrarError(
+                    `Error cargando categorías: ${error.message}`
+                );
+
+            }
 
         }
 
 
-        const boton =
-            formulario.querySelector(
-                '.form-button'
-            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | EDITAR CATEGORÍA
+        |--------------------------------------------------------------------------
+        */
+
+        async function editarCategoria(
+            id
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/${id}`,
+                        {
+                            method: 'GET',
+
+                            headers: {
+
+                                'Accept':
+                                    'application/json'
+
+                            }
+                        }
+                    );
 
 
-        if (boton) {
+                const data =
+                    await response.json();
 
-            boton.textContent =
-                'Guardar';
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        'No se pudo obtener la categoría.'
+                    );
+
+                }
+
+
+                const categoria =
+                    data.data ?? data;
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | MOSTRAR FORMULARIO
+                |------------------------------------------------------------------
+                */
+
+                formularioContainer.style.display =
+                    'block';
+
+
+                botonNueva.textContent =
+                    '− Cerrar formulario';
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | CONFIGURAR FORMULARIO
+                |------------------------------------------------------------------
+                */
+
+                formulario.setAttribute(
+                    'action',
+                    `${API_URL}/${id}`
+                );
+
+
+                formulario.setAttribute(
+                    'method',
+                    'PUT'
+                );
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | CARGAR TECNOLOGÍAS
+                |------------------------------------------------------------------
+                */
+
+                await cargarTecnologias(
+                    categoria.technology_id
+                );
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | CAMPOS
+                |--------------------------------------------------------------------------
+                */
+
+                const campoNombre =
+                    formulario.querySelector(
+                        '[name="name"]'
+                    );
+
+
+                const campoDescripcion =
+                    formulario.querySelector(
+                        '[name="description"]'
+                    );
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | NOMBRE
+                |--------------------------------------------------------------------------
+                */
+
+                if (campoNombre) {
+
+                    campoNombre.value =
+                        categoria.name ?? '';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | DESCRIPCIÓN
+                |--------------------------------------------------------------------------
+                */
+
+                if (campoDescripcion) {
+
+                    campoDescripcion.value =
+                        categoria.description ?? '';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | TÍTULO
+                |--------------------------------------------------------------------------
+                */
+
+                const titulo =
+                    formularioContainer.querySelector(
+                        'h2'
+                    );
+
+
+                if (titulo) {
+
+                    titulo.textContent =
+                        'Editar categoría';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | BOTÓN
+                |--------------------------------------------------------------------------
+                */
+
+                const boton =
+                    formulario.querySelector(
+                        '.form-button'
+                    );
+
+
+                if (boton) {
+
+                    boton.textContent =
+                        'Actualizar';
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error obteniendo categoría:',
+                    error
+                );
+
+
+                alert(
+                    error.message
+                );
+
+            }
 
         }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELIMINAR CATEGORÍA
+        |--------------------------------------------------------------------------
+        */
+
+        async function eliminarCategoria(
+            id
+        ) {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_URL}/${id}`,
+                        {
+                            method: 'DELETE',
+
+                            headers: {
+
+                                'Accept':
+                                    'application/json'
+
+                            }
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        'No se pudo eliminar.'
+                    );
+
+                }
+
+
+                console.log(
+                    'Eliminado:',
+                    data
+                );
+
+
+                /*
+                |------------------------------------------------------------------
+                | RECARGAR TABLA
+                |------------------------------------------------------------------
+                */
+
+                await cargarCategorias();
+
+
+            } catch (error) {
+
+                console.error(
+                    'Error eliminando:',
+                    error
+                );
+
+
+                alert(
+                    error.message
+                );
+
+            }
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FORM SUCCESS
+        |--------------------------------------------------------------------------
+        */
+
+        formulario.addEventListener(
+            'form:success',
+            async () => {
+
+                /*
+                |------------------------------------------------------------------
+                | RECARGAR CATEGORÍAS
+                |------------------------------------------------------------------
+                */
+
+                await cargarCategorias();
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | VOLVER A MODO NUEVO
+                |--------------------------------------------------------------------------
+                */
+
+                formulario.reset();
+
+
+                formulario.setAttribute(
+                    'action',
+                    API_URL
+                );
+
+
+                formulario.setAttribute(
+                    'method',
+                    'POST'
+                );
+
+
+                /*
+                |------------------------------------------------------------------
+                | RECARGAR TECNOLOGÍAS
+                |--------------------------------------------------------------------------
+                */
+
+                await cargarTecnologias();
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | TÍTULO
+                |--------------------------------------------------------------------------
+                */
+
+                const titulo =
+                    formularioContainer.querySelector(
+                        'h2'
+                    );
+
+
+                if (titulo) {
+
+                    titulo.textContent =
+                        'Nueva categoría';
+
+                }
+
+
+
+                /*
+                |------------------------------------------------------------------
+                | BOTÓN
+                |--------------------------------------------------------------------------
+                */
+
+                const boton =
+                    formulario.querySelector(
+                        '.form-button'
+                    );
+
+
+                if (boton) {
+
+                    boton.textContent =
+                        'Guardar';
+
+                }
+
+            }
+        );
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | INICIAR
+        |--------------------------------------------------------------------------
+        */
+
+        cargarCategorias();
 
     }
 );
 
-
-/*
-|--------------------------------------------------------------------------
-| ESCAPAR HTML
-|--------------------------------------------------------------------------
-*/
-
-function escapeHtml(
-    text
-) {
-
-    const div =
-        document.createElement(
-            'div'
-        );
-
-
-    div.textContent =
-        text;
-
-
-    return div.innerHTML;
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| CARGAR AL INICIAR
-|--------------------------------------------------------------------------
-*/
-
-cargarCategorias();
-
-
-});
