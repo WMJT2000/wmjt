@@ -99,7 +99,7 @@ class TechnologyController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tecnología eliminada correctamente.'
+            'message' => 'Tecnología eliminada correctamente'
         ]);
     }
 
