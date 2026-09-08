@@ -10,7 +10,10 @@ class ConceptController extends Controller
     // GET /api/concepts
     public function index()
     {
-        $concepts = Concept::with('category')
+        $concepts = Concept::with([
+                'category',
+                'category.technology'
+            ])
             ->orderBy('id', 'asc')
             ->get();
 
@@ -24,10 +27,14 @@ class ConceptController extends Controller
     // GET /api/concepts/{id}
     public function show($id)
     {
-        $concept = Concept::with('category')
+        $concept = Concept::with([
+                'category',
+                'category.technology'
+            ])
             ->find($id);
 
         if (!$concept) {
+
             return response()->json([
                 'success' => false,
                 'message' => 'Concepto no encontrado'
@@ -36,7 +43,33 @@ class ConceptController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $concept
+            'data' => [
+                'id' => $concept->id,
+
+                'category_id' =>
+                    $concept->category_id,
+
+                'technology_id' =>
+                    $concept->category->technology_id,
+
+                'name' =>
+                    $concept->name,
+
+                'slug' =>
+                    $concept->slug,
+
+                'type' =>
+                    $concept->type,
+
+                'description' =>
+                    $concept->description,
+
+                'how_to_use' =>
+                    $concept->how_to_use,
+
+                'example' =>
+                    $concept->example,
+            ]
         ]);
     }
 
@@ -45,13 +78,26 @@ class ConceptController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'category_id' => 'required|integer|exists:categories,id',
-            'name' => 'required|string|max:150',
-            'slug' => 'required|string|max:150',
-            'type' => 'required|string|max:50',
-            'description' => 'nullable|string',
-            'how_to_use' => 'nullable|string',
-            'example' => 'nullable|string',
+            'category_id' =>
+                'required|integer|exists:categories,id',
+
+            'name' =>
+                'required|string|max:150',
+
+            'slug' =>
+                'required|string|max:150',
+
+            'type' =>
+                'required|string|max:50',
+
+            'description' =>
+                'nullable|string',
+
+            'how_to_use' =>
+                'nullable|string',
+
+            'example' =>
+                'nullable|string',
         ]);
 
         $concept = Concept::create($validated);
@@ -70,6 +116,7 @@ class ConceptController extends Controller
         $concept = Concept::find($id);
 
         if (!$concept) {
+
             return response()->json([
                 'success' => false,
                 'message' => 'Concepto no encontrado'
@@ -77,13 +124,26 @@ class ConceptController extends Controller
         }
 
         $validated = $request->validate([
-            'category_id' => 'sometimes|required|integer|exists:categories,id',
-            'name' => 'sometimes|required|string|max:150',
-            'slug' => 'sometimes|required|string|max:150',
-            'type' => 'sometimes|required|string|max:50',
-            'description' => 'nullable|string',
-            'how_to_use' => 'nullable|string',
-            'example' => 'nullable|string',
+            'category_id' =>
+                'sometimes|required|integer|exists:categories,id',
+
+            'name' =>
+                'sometimes|required|string|max:150',
+
+            'slug' =>
+                'sometimes|required|string|max:150',
+
+            'type' =>
+                'sometimes|required|string|max:50',
+
+            'description' =>
+                'nullable|string',
+
+            'how_to_use' =>
+                'nullable|string',
+
+            'example' =>
+                'nullable|string',
         ]);
 
         $concept->update($validated);
@@ -102,6 +162,7 @@ class ConceptController extends Controller
         $concept = Concept::find($id);
 
         if (!$concept) {
+
             return response()->json([
                 'success' => false,
                 'message' => 'Concepto no encontrado'

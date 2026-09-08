@@ -64,13 +64,11 @@ document.addEventListener(
         | API
         |--------------------------------------------------------------------------
         */
-
         const API_URL =
             '/api/concepts';
 
-
-        const CATEGORIES_API_URL =
-            '/api/categories';
+        const TECHNOLOGIES_API_URL =
+            '/api/technologies';
 
 
 
@@ -274,11 +272,20 @@ document.addEventListener(
 
                     /*
                     |------------------------------------------------------------------
-                    | CARGAR CATEGORÍAS
+                    | CARGAR TECNOLOGÍAS
                     |------------------------------------------------------------------
                     */
 
-                    await cargarCategorias();
+                    await cargarTecnologias();
+
+
+                    /*
+                    |------------------------------------------------------------------
+                    | PREPARAR CATEGORÍA
+                    |------------------------------------------------------------------
+                    */
+
+                    prepararCategoria();
 
 
                     /*
@@ -346,6 +353,154 @@ document.addEventListener(
         );
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | CARGAR TECNOLOGIAS
+        |--------------------------------------------------------------------------
+        */
+
+
+        function prepararCategoria() {
+
+            const selectCategoria =
+                formulario.querySelector(
+                    '[name="category_id"]'
+                );
+
+            if (!selectCategoria) {
+                return;
+            }
+
+            selectCategoria.innerHTML = `
+        <option value="">
+            Seleccione primero una tecnología
+        </option>
+    `;
+
+            selectCategoria.disabled = true;
+        }
+
+
+        async function cargarTecnologias(
+            tecnologiaSeleccionada = null
+        ) {
+
+            const select =
+                formulario.querySelector(
+                    '[name="technology_id"]'
+                );
+
+            if (!select) {
+                return;
+            }
+
+            select.innerHTML = `
+        <option value="">
+            Cargando tecnologías...
+        </option>
+    `;
+
+            try {
+
+                const response =
+                    await fetch(
+                        TECHNOLOGIES_API_URL,
+                        {
+                            method: 'GET',
+
+                            headers: {
+                                'Accept':
+                                    'application/json'
+                            }
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        data.message ||
+                        `HTTP ${response.status}`
+                    );
+                }
+
+                const tecnologias =
+                    Array.isArray(data)
+                        ? data
+                        : data.data ?? [];
+
+                select.innerHTML = `
+            <option value="">
+                Seleccione una tecnología
+            </option>
+        `;
+
+                tecnologias.forEach(
+                    tecnologia => {
+
+                        const option =
+                            document.createElement(
+                                'option'
+                            );
+
+                        option.value =
+                            tecnologia.id;
+
+                        option.textContent =
+                            tecnologia.name;
+
+                        if (
+                            tecnologiaSeleccionada &&
+                            Number(tecnologia.id) ===
+                            Number(tecnologiaSeleccionada)
+                        ) {
+
+                            option.selected = true;
+                        }
+
+                        select.appendChild(option);
+                    }
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Error cargando tecnologías:',
+                    error
+                );
+
+                select.innerHTML = `
+            <option value="">
+                Error cargando tecnologías
+            </option>
+        `;
+            }
+        }
+
+        const selectTecnologia =
+            formulario.querySelector(
+                '[name="technology_id"]'
+            );
+
+        if (selectTecnologia) {
+
+            selectTecnologia.addEventListener(
+                'change',
+                async () => {
+
+                    const technologyId =
+                        selectTecnologia.value;
+
+                    await cargarCategorias(
+                        technologyId
+                    );
+                }
+            );
+        }
+
+
 
         /*
         |--------------------------------------------------------------------------
@@ -354,6 +509,7 @@ document.addEventListener(
         */
 
         async function cargarCategorias(
+            technologyId,
             categoriaSeleccionada = null
         ) {
 
@@ -362,44 +518,48 @@ document.addEventListener(
                     '[name="category_id"]'
                 );
 
-
             if (!select) {
-
                 return;
-
             }
 
+            if (!technologyId) {
+
+                select.innerHTML = `
+            <option value="">
+                Seleccione primero una tecnología
+            </option>
+        `;
+
+                select.disabled = true;
+
+                return;
+            }
+
+            select.disabled = true;
 
             select.innerHTML = `
-
-                <option value="">
-                    Cargando categorías...
-                </option>
-
-            `;
-
+        <option value="">
+            Cargando categorías...
+        </option>
+    `;
 
             try {
 
                 const response =
                     await fetch(
-                        CATEGORIES_API_URL,
+                        `${TECHNOLOGIES_API_URL}/${technologyId}/categories`,
                         {
                             method: 'GET',
 
                             headers: {
-
                                 'Accept':
                                     'application/json'
-
                             }
                         }
                     );
 
-
                 const data =
                     await response.json();
-
 
                 if (!response.ok) {
 
@@ -407,24 +567,18 @@ document.addEventListener(
                         data.message ||
                         `HTTP ${response.status}`
                     );
-
                 }
-
 
                 const categorias =
                     Array.isArray(data)
                         ? data
                         : data.data ?? [];
 
-
                 select.innerHTML = `
-
-                    <option value="">
-                        Seleccione una categoría
-                    </option>
-
-                `;
-
+            <option value="">
+                Seleccione una categoría
+            </option>
+        `;
 
                 categorias.forEach(
                     categoria => {
@@ -434,14 +588,11 @@ document.addEventListener(
                                 'option'
                             );
 
-
                         option.value =
                             categoria.id;
 
-
                         option.textContent =
                             categoria.name;
-
 
                         if (
                             categoriaSeleccionada &&
@@ -449,19 +600,14 @@ document.addEventListener(
                             Number(categoriaSeleccionada)
                         ) {
 
-                            option.selected =
-                                true;
-
+                            option.selected = true;
                         }
 
-
-                        select.appendChild(
-                            option
-                        );
-
+                        select.appendChild(option);
                     }
                 );
 
+                select.disabled = false;
 
             } catch (error) {
 
@@ -470,17 +616,12 @@ document.addEventListener(
                     error
                 );
 
-
                 select.innerHTML = `
-
-                    <option value="">
-                        Error cargando categorías
-                    </option>
-
-                `;
-
+            <option value="">
+                Error cargando categorías
+            </option>
+        `;
             }
-
         }
 
 
@@ -645,15 +786,17 @@ document.addEventListener(
 
                 /*
                 |------------------------------------------------------------------
-                | CARGAR CATEGORÍAS
+                | CARGAR TECNOLOGIA Y CATEGORIA
                 |------------------------------------------------------------------
                 */
-
-                await cargarCategorias(
-                    concepto.category_id
+                await cargarTecnologias(
+                    concepto.technology_id
                 );
 
-
+                await cargarCategorias(
+                    concepto.technology_id,
+                    concepto.category_id
+                );
 
                 /*
                 |------------------------------------------------------------------
@@ -963,14 +1106,21 @@ document.addEventListener(
                 );
 
 
-                /*
-                |------------------------------------------------------------------
-                | RECARGAR CATEGORÍAS
-                |------------------------------------------------------------------
+                /* 
+                |------------------------------------------------------------------ 
+                | RECARGAR TECNOLOGÍAS 
+                |------------------------------------------------------------------ 
                 */
 
-                await cargarCategorias();
+                await cargarTecnologias();
 
+
+                /* 
+                |------------------------------------------------------------------ 
+                | PREPARAR CATEGORÍA 
+                |------------------------------------------------------------------ 
+                */
+                prepararCategoria()
 
 
                 /*

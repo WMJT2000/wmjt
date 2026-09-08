@@ -64,6 +64,14 @@
             'buttonText' => 'Guardar',
 
             'fields' => [
+                [
+    'name' => 'technology_id',
+    'label' => 'Tecnología',
+    'type' => 'select',
+    'placeholder' => 'Seleccione una tecnología',
+    'required' => true,
+    'options' => []
+],
 
                 [
                     'name' => 'category_id',
