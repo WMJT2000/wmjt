@@ -4,7 +4,9 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KnowledgeController;
 use Illuminate\Support\Facades\Auth;
-
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\TechnologyController;
+use App\Http\Controllers\ConceptController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -76,6 +78,20 @@ Route::middleware('auth')->group(function () {
         ->name('knowledge.search');
 });
 
+
+// Gestión
+Route::middleware('auth')->group(function () {
+
+    Route::get('/gestion/technologies', [TechnologyController::class, 'page'])
+        ->name('technologies.index');
+
+    Route::get('/gestion/categories', [CategoryController::class, 'page'])
+        ->name('categories.index');
+
+    Route::get('/gestion/concepts', [ConceptController::class, 'page'])
+        ->name('concepts.index');
+
+});
 
 // Rutas de Laravel Breeze
 require __DIR__.'/auth.php';

@@ -57,47 +57,93 @@
             </div>
 
 
-            <a
-                href="/gestion/technologies"
-                class="dashboard-nav-item"
-            >
-                <span>💻</span>
-                Tecnologías
-            </a>
+           <a href="{{ route('technologies.index') }}" class="dashboard-nav-item">
+    <span>💻</span>
+    Tecnologías
+</a>
 
+<a href="{{ route('categories.index') }}" class="dashboard-nav-item">
+    <span>📁</span>
+    Categorías
+</a>
 
-            <a
-                href="/gestion/categories"
-                class="dashboard-nav-item"
-            >
-                <span>📁</span>
-                Categorías
-            </a>
-
-
-            <a
-                href="/gestion/concepts"
-                class="dashboard-nav-item"
-            >
-                <span>📚</span>
-                Conceptos
-            </a>
+<a href="{{ route('concepts.index') }}" class="dashboard-nav-item">
+    <span>📚</span>
+    Conceptos
+</a>
 
         </nav>
 
+<div class="dashboard-sidebar-footer">
 
-        <div class="dashboard-sidebar-footer">
+    <button
+        type="button"
+        class="user-profile-button"
+        onclick="toggleUserMenu()"
+    >
 
-            <div class="user-avatar">
-                W
-            </div>
+        <div class="user-avatar">
+            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+        </div>
 
-            <div>
-                <strong>Administrador</strong>
-                <span>Base de conocimiento</span>
-            </div>
+        <div class="user-profile-info">
+
+            <strong>
+                {{ Auth::user()->name }}
+            </strong>
+
+            <span>
+                {{ Auth::user()->email }}
+            </span>
 
         </div>
+
+        <span class="user-profile-arrow">
+            ▾
+        </span>
+
+    </button>
+
+
+    {{-- MENÚ DEL USUARIO --}}
+
+    <div
+        id="user-menu"
+        class="user-menu"
+    >
+
+        <a href="{{ route('profile.edit') }}">
+            <span>👤</span>
+            Mi perfil
+        </a>
+
+
+        <a href="{{ route('register') }}">
+            <span>➕</span>
+            Crear usuario
+        </a>
+
+
+        <div class="user-menu-divider"></div>
+
+
+        <form
+            method="POST"
+            action="{{ route('logout') }}"
+        >
+
+            @csrf
+
+            <button type="submit">
+                <span>🚪</span>
+                Cerrar sesión
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
 
     </aside>
 
@@ -142,11 +188,42 @@
                     🔔
                 </button>
 
+<div class="topbar-user">
 
-                <div class="profile-avatar">
-                    W
-                </div>
+    <button
+        type="button"
+        class="profile-avatar"
+        onclick="toggleTopbarUserMenu()"
+    >
+        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+    </button>
 
+    <div id="topbar-user-menu" class="topbar-user-menu">
+
+        <a href="{{ route('profile.edit') }}">
+            <span>👤</span>
+            Mi perfil
+        </a>
+
+        <a href="{{ route('register') }}">
+            <span>➕</span>
+            Crear usuario
+        </a>
+
+        <div class="user-menu-divider"></div>
+
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+
+            <button type="submit">
+                <span>🚪</span>
+                Cerrar sesión
+            </button>
+        </form>
+
+    </div>
+
+</div>
             </div>
 
         </header>

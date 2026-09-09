@@ -7,6 +7,18 @@ use Illuminate\Http\Request;
 
 class ConceptController extends Controller
 {
+
+public function page()
+{
+    $concepts = Concept::with([
+        'category',
+        'category.technology'
+    ])
+    ->orderBy('id', 'asc')
+    ->get();
+
+    return view('gestion.concepts', compact('concepts'));
+}
     // GET /api/concepts
     public function index()
     {

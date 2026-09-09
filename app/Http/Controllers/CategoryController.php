@@ -8,6 +8,16 @@ use Illuminate\Http\Request;
 class CategoryController extends Controller
 {
     // GET /api/categories
+
+    public function page()
+{
+    $categories = Category::with('technology')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    return view('gestion.categories', compact('categories'));
+}
+
     public function index()
     {
         $categories = Category::with('technology')

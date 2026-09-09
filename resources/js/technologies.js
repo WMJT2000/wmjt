@@ -322,6 +322,7 @@ document.addEventListener(
                         API_URL,
                         {
                             method: 'GET',
+                             credentials: 'same-origin',
 
                             headers: {
                                 'Accept':
@@ -396,6 +397,7 @@ document.addEventListener(
                         `${API_URL}/${id}`,
                         {
                             method: 'GET',
+                             credentials: 'same-origin',
 
                             headers: {
                                 'Accept':
@@ -569,6 +571,7 @@ document.addEventListener(
                         `${API_URL}/${id}`,
                         {
                             method: 'DELETE',
+                             credentials: 'same-origin',
 
                             headers: {
                                 'Accept':

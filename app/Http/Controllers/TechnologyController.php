@@ -8,6 +8,13 @@ use Illuminate\Http\Request;
 class TechnologyController extends Controller
 {
     // GET /api/technologies
+public function page()
+{
+    $technologies = Technology::orderBy('id', 'asc')->get();
+
+    return view('gestion.technologies', compact('technologies'));
+}
+    
     public function index()
     {
         $technologies = Technology::orderBy('id', 'asc')->get();

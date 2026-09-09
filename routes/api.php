@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TechnologyController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ConceptController;
-
+Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
@@ -116,3 +116,5 @@ Route::delete('/concepts/{id}', [
     ConceptController::class,
     'destroy'
 ]);
+
+});

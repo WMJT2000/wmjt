@@ -7,7 +7,7 @@
             <div class="login-header">
 
                 <div class="login-logo">
-                    TK
+                    WJ
                 </div>
 
                 <h1 class="login-title">
@@ -100,40 +100,6 @@
                 </div>
 
 
-                <!-- Opciones -->
-
-                <div class="login-options">
-
-                    <label
-                        for="remember_me"
-                        class="login-remember"
-                    >
-
-                        <input
-                            id="remember_me"
-                            type="checkbox"
-                            name="remember"
-                        >
-
-                        <span>
-                            Recordarme
-                        </span>
-
-                    </label>
-
-
-                    @if (Route::has('password.request'))
-
-                        <a
-                            href="{{ route('password.request') }}"
-                            class="login-link"
-                        >
-                            ¿Olvidaste tu contraseña?
-                        </a>
-
-                    @endif
-
-                </div>
 
 
                 <!-- Botón -->
@@ -148,21 +114,7 @@
             </form>
 
 
-            <!-- Footer -->
-
-            <div class="login-footer">
-
-                ¿No tienes una cuenta?
-
-                @if (Route::has('register'))
-
-                    <a href="{{ route('register') }}">
-                        Crear cuenta
-                    </a>
-
-                @endif
-
-            </div>
+           
 
         </div>
 
