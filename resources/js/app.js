@@ -10,6 +10,7 @@ import '../css/knowledge.css';
 import '../css/tabla-gestion.css';
 import '../css/login.css';
 import '../css/register.css';
+import '../css/editprofile.css';
 // JavaScript
 import './form.js';
 import './technologies.js';
