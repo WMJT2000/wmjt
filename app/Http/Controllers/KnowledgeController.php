@@ -9,6 +9,19 @@ use Illuminate\Http\Request;
 
 class KnowledgeController extends Controller
 {
+
+public function home()
+{
+    $technologies = Technology::count();
+    $categories = Category::count();
+    $concepts = Concept::count();
+
+    return view('inicio', compact(
+        'technologies',
+        'categories',
+        'concepts'
+    ));
+}
     /**
      * Página principal del conocimiento.
      */

@@ -8,6 +8,7 @@ import '../css/technologies.css';
 import '../css/dashboard.css';
 import '../css/knowledge.css';
 import '../css/tabla-gestion.css';
+import '../css/login.css';
 // JavaScript
 import './form.js';
 import './technologies.js';
