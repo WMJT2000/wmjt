@@ -1334,10 +1334,38 @@ body {
        SIDEBAR FOOTER
     ----------------------------------------- */
 
-    .dashboard-sidebar-footer {
-        display: none;
-    }
+  .dashboard-sidebar-footer {
+    display: flex;
+    width: auto;
+    margin-top: 0;
+    padding: 0 8px;
+    border-top: none;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
 
+.dashboard-sidebar-footer .user-profile-button {
+    width: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dashboard-sidebar-footer .user-profile-info,
+.dashboard-sidebar-footer .user-profile-arrow {
+    display: none;
+}
+
+.dashboard-sidebar-footer .user-avatar {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    font-size: 13px;
+}
 
     /* -----------------------------------------
        MAIN

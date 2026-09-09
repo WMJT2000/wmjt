@@ -18,4 +18,8 @@ import './concepts.js';
 import './categories.js';
 import './tabla-gestion.js';
 import './dashboard.js';
+import './english-categories.js';
+import './english-words.js';
+import './english-meanings.js';
+
 

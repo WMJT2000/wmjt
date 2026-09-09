@@ -52,98 +52,23 @@
 
 
 
-            <div class="nav-title">
-                GESTIÓN
-            </div>
+<div class="nav-title">
+    ADMINISTRACIÓN
+</div>
 
-
-           <a href="{{ route('technologies.index') }}" class="dashboard-nav-item">
-    <span>💻</span>
-    Tecnologías
-</a>
-
-<a href="{{ route('categories.index') }}" class="dashboard-nav-item">
-    <span>📁</span>
-    Categorías
-</a>
-
-<a href="{{ route('concepts.index') }}" class="dashboard-nav-item">
-    <span>📚</span>
-    Conceptos
+<a
+    href="{{ route('gestion.index') }}"
+    class="dashboard-nav-item"
+>
+    <span>⚙️</span>
+    Gestión
 </a>
 
         </nav>
+        {{-- USUARIO --}}
 
-<div class="dashboard-sidebar-footer">
+        <x-user-menu />
 
-    <button
-        type="button"
-        class="user-profile-button"
-        onclick="toggleUserMenu()"
-    >
-
-        <div class="user-avatar">
-            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-        </div>
-
-        <div class="user-profile-info">
-
-            <strong>
-                {{ Auth::user()->name }}
-            </strong>
-
-            <span>
-                {{ Auth::user()->email }}
-            </span>
-
-        </div>
-
-        <span class="user-profile-arrow">
-            ▾
-        </span>
-
-    </button>
-
-
-    {{-- MENÚ DEL USUARIO --}}
-
-    <div
-        id="user-menu"
-        class="user-menu"
-    >
-
-        <a href="{{ route('profile.edit') }}">
-            <span>👤</span>
-            Mi perfil
-        </a>
-
-
-        <a href="{{ route('register') }}">
-            <span>➕</span>
-            Crear usuario
-        </a>
-
-
-        <div class="user-menu-divider"></div>
-
-
-        <form
-            method="POST"
-            action="{{ route('logout') }}"
-        >
-
-            @csrf
-
-            <button type="submit">
-                <span>🚪</span>
-                Cerrar sesión
-            </button>
-
-        </form>
-
-    </div>
-
-</div>
 
     </aside>
 
@@ -328,118 +253,6 @@
 
             <div class="dashboard-grid">
 
-
-                {{-- GESTIÓN --}}
-
-                <div class="dashboard-panel">
-
-                    <div class="panel-header">
-
-                        <div>
-
-                            <h2>
-                                Gestión del conocimiento
-                            </h2>
-
-                            <p>
-                                Accede rápidamente a tus recursos.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="management-grid">
-
-
-                        <a
-                            href="/gestion/technologies"
-                            class="management-card"
-                        >
-
-                            <div class="management-icon">
-                                💻
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    Tecnologías
-                                </strong>
-
-                                <span>
-                                    Gestionar tecnologías
-                                </span>
-
-                            </div>
-
-                            <b>
-                                →
-                            </b>
-
-                        </a>
-
-
-                        <a
-                            href="/gestion/categories"
-                            class="management-card"
-                        >
-
-                            <div class="management-icon">
-                                📁
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    Categorías
-                                </strong>
-
-                                <span>
-                                    Organizar categorías
-                                </span>
-
-                            </div>
-
-                            <b>
-                                →
-                            </b>
-
-                        </a>
-
-
-                        <a
-                            href="/gestion/concepts"
-                            class="management-card"
-                        >
-
-                            <div class="management-icon">
-                                📚
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    Conceptos
-                                </strong>
-
-                                <span>
-                                    Gestionar conceptos
-                                </span>
-
-                            </div>
-
-                            <b>
-                                →
-                            </b>
-
-                        </a>
-
-
-                    </div>
-
-                </div>
 
 
                 {{-- ACTIVIDAD --}}
