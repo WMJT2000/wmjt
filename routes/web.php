@@ -47,6 +47,21 @@ Route::middleware('auth')->group(function () {
             Route::get('/english/category/{category}/practice', [EnglishLearningController::class, 'practice'])
     ->name('english.practice');
 
+Route::post(
+    '/english/category/{category}/practice/start',
+    [EnglishLearningController::class, 'startPractice']
+)->name('english.practice.start');
+
+Route::post(
+    '/english/category/{category}/practice/result',
+    [EnglishLearningController::class, 'savePracticeResult']
+)->name('english.practice.result');
+
+Route::post(
+    '/english/category/{category}/practice/finish',
+    [EnglishLearningController::class, 'finishPractice']
+)->name('english.practice.finish');
+
 Route::get('/english/category/{category}/{word?}', [EnglishLearningController::class, 'study'])
     ->name('english.study');
 

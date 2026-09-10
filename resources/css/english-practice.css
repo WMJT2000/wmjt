@@ -1492,3 +1492,475 @@
         min-width: 0;
     }
 }
+
+
+/* =========================================================
+   RESULTADO FINAL DE LA PRÁCTICA
+   ========================================================= */
+
+.english-practice-result {
+    width: 100%;
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 40px 30px;
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+    border-radius: 24px;
+
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.10);
+
+    text-align: center;
+
+    animation: practiceResultAppear 0.45s ease-out;
+}
+
+
+/* =========================================================
+   ANIMACIÓN
+   ========================================================= */
+
+@keyframes practiceResultAppear {
+
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   TÍTULO
+   ========================================================= */
+
+.english-practice-result h2 {
+    margin: 0 0 30px;
+
+    font-size: 32px;
+    font-weight: 800;
+
+    line-height: 1.2;
+
+    color: #1f2937;
+}
+
+
+/* =========================================================
+   RESUMEN
+   ========================================================= */
+
+.english-practice-summary {
+    width: 100%;
+    max-width: 600px;
+
+    margin: 0 auto 25px;
+
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
+}
+
+
+/* =========================================================
+   TARJETAS DEL RESUMEN
+   ========================================================= */
+
+.english-practice-summary p {
+    margin: 0;
+
+    padding: 20px 15px;
+
+    min-height: 90px;
+
+    box-sizing: border-box;
+
+    background: #f7f8fa;
+
+    border-radius: 16px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    color: #1f2937;
+}
+
+
+/* =========================================================
+   ETIQUETAS
+   ========================================================= */
+
+.english-practice-summary p strong {
+    font-size: 14px;
+
+    font-weight: 600;
+
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   VALORES
+   ========================================================= */
+
+.english-practice-summary p span {
+    font-size: 24px;
+
+    font-weight: 800;
+
+    color: #111827;
+}
+
+
+/* =========================================================
+   PUNTAJE
+   ========================================================= */
+
+#practice-score {
+    font-size: 38px !important;
+
+    font-weight: 900 !important;
+
+    color: #16a34a !important;
+}
+
+
+/* =========================================================
+   MENSAJE FINAL
+   ========================================================= */
+
+#practice-result-message {
+    max-width: 550px;
+
+    margin: 25px auto 30px;
+
+    font-size: 19px;
+
+    font-weight: 600;
+
+    line-height: 1.5;
+
+    color: #374151;
+}
+
+
+/* =========================================================
+   CONTENEDOR DE BOTONES
+   ========================================================= */
+
+.english-practice-result-actions {
+    width: 100%;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-top: 20px;
+}
+
+
+/* =========================================================
+   BOTÓN INTENTAR NUEVAMENTE
+   ========================================================= */
+
+.english-practice-retry-button {
+    border: none;
+
+    padding: 13px 22px;
+
+    border-radius: 12px;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.english-practice-retry-button:hover {
+    background: #1d4ed8;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+
+.english-practice-retry-button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   BOTÓN CAMBIAR MODO
+   ========================================================= */
+
+.english-practice-change-mode-button {
+    border: none;
+
+    padding: 13px 22px;
+
+    border-radius: 12px;
+
+    background: #6b7280;
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.english-practice-change-mode-button:hover {
+    background: #4b5563;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+
+.english-practice-change-mode-button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   VOLVER A ESTUDIAR
+   ========================================================= */
+
+.english-practice-study-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 13px 22px;
+
+    border-radius: 12px;
+
+    background: #16a34a;
+
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.english-practice-study-link:hover {
+    background: #15803d;
+
+    transform: translateY(-2px);
+
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+
+.english-practice-study-link:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   ESTADO EXCELENTE
+   ========================================================= */
+
+.english-practice-result.success {
+    border-top: 5px solid #16a34a;
+}
+
+
+/* =========================================================
+   ESTADO REGULAR
+   ========================================================= */
+
+.english-practice-result.warning {
+    border-top: 5px solid #f59e0b;
+}
+
+
+/* =========================================================
+   ESTADO BAJO
+   ========================================================= */
+
+.english-practice-result.low-score {
+    border-top: 5px solid #ef4444;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .english-practice-result {
+        margin: 30px auto;
+
+        padding: 30px 20px;
+
+        border-radius: 20px;
+    }
+
+
+    .english-practice-result h2 {
+        font-size: 27px;
+    }
+
+
+    .english-practice-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        gap: 12px;
+    }
+
+
+    .english-practice-summary p {
+        padding: 16px 10px;
+
+        min-height: 80px;
+    }
+
+
+    .english-practice-summary p span {
+        font-size: 21px;
+    }
+
+
+    #practice-score {
+        font-size: 32px !important;
+    }
+
+
+    #practice-result-message {
+        font-size: 17px;
+    }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE - MÓVIL
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .english-practice-result {
+        width: calc(100% - 20px);
+
+        margin: 20px auto;
+
+        padding: 25px 15px;
+
+        border-radius: 18px;
+    }
+
+
+    .english-practice-result h2 {
+        font-size: 24px;
+
+        margin-bottom: 22px;
+    }
+
+
+    .english-practice-summary {
+        grid-template-columns: 1fr;
+
+        gap: 10px;
+    }
+
+
+    .english-practice-summary p {
+        min-height: auto;
+
+        padding: 14px;
+    }
+
+
+    .english-practice-summary p strong {
+        font-size: 13px;
+    }
+
+
+    .english-practice-summary p span {
+        font-size: 22px;
+    }
+
+
+    #practice-score {
+        font-size: 30px !important;
+    }
+
+
+    #practice-result-message {
+        font-size: 16px;
+
+        margin-bottom: 25px;
+    }
+
+
+    .english-practice-result-actions {
+        flex-direction: column;
+
+        width: 100%;
+    }
+
+
+    .english-practice-retry-button,
+    .english-practice-change-mode-button,
+    .english-practice-study-link {
+        width: 100%;
+
+        box-sizing: border-box;
+    }
+
+}

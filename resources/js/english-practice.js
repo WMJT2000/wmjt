@@ -72,20 +72,30 @@
                 'btn-toggle-auto-next'
             );
 
-        const result =
-            document.getElementById(
-                'practice-result'
-            );
+
+
+        const practiceResult =
+            document.getElementById('practice-result');
 
         const scoreElement =
             document.getElementById(
                 'practice-score'
             );
 
-        const resultMessage =
+        const resultMessageElement =
             document.getElementById(
                 'practice-result-message'
             );
+
+
+        const resultCategoryElement =
+            document.getElementById('practice-result-category');
+
+        const correctAnswersElement =
+            document.getElementById('practice-correct-answers');
+
+        const incorrectAnswersElement =
+            document.getElementById('practice-incorrect-answers');
 
         const retryButton =
             document.getElementById(
@@ -115,39 +125,27 @@
 
         let selectedPracticeMode = null;
 
-        modeOptions.forEach(
-            option => {
+        modeOptions.forEach(option => {
+            option.addEventListener('click', () => {
 
-                option.addEventListener(
-                    'click',
-                    () => {
+                modeOptions.forEach(item => {
+                    item.classList.remove('selected');
+                });
 
-                        modeOptions.forEach(
-                            item => {
-                                item.classList.remove(
-                                    'selected'
-                                );
-                            }
-                        );
+                option.classList.add('selected');
 
-                        option.classList.add(
-                            'selected'
-                        );
+                selectedPracticeMode =
+                    option.dataset.practiceMode;
 
-                        selectedPracticeMode =
-                            option.dataset.practiceMode;
+                // Guardamos también el modo en practice
+                practice.selectedMode =
+                    selectedPracticeMode;
 
-                        if (startButton) {
-                            startButton.disabled =
-                                false;
-                        }
-
-                    }
-                );
-
-            }
-        );
-
+                if (startButton) {
+                    startButton.disabled = false;
+                }
+            });
+        });
         const soundToggle =
             document.getElementById(
                 'btn-toggle-practice-sounds'
@@ -162,6 +160,41 @@
         | UTILIDADES
         |--------------------------------------------------------------------------
         */
+
+
+
+        async function iniciarSesion() {
+            const response = await fetch(
+                `/english/category/${practice.categoryId}/practice/start`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content'),
+                    },
+                    body: JSON.stringify({
+                        practice_session_id: practice.sessionId,
+                        practice_mode: practice.selectedMode,
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            console.log('INICIAR SESIÓN - STATUS:', response.status);
+            console.log('INICIAR SESIÓN - RESPUESTA:', data);
+
+            if (!response.ok) {
+                throw new Error(
+                    data.message || 'No se pudo iniciar la práctica.'
+                );
+            }
+
+            return data;
+        }
 
 
 
@@ -474,6 +507,7 @@
 
                     correctAnswer:
                         respuestaCorrecta,
+                    wordId: word.id,
 
                     options:
                         crearOpciones(
@@ -515,6 +549,8 @@
                     correctAnswer:
                         respuestaCorrecta,
 
+                    wordId: word.id,
+
                     options:
                         crearOpciones(
                             respuestaCorrecta,
@@ -550,6 +586,8 @@
 
                     correctAnswer:
                         respuestaCorrecta,
+
+                    wordId: word.id,
 
                     options:
                         crearOpciones(
@@ -894,13 +932,51 @@
         }
 
 
+        async function guardarResultado(current, respuesta) {
+
+            if (!current.wordId) {
+                console.error('La pregunta no tiene wordId.');
+                return;
+            }
+
+            const correcta = respuesta === current.correctAnswer;
+
+            const response = await fetch(
+                `/english/category/${practice.categoryId}/practice/result`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content'),
+                    },
+                    body: JSON.stringify({
+                        english_word_id: current.wordId,
+                        practice_session_id: practice.sessionId,
+                        question_type: current.type,
+                        user_answer: respuesta,
+                        correct_answer: current.correctAnswer,
+                        is_correct: correcta,
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('No se pudo guardar la respuesta.');
+            }
+
+            return response.json();
+        }
+
         /*
         |--------------------------------------------------------------------------
         | RESPONDER
         |--------------------------------------------------------------------------
         */
 
-        function responder(
+        async function responder(
             respuesta,
             button,
             current
@@ -919,6 +995,12 @@
             const correcta =
                 respuesta ===
                 current.correctAnswer;
+
+            await guardarResultado(
+                current,
+                respuesta
+            );
+
             if (correcta) {
                 score++;
                 reproducirSonidoCorrecto();
@@ -1022,6 +1104,46 @@
         }
 
 
+
+        async function finalizarSesion() {
+
+            const response = await fetch(
+                `/english/category/${practice.categoryId}/practice/finish`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content'),
+                    },
+                    body: JSON.stringify({
+                        practice_session_id: practice.sessionId,
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('No se pudo finalizar la práctica.');
+            }
+
+            const data = await response.json();
+
+            console.log(
+                'FINALIZAR PRÁCTICA - STATUS:',
+                response.status
+            );
+
+            console.log(
+                'FINALIZAR PRÁCTICA - RESPUESTA:',
+                data
+            );
+
+            return data;
+        }
+
+
         function avanzarSiguiente() {
 
             if (autoNextTimer) {
@@ -1058,62 +1180,92 @@
         |--------------------------------------------------------------------------
         */
 
-        function finalizarPractica() {
+        async function finalizarPractica() {
+            try {
+                const resultado = await finalizarSesion();
 
-            questionType.style.display =
-                'none';
-
-            question.style.display =
-                'none';
-
-            options.style.display =
-                'none';
-
-            feedback.style.display =
-                'none';
-
-            nextButton.style.display =
-                'none';
-
-            result.style.display =
-                'block';
-
-
-            scoreElement.textContent =
-                `${score} / ${questions.length}`;
-
-
-            const porcentaje =
-                Math.round(
-                    (
-                        score /
-                        questions.length
-                    ) * 100
+                console.log(
+                    'RESULTADO RECIBIDO EN finalizarPractica:',
+                    resultado
                 );
 
+                console.log(
+                    'practiceCard:',
+                    practiceCard
+                );
 
-            if (porcentaje >= 90) {
+                console.log(
+                    'practiceResult:',
+                    practiceResult
+                );
 
-                resultMessage.textContent =
-                    '¡Excelente! Dominas muy bien estas palabras.';
+                console.log(
+                    'resultCategoryElement:',
+                    resultCategoryElement
+                );
 
-            } else if (porcentaje >= 70) {
+                console.log(
+                    'correctAnswersElement:',
+                    correctAnswersElement
+                );
 
-                resultMessage.textContent =
-                    '¡Muy bien! Sigue practicando para mejorar.';
+                console.log(
+                    'incorrectAnswersElement:',
+                    incorrectAnswersElement
+                );
 
-            } else if (porcentaje >= 50) {
+                console.log(
+                    'scoreElement:',
+                    scoreElement
+                );
 
-                resultMessage.textContent =
-                    'Buen comienzo. Te conviene repasar algunas palabras.';
+                console.log(
+                    'resultMessageElement:',
+                    resultMessageElement
+                );
 
-            } else {
+                practiceCard.style.display = 'none';
 
-                resultMessage.textContent =
-                    'No te preocupes. Repasa las palabras y vuelve a intentarlo.';
+                practiceResult.style.display = 'block';
 
+                resultCategoryElement.textContent =
+                    practice.categoryName;
+
+                correctAnswersElement.textContent =
+                    resultado.correct_answers;
+
+                incorrectAnswersElement.textContent =
+                    resultado.incorrect_answers;
+
+                scoreElement.textContent =
+                    `${resultado.score}%`;
+
+                const percentage = resultado.score;
+
+                if (percentage >= 90) {
+                    resultMessageElement.textContent =
+                        '🏆 ¡Excelente trabajo!';
+                } else if (percentage >= 70) {
+                    resultMessageElement.textContent =
+                        '👏 ¡Muy bien! Sigue practicando.';
+                } else if (percentage >= 50) {
+                    resultMessageElement.textContent =
+                        '💪 Vas por buen camino. Puedes mejorar.';
+                } else {
+                    resultMessageElement.textContent =
+                        '📚 Sigue estudiando y vuelve a intentarlo.';
+                }
+
+            } catch (error) {
+                console.error(
+                    'ERROR DENTRO DE finalizarPractica:',
+                    error
+                );
+
+                alert(
+                    'ERROR: ' + error.message
+                );
             }
-
         }
         /*
                |--------------------------------------------------------------------------
@@ -1121,29 +1273,33 @@
                |--------------------------------------------------------------------------
                */
 
-        function reiniciarPractica() {
+        async function reiniciarPractica() {
+
+            practice.sessionId = crypto.randomUUID();
+
+            practiceResult.style.display = 'none';
+            practiceCard.style.display = 'block';
+
+            currentQuestionIndex = 0;
+            score = 0;
+            answered = false;
 
             questions = generarPreguntas();
 
-            currentQuestionIndex = 0;
+            try {
 
-            score = 0;
+                await iniciarSesion();
 
-            answered = false;
+                mostrarPregunta();
 
-            questionType.style.display = 'inline-flex';
+            } catch (error) {
 
-            question.style.display = 'block';
+                console.error(error);
 
-            options.style.display = 'grid';
-
-            result.style.display = 'none';
-
-            feedback.style.display = 'none';
-
-            nextButton.style.display = 'none';
-
-            mostrarPregunta();
+                alert(
+                    'No se pudo iniciar la nueva práctica.'
+                );
+            }
         }
 
 
@@ -1162,7 +1318,9 @@
         if (changeModeButton) {
             changeModeButton.addEventListener('click', () => {
 
-                result.style.display = 'none';
+                practice.sessionId = crypto.randomUUID();
+
+                practiceResult.style.display = 'none';
 
                 modeSelector.style.display = 'block';
 
@@ -1242,80 +1400,53 @@
 
         if (startButton) {
 
-            startButton.addEventListener(
-                'click',
-                () => {
+            startButton.addEventListener('click', async () => {
 
-                    if (!selectedPracticeMode) {
+                if (!practice.selectedMode) {
+                    return;
+                }
+
+                try {
+
+                    startButton.disabled = true;
+
+                    await iniciarSesion();
+
+                    modeSelector.style.display = 'none';
+
+                    questions = generarPreguntas();
+
+                    if (questions.length === 0) {
+                        alert('No hay suficientes preguntas para practicar.');
                         return;
-                    }
-
-                    practice.selectedMode =
-                        selectedPracticeMode;
-
-                    modeSelector.style.display =
-                        'none';
-
-                    questions =
-                        generarPreguntas();
-
-                    if (practiceCard) {
-                        practiceCard.style.display = 'block';
-                    }
-
-                    if (
-                        questions.length === 0
-                    ) {
-
-                        modeSelector.style.display =
-                            'block';
-
-                        question.textContent =
-                            'No hay suficientes datos para crear preguntas.';
-
-                        return;
-
                     }
 
                     currentQuestionIndex = 0;
-
                     score = 0;
-
                     answered = false;
 
-                    autoNextEnabled = true;
-
-                    if (autoNextButton) {
-
-                        autoNextButton.textContent =
-                            '⚡ Auto: ON';
-
-                        autoNextButton.setAttribute(
-                            'aria-pressed',
-                            'true'
-                        );
-
-                        autoNextButton.classList.remove(
-                            'disabled'
-                        );
-                    }
-
-                    result.style.display =
-                        'none';
-
-                    questionType.style.display =
-                        'inline-flex';
-
-                    question.style.display =
-                        'block';
-
-                    options.style.display =
-                        'grid';
+                    practiceCard.style.display = 'block';
+                    practiceResult.style.display = 'none';
 
                     mostrarPregunta();
 
+                } catch (error) {
+
+                    console.error(error);
+
+                    alert('No se pudo iniciar la práctica.');
+
+                    console.error('ERROR AL INICIAR:', error);
+
+                    alert(
+                        'ERROR: ' + error.message
+                    );
+
+                } finally {
+
+                    startButton.disabled = false;
                 }
-            );
+            });
 
         }
 
