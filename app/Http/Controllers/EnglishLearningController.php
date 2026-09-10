@@ -51,4 +51,20 @@ class EnglishLearningController extends Controller
             'currentIndex'
         ));
     }
+
+    public function practice(EnglishCategory $category): View
+{
+    $words = $category->words()
+        ->with('meanings')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    return view('english.practice', compact(
+        'category',
+        'words'
+    ));
+}
+
+
+
 }

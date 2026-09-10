@@ -44,8 +44,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/english', [EnglishLearningController::class, 'index'])
         ->name('english.index');
 
+            Route::get('/english/category/{category}/practice', [EnglishLearningController::class, 'practice'])
+    ->name('english.practice');
+
 Route::get('/english/category/{category}/{word?}', [EnglishLearningController::class, 'study'])
     ->name('english.study');
+
+
 
 });
 

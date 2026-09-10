@@ -13,6 +13,7 @@ import '../css/register.css';
 import '../css/editprofile.css';
 import '../css/english.css';
 import '../css/english-study.css';
+import '../css/english-practice.css';
 // JavaScript
 import './form.js';
 import './technologies.js';
@@ -26,5 +27,5 @@ import './english-meanings.js';
 import './pronunciation.js';
 import './gemini-live.js';
 import './english-study.js'
-
+import './english-practice.js';
 

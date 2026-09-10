@@ -114,11 +114,11 @@ async function iniciarSesion() {
                         {
 
                             text: `
-You are an English pronunciation assistant.
+You are a pronunciation assistant.
 
 Every user message is a completely independent pronunciation request.
 
-Pronounce ONLY the exact text from the latest user message.
+Follow the instructions contained in the latest user message.
 
 Do not use previous messages as the pronunciation target.
 
@@ -128,21 +128,14 @@ Do not repeat previous sentences.
 
 Do not continue previous requests.
 
-If the latest message contains one English word, pronounce only that word.
+When the instruction says to pronounce English text, pronounce only that English text.
 
-If the latest message contains an English sentence, pronounce only that sentence.
+When the instruction says to speak complete feedback, speak the complete feedback exactly as provided.
 
-Do NOT translate.
+Do not invent additional content.
 
-Do NOT explain.
-
-Do NOT add any words.
-
-Do NOT speak Spanish.
-
-Return ONLY the English pronunciation as audio.
-                            `.trim(),
-
+Return only the requested speech as audio.
+`.trim(),
                         },
 
                     ],
@@ -249,7 +242,8 @@ Return ONLY the English pronunciation as audio.
 */
 
 export async function pronunciarEnIngles(
-    texto
+    texto,
+    modo = 'ingles'
 ) {
 
     if (
@@ -267,6 +261,54 @@ export async function pronunciarEnIngles(
 
 
     texto = texto.trim();
+
+
+
+    let instruccion;
+
+    if (modo === 'feedback') {
+
+        instruccion = `
+Speak the complete text exactly as provided.
+
+Read every word of the text.
+
+Do not shorten the text.
+
+Do not remove any words.
+
+Do not replace any words.
+
+Do not add any words.
+
+Keep the original language of each word.
+
+If the text is in Spanish, speak it in Spanish.
+
+If the text contains English words, pronounce those English words naturally.
+
+Text:
+${texto}
+    `.trim();
+
+    } else {
+
+        instruccion = `
+Pronounce ONLY the exact English text provided.
+
+Do not translate.
+
+Do not explain.
+
+Do not add any words.
+
+Do not remove any words.
+
+Text:
+${texto}
+    `.trim();
+
+    }
 
 
     /*
@@ -390,16 +432,13 @@ export async function pronunciarEnIngles(
         );
 
 
-conexion.sendRealtimeInput({
-    text: `
-Pronounce ONLY this text.
+        conexion.sendRealtimeInput({
+            text: `
+${instruccion}
 
 Speed: ${velocidadPronunciacion}x
-
-Text:
-${texto}
     `.trim(),
-});
+        });
 
 
         console.log(
@@ -1031,3 +1070,6 @@ window.addEventListener(
 
 window.cerrarGeminiLive =
     cerrarGeminiLive;
+
+window.pronunciarEnIngles =
+    pronunciarEnIngles;

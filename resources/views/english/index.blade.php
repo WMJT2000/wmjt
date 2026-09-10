@@ -69,9 +69,13 @@
                         {{ $category->words_count === 1 ? 'palabra' : 'palabras' }}
                     </span>
 
-                <a href="{{ route('english.study', $category) }}">
-    Estudiar →
+    <a href="{{ route('english.study', $category) }}">
+    📚 Estudiar
 </a>
+
+<a href="{{ route('english.practice', $category) }}">
+    🧠 Practicar
+</a> 
                 </div>
 
             @empty

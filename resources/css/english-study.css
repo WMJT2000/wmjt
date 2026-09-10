@@ -68,7 +68,7 @@
     justify-content: space-between;
 
     padding-bottom: 18px;
-    margin-bottom: 32px;
+    margin-bottom: 26px;
 
     border-bottom: 1px solid #e5e7eb;
 }
@@ -86,11 +86,222 @@
 
 
 /* =========================================================
+   CONTROL DE VELOCIDAD
+   ========================================================= */
+
+.english-pronunciation-speed {
+    width: 100%;
+    max-width: 520px;
+
+    margin: 0 auto 30px;
+    padding: 18px 20px;
+
+    box-sizing: border-box;
+
+    background: #f9fafb;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    text-align: center;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.english-pronunciation-speed:hover {
+    background: #ffffff;
+
+    border-color: #d1d5db;
+
+    box-shadow:
+        0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+
+/* =========================================================
+   TÍTULO DEL CONTROL
+   ========================================================= */
+
+.english-pronunciation-speed label {
+    display: block;
+
+    margin-bottom: 14px;
+
+    color: #374151;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   CONTROL SLIDER
+   ========================================================= */
+
+.english-pronunciation-speed-control {
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+
+    gap: 12px;
+}
+
+.english-pronunciation-speed-control span {
+    flex-shrink: 0;
+
+    font-size: 19px;
+
+    line-height: 1;
+}
+
+
+/* =========================================================
+   RANGE
+   ========================================================= */
+
+#pronunciation-speed {
+    flex: 1;
+
+    width: 100%;
+    height: 6px;
+
+    margin: 0;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    background: #d1d5db;
+
+    border-radius: 999px;
+
+    outline: none;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   RANGE - CHROME / EDGE / SAFARI
+   ========================================================= */
+
+#pronunciation-speed::-webkit-slider-runnable-track {
+    height: 6px;
+
+    background: #d1d5db;
+
+    border-radius: 999px;
+}
+
+#pronunciation-speed::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+
+    margin-top: -6px;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    background: #111827;
+
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.18);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+#pronunciation-speed::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.25);
+}
+
+
+/* =========================================================
+   RANGE - FIREFOX
+   ========================================================= */
+
+#pronunciation-speed::-moz-range-track {
+    height: 6px;
+
+    background: #d1d5db;
+
+    border-radius: 999px;
+}
+
+#pronunciation-speed::-moz-range-progress {
+    height: 6px;
+
+    background: #111827;
+
+    border-radius: 999px;
+}
+
+#pronunciation-speed::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+
+    background: #111827;
+
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+
+    box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.18);
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   VELOCIDAD ACTUAL
+   ========================================================= */
+
+#pronunciation-speed-value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 125px;
+
+    margin-top: 14px;
+    padding: 6px 12px;
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+
+    color: #111827;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+
+/* =========================================================
    PALABRA
    ========================================================= */
 
 .english-study-word {
     text-align: center;
+
     padding: 20px 10px 30px;
 }
 
@@ -102,6 +313,7 @@
     font-weight: 700;
 
     color: #111827;
+
     letter-spacing: -1.5px;
 
     overflow-wrap: anywhere;
@@ -131,6 +343,7 @@
 .english-study-pronunciation strong {
     font-size: 15px;
     font-weight: 600;
+
     color: #374151;
 }
 
@@ -139,7 +352,8 @@
    BOTÓN DE AUDIO
    ========================================================= */
 
-.btn-pronunciation, .btn-example-pronunciation {
+.btn-pronunciation,
+.btn-example-pronunciation {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -163,23 +377,48 @@
     transition:
         transform 0.15s ease,
         background-color 0.15s ease,
-        border-color 0.15s ease;
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
-.btn-pronunciation, .btn-example-pronunciation:hover {
+
+/* =========================================================
+   HOVER AUDIO
+   ========================================================= */
+
+.btn-pronunciation:hover,
+.btn-example-pronunciation:hover {
     transform: translateY(-1px);
 
     background: #f3f4f6;
+
     border-color: #d1d5db;
+
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.06);
 }
 
-.btn-pronunciation, .btn-example-pronunciation:active {
+
+/* =========================================================
+   ACTIVE AUDIO
+   ========================================================= */
+
+.btn-pronunciation:active,
+.btn-example-pronunciation:active {
     transform: scale(0.96);
 }
 
-.btn-pronunciation, .btn-example-pronunciation:disabled {
+
+/* =========================================================
+   AUDIO DESHABILITADO
+   ========================================================= */
+
+.btn-pronunciation:disabled,
+.btn-example-pronunciation:disabled {
     opacity: 0.6;
+
     cursor: wait;
+
     transform: none;
 }
 
@@ -200,9 +439,11 @@
 
 .english-study-meanings p {
     margin: 0;
+
     padding: 7px 14px;
 
     background: #f3f4f6;
+
     border-radius: 999px;
 
     color: #374151;
@@ -226,6 +467,7 @@
     box-sizing: border-box;
 
     background: #f9fafb;
+
     border: 1px solid #e5e7eb;
     border-radius: 14px;
 
@@ -240,12 +482,14 @@
 .english-study-example strong {
     font-size: 17px;
     line-height: 1.5;
+
     color: #111827;
 }
 
 .english-study-example span {
     font-size: 15px;
     line-height: 1.5;
+
     color: #6b7280;
 }
 
@@ -265,7 +509,9 @@
 }
 
 
-/* Botones Anterior / Siguiente */
+/* =========================================================
+   BOTONES ANTERIOR / SIGUIENTE
+   ========================================================= */
 
 .english-study-actions button {
     display: inline-flex;
@@ -281,6 +527,7 @@
     border-radius: 10px;
 
     font-family: inherit;
+
     font-size: 15px;
     font-weight: 600;
 
@@ -289,7 +536,8 @@
     transition:
         transform 0.15s ease,
         background-color 0.15s ease,
-        border-color 0.15s ease;
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
 
@@ -307,6 +555,7 @@
 
 #btn-previous-word:hover {
     background: #e5e7eb;
+
     transform: translateY(-1px);
 }
 
@@ -327,6 +576,7 @@
 
 #btn-next-word:hover {
     background: #1f2937;
+
     transform: translateY(-1px);
 }
 
@@ -349,6 +599,7 @@
     border-radius: 10px;
 
     background: #f3f4f6;
+
     border: 1px solid #e5e7eb;
 
     color: #374151;
@@ -383,6 +634,7 @@
     display: block;
 
     font-size: 18px;
+
     color: #111827;
 }
 
@@ -397,29 +649,56 @@
         padding: 30px 18px 45px;
     }
 
+
     .english-header {
         margin-bottom: 24px;
     }
+
 
     .english-header h1 {
         font-size: 28px;
     }
 
+
     .english-study-card {
         padding: 24px;
+
         border-radius: 18px;
     }
+
+
+    /* Velocidad */
+
+    .english-pronunciation-speed {
+        max-width: 100%;
+
+        margin-bottom: 26px;
+
+        padding: 16px 18px;
+    }
+
 
     .english-study-word h2 {
         font-size: 46px;
     }
 
+
     .english-study-example {
         margin-top: 26px;
     }
+
 }
 
+.english-practice-result-actions {
+    flex-direction: column;
+    gap: 10px;
+}
 
+.english-practice-retry-button,
+.english-practice-study-link {
+    width: 100%;
+    min-width: 0;
+}
 /* =========================================================
    TELÉFONO
    ========================================================= */
@@ -430,37 +709,108 @@
         padding: 22px 14px 35px;
     }
 
+
     .english-header h1 {
         font-size: 25px;
     }
+
 
     .english-header p {
         font-size: 14px;
     }
 
+
     .english-study-card {
         padding: 18px;
+
         border-radius: 16px;
     }
 
+
     .english-study-progress {
-        margin-bottom: 22px;
+        margin-bottom: 20px;
+
         padding-bottom: 14px;
     }
+
 
     .english-study-progress span,
     .english-study-progress strong {
         font-size: 13px;
     }
 
+
+    /* =====================================================
+       VELOCIDAD EN MÓVIL
+       ===================================================== */
+
+    .english-pronunciation-speed {
+        margin-bottom: 24px;
+
+        padding: 15px;
+    }
+
+
+    .english-pronunciation-speed label {
+        margin-bottom: 13px;
+
+        font-size: 13px;
+    }
+
+
+    .english-pronunciation-speed-control {
+        gap: 9px;
+    }
+
+
+    .english-pronunciation-speed-control span {
+        font-size: 17px;
+    }
+
+
+    #pronunciation-speed {
+        height: 6px;
+    }
+
+
+    #pronunciation-speed::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+
+        margin-top: -7px;
+    }
+
+
+    #pronunciation-speed-value {
+        min-width: 120px;
+
+        margin-top: 12px;
+
+        padding: 6px 10px;
+
+        font-size: 12px;
+    }
+
+
+    /* =====================================================
+       PALABRA
+       ===================================================== */
+
     .english-study-word {
         padding: 12px 4px 22px;
     }
 
+
     .english-study-word h2 {
         font-size: 38px;
+
         letter-spacing: -0.8px;
     }
+
+
+    /* =====================================================
+       PRONUNCIACIÓN
+       ===================================================== */
 
     .english-study-pronunciation {
         flex-wrap: wrap;
@@ -468,52 +818,84 @@
         margin-top: 14px;
     }
 
+
     .english-study-pronunciation span,
     .english-study-pronunciation strong {
         font-size: 14px;
     }
 
-    .btn-pronunciation, .btn-example-pronunciation {
+
+    /* =====================================================
+       BOTONES AUDIO
+       ===================================================== */
+
+    .btn-pronunciation,
+    .btn-example-pronunciation {
         width: 38px;
         height: 38px;
     }
+
+
+    /* =====================================================
+       SIGNIFICADOS
+       ===================================================== */
 
     .english-study-meanings {
         margin-top: 18px;
     }
 
+
     .english-study-meanings p {
         font-size: 14px;
+
         padding: 6px 12px;
     }
 
+
+    /* =====================================================
+       EJEMPLO
+       ===================================================== */
+
     .english-study-example {
         margin-top: 22px;
+
         padding: 16px;
     }
+
 
     .english-study-example strong {
         font-size: 15px;
     }
 
+
     .english-study-example span {
         font-size: 14px;
     }
 
+
+    /* =====================================================
+       NAVEGACIÓN
+       ===================================================== */
+
     .english-study-actions {
         flex-direction: column;
+
         width: 100%;
     }
+
 
     .english-study-actions button,
     #study-completed {
         width: 100%;
+
         min-height: 48px;
     }
+
 
     #btn-next-word {
         margin-left: 0;
     }
+
 }
 
 
@@ -528,24 +910,174 @@
         padding-right: 10px;
     }
 
+
     .english-study-card {
         padding: 15px;
     }
+
 
     .english-study-word h2 {
         font-size: 32px;
     }
 
+
     .english-study-example {
         padding: 14px;
     }
+
 
     .english-study-pronunciation {
         gap: 6px;
     }
 
+
     .english-study-pronunciation span,
     .english-study-pronunciation strong {
         font-size: 13px;
     }
+
+
+    /* =====================================================
+       VELOCIDAD
+       ===================================================== */
+
+    .english-pronunciation-speed {
+        padding: 13px 12px;
+    }
+
+
+    .english-pronunciation-speed-control {
+        gap: 7px;
+    }
+
+
+    .english-pronunciation-speed-control span {
+        font-size: 16px;
+    }
+
+
+    #pronunciation-speed-value {
+        min-width: 110px;
+
+        font-size: 11px;
+    }
+
+}
+
+
+/* =========================================================
+   ACCIONES DEL RESULTADO
+   ========================================================= */
+
+.english-practice-result-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    width: 100%;
+}
+
+
+/* =========================================================
+   BOTÓN INTENTAR OTRA VEZ
+   ========================================================= */
+
+.english-practice-retry-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 180px;
+    min-height: 46px;
+
+    padding: 0 20px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #2563eb;
+    border-radius: 10px;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+
+    line-height: 1.2;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.english-practice-retry-button:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 4px 10px rgba(37, 99, 235, 0.20);
+}
+
+.english-practice-retry-button:active {
+    transform: translateY(0);
+}
+
+.english-practice-retry-button:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.20);
+    outline-offset: 3px;
+}
+
+
+/* =========================================================
+   RESULTADO - ENLACE ESTUDIO
+   ========================================================= */
+
+.english-practice-study-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 180px;
+    min-height: 46px;
+
+    padding: 0 20px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+
+    background: #f3f4f6;
+    color: #374151;
+
+    text-decoration: none;
+
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+
+    line-height: 1.2;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.english-practice-study-link:hover {
+    background: #e5e7eb;
+    border-color: #d1d5db;
+
+    transform: translateY(-1px);
 }
