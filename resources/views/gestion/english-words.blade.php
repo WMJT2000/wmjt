@@ -73,6 +73,16 @@
                     'maxlength' => 100
                 ],
 
+
+                [
+                    'name' => 'pronunciation_guide',
+                    'label' => 'Guía de pronunciación',
+                    'type' => 'text',
+                    'placeholder' => 'Ej: á-pol',
+                    'required' => true,
+                    'maxlength' => 100
+                ],
+
                 [
                     'name' => 'example',
                     'label' => 'Ejemplo',
@@ -112,6 +122,11 @@
             [
                 'key' => 'word',
                 'label' => 'Palabra'
+            ],
+
+            [
+                'key' => 'pronunciation_guide',
+                'label' => 'Guía de pronunciación'
             ],
 
             [

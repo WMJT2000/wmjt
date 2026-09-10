@@ -50,6 +50,18 @@
         Explorar conocimiento
     </a>
 
+    <div class="nav-title">
+    INGLÉS
+</div>
+
+<a
+    href="{{ route('english.index') }}"
+    class="dashboard-nav-item"
+>
+    <span>🇬🇧</span>
+    Inglés
+</a>
+
 
 
 <div class="nav-title">

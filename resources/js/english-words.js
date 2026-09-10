@@ -69,6 +69,11 @@ document.addEventListener(
                     },
 
                     {
+                        key: 'pronunciation_guide',
+                        label: 'Guía de pronunciación'
+                    },
+
+                    {
                         key: 'category.name',
                         label: 'Categoría'
                     },
@@ -394,6 +399,8 @@ document.addEventListener(
 
                 const data =
                     await response.json();
+
+
 
 
                 if (!response.ok) {

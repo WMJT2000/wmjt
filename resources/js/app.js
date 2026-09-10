@@ -11,6 +11,8 @@ import '../css/tabla-gestion.css';
 import '../css/login.css';
 import '../css/register.css';
 import '../css/editprofile.css';
+import '../css/english.css';
+import '../css/english-study.css';
 // JavaScript
 import './form.js';
 import './technologies.js';
@@ -21,5 +23,8 @@ import './dashboard.js';
 import './english-categories.js';
 import './english-words.js';
 import './english-meanings.js';
+import './pronunciation.js';
+import './gemini-live.js';
+import './english-study.js'
 
 

@@ -1,0 +1,551 @@
+/* =========================================================
+   ENGLISH STUDY
+   Diseño minimalista y responsive
+   ========================================================= */
+
+.english-container {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.english-header {
+    margin-bottom: 32px;
+}
+
+.english-header h1 {
+    margin: 0;
+
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.english-header p {
+    margin: 8px 0 0;
+
+    font-size: 16px;
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   TARJETA DE ESTUDIO
+   ========================================================= */
+
+.english-study-card {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px;
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+
+/* =========================================================
+   PROGRESO
+   ========================================================= */
+
+.english-study-progress {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-bottom: 18px;
+    margin-bottom: 32px;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.english-study-progress span {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.english-study-progress strong {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+}
+
+
+/* =========================================================
+   PALABRA
+   ========================================================= */
+
+.english-study-word {
+    text-align: center;
+    padding: 20px 10px 30px;
+}
+
+.english-study-word h2 {
+    margin: 0;
+
+    font-size: 56px;
+    line-height: 1.1;
+    font-weight: 700;
+
+    color: #111827;
+    letter-spacing: -1.5px;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   PRONUNCIACIÓN
+   ========================================================= */
+
+.english-study-pronunciation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    margin-top: 16px;
+
+    color: #6b7280;
+}
+
+.english-study-pronunciation span {
+    font-size: 15px;
+}
+
+.english-study-pronunciation strong {
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+}
+
+
+/* =========================================================
+   BOTÓN DE AUDIO
+   ========================================================= */
+
+.btn-pronunciation, .btn-example-pronunciation {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    margin-left: 4px;
+    padding: 0;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+
+    background: #f9fafb;
+    color: #111827;
+
+    font-size: 18px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.btn-pronunciation, .btn-example-pronunciation:hover {
+    transform: translateY(-1px);
+
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.btn-pronunciation, .btn-example-pronunciation:active {
+    transform: scale(0.96);
+}
+
+.btn-pronunciation, .btn-example-pronunciation:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    transform: none;
+}
+
+
+/* =========================================================
+   SIGNIFICADOS
+   ========================================================= */
+
+.english-study-meanings {
+    margin-top: 22px;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    gap: 8px;
+}
+
+.english-study-meanings p {
+    margin: 0;
+    padding: 7px 14px;
+
+    background: #f3f4f6;
+    border-radius: 999px;
+
+    color: #374151;
+
+    font-size: 16px;
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   EJEMPLO
+   ========================================================= */
+
+.english-study-example {
+    width: 100%;
+    max-width: 600px;
+
+    margin: 32px auto 0;
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+
+    text-align: center;
+}
+
+.english-study-example strong {
+    font-size: 17px;
+    line-height: 1.5;
+    color: #111827;
+}
+
+.english-study-example span {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   BOTONES DE NAVEGACIÓN
+   ========================================================= */
+
+.english-study-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-top: 10px;
+}
+
+
+/* Botones Anterior / Siguiente */
+
+.english-study-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 46px;
+
+    padding: 0 20px;
+
+    box-sizing: border-box;
+
+    border-radius: 10px;
+
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+
+/* =========================================================
+   BOTÓN ANTERIOR
+   ========================================================= */
+
+#btn-previous-word {
+    color: #374151;
+
+    background: #f3f4f6;
+
+    border: 1px solid #e5e7eb;
+}
+
+#btn-previous-word:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   BOTÓN SIGUIENTE
+   ========================================================= */
+
+#btn-next-word {
+    margin-left: auto;
+
+    color: #ffffff;
+
+    background: #111827;
+
+    border: 1px solid #111827;
+}
+
+#btn-next-word:hover {
+    background: #1f2937;
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   ESTADO COMPLETADO
+   ========================================================= */
+
+#study-completed {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 46px;
+
+    padding: 0 20px;
+
+    box-sizing: border-box;
+
+    border-radius: 10px;
+
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+
+    color: #374151;
+
+    font-size: 15px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   ESTADO VACÍO
+   ========================================================= */
+
+.english-empty {
+    width: 100%;
+    max-width: 760px;
+
+    margin: 0 auto;
+    padding: 40px 24px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+}
+
+.english-empty strong {
+    display: block;
+
+    font-size: 18px;
+    color: #111827;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .english-container {
+        padding: 30px 18px 45px;
+    }
+
+    .english-header {
+        margin-bottom: 24px;
+    }
+
+    .english-header h1 {
+        font-size: 28px;
+    }
+
+    .english-study-card {
+        padding: 24px;
+        border-radius: 18px;
+    }
+
+    .english-study-word h2 {
+        font-size: 46px;
+    }
+
+    .english-study-example {
+        margin-top: 26px;
+    }
+}
+
+
+/* =========================================================
+   TELÉFONO
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .english-container {
+        padding: 22px 14px 35px;
+    }
+
+    .english-header h1 {
+        font-size: 25px;
+    }
+
+    .english-header p {
+        font-size: 14px;
+    }
+
+    .english-study-card {
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .english-study-progress {
+        margin-bottom: 22px;
+        padding-bottom: 14px;
+    }
+
+    .english-study-progress span,
+    .english-study-progress strong {
+        font-size: 13px;
+    }
+
+    .english-study-word {
+        padding: 12px 4px 22px;
+    }
+
+    .english-study-word h2 {
+        font-size: 38px;
+        letter-spacing: -0.8px;
+    }
+
+    .english-study-pronunciation {
+        flex-wrap: wrap;
+
+        margin-top: 14px;
+    }
+
+    .english-study-pronunciation span,
+    .english-study-pronunciation strong {
+        font-size: 14px;
+    }
+
+    .btn-pronunciation, .btn-example-pronunciation {
+        width: 38px;
+        height: 38px;
+    }
+
+    .english-study-meanings {
+        margin-top: 18px;
+    }
+
+    .english-study-meanings p {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+
+    .english-study-example {
+        margin-top: 22px;
+        padding: 16px;
+    }
+
+    .english-study-example strong {
+        font-size: 15px;
+    }
+
+    .english-study-example span {
+        font-size: 14px;
+    }
+
+    .english-study-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .english-study-actions button,
+    #study-completed {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    #btn-next-word {
+        margin-left: 0;
+    }
+}
+
+
+/* =========================================================
+   TELÉFONOS MUY PEQUEÑOS
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+    .english-container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .english-study-card {
+        padding: 15px;
+    }
+
+    .english-study-word h2 {
+        font-size: 32px;
+    }
+
+    .english-study-example {
+        padding: 14px;
+    }
+
+    .english-study-pronunciation {
+        gap: 6px;
+    }
+
+    .english-study-pronunciation span,
+    .english-study-pronunciation strong {
+        font-size: 13px;
+    }
+}

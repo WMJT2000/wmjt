@@ -11,6 +11,7 @@ class EnglishWord extends Model
     protected $fillable = [
         'english_category_id',
         'word',
+        'pronunciation_guide',
         'example',
         'example_translation',
     ];

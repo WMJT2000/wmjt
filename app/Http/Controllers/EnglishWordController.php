@@ -47,6 +47,12 @@ class EnglishWordController extends Controller
                 'max:100',
             ],
 
+                 'pronunciation_guide' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
             'example' => [
                 'nullable',
                 'string',
@@ -83,6 +89,12 @@ class EnglishWordController extends Controller
             ],
 
             'word' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+              'pronunciation_guide' => [
                 'required',
                 'string',
                 'max:100',

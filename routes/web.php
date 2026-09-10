@@ -9,6 +9,7 @@ use App\Http\Controllers\TechnologyController;
 use App\Http\Controllers\ConceptController;
 use App\Http\Controllers\ManagementController;
 use App\Http\Controllers\KnowledgeManagementController;
+use App\Http\Controllers\EnglishLearningController;
 use App\Http\Controllers\EnglishManagementController;
 use App\Http\Controllers\EnglishCategoryController;
 use App\Http\Controllers\EnglishWordController;
@@ -35,6 +36,18 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->name('inicio');
 
+
+// Aprendizaje de inglés
+// Aprendizaje de inglés
+Route::middleware('auth')->group(function () {
+
+    Route::get('/english', [EnglishLearningController::class, 'index'])
+        ->name('english.index');
+
+Route::get('/english/category/{category}/{word?}', [EnglishLearningController::class, 'study'])
+    ->name('english.study');
+
+});
 
 // Dashboard principal
 // Después de iniciar sesión, se muestra inicio.blade.php

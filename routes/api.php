@@ -9,8 +9,12 @@ use App\Http\Controllers\ConceptController;
 use App\Http\Controllers\EnglishCategoryController;
 use App\Http\Controllers\EnglishWordController;
 use App\Http\Controllers\EnglishMeaningController;
-
+use App\Http\Controllers\EnglishPronunciationController;
+use App\Http\Controllers\EnglishLiveController;
 Route::middleware('auth')->group(function () {
+
+Route::post('/english/pronunciation', [EnglishPronunciationController::class, 'pronounce']);
+Route::post('/english/live-token', [EnglishLiveController::class, 'token']);
 
 /*
 |--------------------------------------------------------------------------
