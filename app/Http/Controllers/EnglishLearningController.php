@@ -87,6 +87,244 @@ $latestPractices = EnglishPracticeSession::with('category')
     ));
 }
 
+
+public function statistics(): View
+{
+    /*
+    |--------------------------------------------------------------------------
+    | ESTADÍSTICAS GENERALES
+    |--------------------------------------------------------------------------
+    */
+
+    $totalQuestions = EnglishPracticeResult::where(
+        'user_id',
+        auth()->id()
+    )->count();
+
+    $correctAnswers = EnglishPracticeResult::where(
+        'user_id',
+        auth()->id()
+    )
+        ->where('is_correct', true)
+        ->count();
+
+    $incorrectAnswers = EnglishPracticeResult::where(
+        'user_id',
+        auth()->id()
+    )
+        ->where('is_correct', false)
+        ->count();
+
+    $accuracy = $totalQuestions > 0
+        ? (int) round(
+            ($correctAnswers / $totalQuestions) * 100
+        )
+        : 0;
+
+    /*
+    |--------------------------------------------------------------------------
+    | PRÁCTICAS COMPLETADAS
+    |--------------------------------------------------------------------------
+    */
+
+    $totalPractices = EnglishPracticeSession::where(
+        'user_id',
+        auth()->id()
+    )
+        ->whereNotNull('completed_at')
+        ->count();
+
+    /*
+    |--------------------------------------------------------------------------
+    | MEJOR PUNTUACIÓN
+    |--------------------------------------------------------------------------
+    */
+
+    $bestScore = EnglishPracticeSession::where(
+        'user_id',
+        auth()->id()
+    )
+        ->whereNotNull('completed_at')
+        ->max('score') ?? 0;
+
+    /*
+    |--------------------------------------------------------------------------
+    | PALABRAS INCORRECTAS
+    |--------------------------------------------------------------------------
+    */
+
+    $incorrectWords = EnglishPracticeResult::where(
+        'user_id',
+        auth()->id()
+    )
+        ->where('is_correct', false)
+        ->distinct('english_word_id')
+        ->count('english_word_id');
+
+    /*
+    |--------------------------------------------------------------------------
+    | ESTADÍSTICAS POR CATEGORÍA
+    |--------------------------------------------------------------------------
+    */
+
+    $categoryStatistics = EnglishPracticeResult::where(
+        'user_id',
+        auth()->id()
+    )
+        ->with('category')
+        ->get()
+        ->groupBy('english_category_id')
+        ->map(function ($results) {
+
+            $total = $results->count();
+
+            $correct = $results
+                ->where('is_correct', true)
+                ->count();
+
+            $accuracy = $total > 0
+                ? (int) round(
+                    ($correct / $total) * 100
+                )
+                : 0;
+
+            return [
+                'category' => $results->first()->category,
+                'total' => $total,
+                'correct' => $correct,
+                'incorrect' => $total - $correct,
+                'accuracy' => $accuracy,
+            ];
+        })
+        ->sortByDesc('accuracy')
+        ->values();
+
+
+        /*
+|--------------------------------------------------------------------------
+| RACHA DE ESTUDIO
+|--------------------------------------------------------------------------
+*/
+
+$studyDates = EnglishPracticeSession::where(
+    'user_id',
+    auth()->id()
+)
+    ->whereNotNull('completed_at')
+    ->orderBy('completed_at', 'desc')
+    ->pluck('completed_at')
+    ->map(function ($date) {
+        return $date->format('Y-m-d');
+    })
+    ->unique()
+    ->values();
+
+
+/*
+|--------------------------------------------------------------------------
+| RACHA ACTUAL
+|--------------------------------------------------------------------------
+*/
+
+$currentStreak = 0;
+
+$today = now()->startOfDay();
+
+foreach ($studyDates as $index => $date) {
+
+    $studyDate = \Carbon\Carbon::parse($date)->startOfDay();
+
+    if ($index === 0) {
+
+        if (
+            $studyDate->equalTo($today) ||
+            $studyDate->equalTo(
+                $today->copy()->subDay()
+            )
+        ) {
+            $currentStreak = 1;
+        } else {
+            break;
+        }
+
+        continue;
+    }
+
+    $previousDate = \Carbon\Carbon::parse(
+        $studyDates[$index - 1]
+    )->startOfDay();
+
+    if (
+        $previousDate->diffInDays($studyDate) === 1
+    ) {
+        $currentStreak++;
+    } else {
+        break;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MEJOR RACHA
+|--------------------------------------------------------------------------
+*/
+
+$bestStreak = 0;
+$streak = 0;
+$previousDate = null;
+
+foreach ($studyDates->sort() as $date) {
+
+    $studyDate = \Carbon\Carbon::parse($date)->startOfDay();
+
+    if ($previousDate === null) {
+
+        $streak = 1;
+
+    } elseif (
+        $previousDate->diffInDays($studyDate) === 1
+    ) {
+
+        $streak++;
+
+    } else {
+
+        $streak = 1;
+    }
+
+    $bestStreak = max(
+        $bestStreak,
+        $streak
+    );
+
+    $previousDate = $studyDate;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| DÍAS ESTUDIADOS
+|--------------------------------------------------------------------------
+*/
+
+$totalStudyDays = $studyDates->count();
+
+return view('english.statistics', compact(
+    'totalQuestions',
+    'correctAnswers',
+    'incorrectAnswers',
+    'accuracy',
+    'totalPractices',
+    'bestScore',
+    'incorrectWords',
+    'categoryStatistics',
+    'currentStreak',
+    'bestStreak',
+    'totalStudyDays'
+));
+}
+
     public function study(EnglishCategory $category, $word = 0): View
     {
         $words = $category->words()

@@ -14,6 +14,7 @@ import '../css/editprofile.css';
 import '../css/english.css';
 import '../css/english-study.css';
 import '../css/english-practice.css';
+import '../css/english-statistics.css';
 // JavaScript
 import './form.js';
 import './technologies.js';
