@@ -1,0 +1,128 @@
+/* =========================================
+   FILTROS - MIS MANUALES
+========================================= */
+
+.manuals-filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 22px;
+    padding: 5px;
+    width: fit-content;
+    background: #f1f5f9;
+    border-radius: 9px;
+}
+
+.manual-filter-btn {
+    border: none;
+    padding: 9px 15px;
+    border-radius: 7px;
+    background: transparent;
+    color: #64748b;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.manual-filter-btn:hover {
+    color: #1e293b;
+}
+
+.manual-filter-btn.active {
+    background: #ffffff;
+    color: #2563eb;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+
+/* =========================================
+   MENSAJE SIN RESULTADOS
+========================================= */
+
+#my-manuals-empty-filter {
+    margin-top: 10px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+    .manuals-filters {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .manual-filter-btn {
+        flex: 1;
+        white-space: nowrap;
+    }
+
+}
+
+
+/* =========================================
+   ESTADÍSTICAS - MIS MANUALES
+========================================= */
+
+.my-manuals-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.my-manual-stat {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 16px 18px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.my-manual-stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    background: #eff6ff;
+    border-radius: 8px;
+    font-size: 20px;
+}
+
+.my-manual-stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.my-manual-stat-info strong {
+    color: #1e293b;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.my-manual-stat-info span {
+    color: #64748b;
+    font-size: 11px;
+}
+
+@media (max-width: 768px) {
+
+    .my-manuals-stats {
+        grid-template-columns: 1fr;
+    }
+
+}

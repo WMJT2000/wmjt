@@ -16,6 +16,9 @@ import '../css/english-study.css';
 import '../css/english-practice.css';
 import '../css/english-statistics.css';
 import '../css/english-dominio.css';
+import '../css/manuals.css';
+import '../css/manuals-execution.css';
+import '../css/manuals-mio.css';
 // JavaScript
 import './form.js';
 import './technologies.js';
@@ -30,4 +33,8 @@ import './pronunciation.js';
 import './gemini-live.js';
 import './english-study.js'
 import './english-practice.js';
+import './manuals.js';
+import './manual-sections.js';
+import './manual-steps.js';
+import './manual-mio.js';
 

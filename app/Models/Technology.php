@@ -17,4 +17,10 @@ class Technology extends Model
     {
         return $this->hasMany(Category::class, 'technology_id');
     }
+
+
+    public function manuals()
+    {
+        return $this->hasMany(Manual::class, 'technology_id');
+    }
 }

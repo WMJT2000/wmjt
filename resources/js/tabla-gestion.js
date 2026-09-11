@@ -12,7 +12,7 @@
 | - Mostrar loading
 | - Mostrar errores
 | - Mostrar tabla vacía
-| - Generar botones Editar / Eliminar
+| - Generar botones Editar / Secciones / Eliminar
 | - Emitir eventos
 |
 | NO RESPONSABILIDADES:
@@ -54,6 +54,8 @@ export class TablaGestion {
         this.actions =
             config.actions ?? {
                 edit: true,
+                sections: false,
+                steps: false,
                 delete: true
             };
 
@@ -289,6 +291,7 @@ export class TablaGestion {
 
                 if (
                     this.actions.edit ||
+                    this.actions.sections ||
                     this.actions.delete
                 ) {
 
@@ -298,6 +301,33 @@ export class TablaGestion {
 
                     celdaAcciones.className =
                         'tabla-gestion-actions';
+
+
+
+
+                    if (this.actions.steps) {
+
+                        const botonPasos =
+                            document.createElement('button');
+
+                        botonPasos.type = 'button';
+
+                        botonPasos.className =
+                            'tabla-gestion-btn tabla-gestion-btn-steps';
+
+                        botonPasos.dataset.action =
+                            'steps';
+
+                        botonPasos.dataset.id =
+                            registro.id;
+
+                        botonPasos.textContent =
+                            'Pasos';
+
+                        celdaAcciones.appendChild(
+                            botonPasos
+                        );
+                    }
 
 
                     /*
@@ -336,6 +366,47 @@ export class TablaGestion {
 
                         celdaAcciones.appendChild(
                             botonEditar
+                        );
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | SECCIONES
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        this.actions.sections
+                    ) {
+
+                        const botonSecciones =
+                            document.createElement('button');
+
+
+                        botonSecciones.type =
+                            'button';
+
+
+                        botonSecciones.className =
+                            'tabla-gestion-btn tabla-gestion-btn-sections';
+
+
+                        botonSecciones.dataset.action =
+                            'sections';
+
+
+                        botonSecciones.dataset.id =
+                            registro.id;
+
+
+                        botonSecciones.textContent =
+                            'Secciones';
+
+
+                        celdaAcciones.appendChild(
+                            botonSecciones
                         );
 
                     }
@@ -543,6 +614,8 @@ export class TablaGestion {
 
         if (
             this.actions.edit ||
+            this.actions.sections ||
+            this.actions.steps ||
             this.actions.delete
         ) {
 
@@ -594,6 +667,64 @@ export class TablaGestion {
 
                     this.emitir(
                         'edit',
+                        registro
+                    );
+
+
+                    return;
+
+                }
+
+
+
+                const botonPasos =
+                    event.target.closest(
+                        '[data-action="steps"]'
+                    );
+
+                if (botonPasos) {
+
+                    const id =
+                        botonPasos.dataset.id;
+
+                    const registro =
+                        this.obtenerRegistroPorId(id);
+
+                    this.emitir(
+                        'steps',
+                        registro
+                    );
+
+                    return;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | SECCIONES
+                |--------------------------------------------------------------------------
+                */
+
+                const botonSecciones =
+                    event.target.closest(
+                        '[data-action="sections"]'
+                    );
+
+
+                if (botonSecciones) {
+
+                    const id =
+                        botonSecciones.dataset.id;
+
+
+                    const registro =
+                        this.obtenerRegistroPorId(
+                            id
+                        );
+
+
+                    this.emitir(
+                        'sections',
                         registro
                     );
 

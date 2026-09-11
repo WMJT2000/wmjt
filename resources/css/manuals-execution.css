@@ -1,0 +1,2101 @@
+/* =========================================================
+   EJECUCIÓN DE MANUALES
+========================================================= */
+
+
+/* =========================================================
+   CONTENEDOR PRINCIPAL
+========================================================= */
+
+.gestion-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.gestion-header {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.gestion-header > div {
+    min-width: 0;
+}
+
+.gestion-header h1 {
+    margin: 0;
+    color: #111827;
+    font-size: 28px;
+    line-height: 1.25;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.gestion-header p {
+    margin: 8px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.gestion-header .btn-primary {
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   BOTONES PRINCIPALES
+========================================================= */
+
+.gestion-container .btn-primary,
+.gestion-container .btn-secondary {
+    min-height: 42px;
+    padding: 10px 16px;
+    border-radius: 8px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+/* =========================================================
+   BOTÓN PRINCIPAL
+========================================================= */
+
+.gestion-container .btn-primary {
+    border: none;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    text-decoration: none;
+
+    box-shadow:
+        0 2px 5px rgba(37, 99, 235, 0.18);
+}
+
+.gestion-container .btn-primary:hover {
+    background: #1d4ed8;
+
+    box-shadow:
+        0 4px 10px rgba(37, 99, 235, 0.25);
+
+    transform: translateY(-1px);
+}
+
+.gestion-container .btn-primary:active {
+    background: #1e40af;
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   BOTÓN SECUNDARIO
+========================================================= */
+
+.gestion-container .btn-secondary {
+    border: 1px solid #d1d5db;
+
+    background: #ffffff;
+    color: #374151;
+}
+
+.gestion-container .btn-secondary:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.gestion-container .btn-secondary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   INFORMACIÓN DEL MANUAL
+========================================================= */
+
+.gestion-info {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #dbeafe;
+    border-left: 4px solid #3b82f6;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 8px rgba(37, 99, 235, 0.04);
+}
+
+.gestion-info p {
+    margin: 0;
+
+    color: #4b5563;
+
+    font-size: 14px;
+    line-height: 1.65;
+
+    overflow-wrap: anywhere;
+}
+
+.gestion-info p + h3 {
+    margin-top: 20px;
+}
+
+.gestion-info h3 {
+    margin: 0 0 8px;
+
+    color: #1e3a8a;
+
+    font-size: 16px;
+    line-height: 1.4;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   PROGRESO
+========================================================= */
+
+.manual-progress-card {
+    width: 100%;
+    margin-bottom: 25px;
+    padding: 18px 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+
+    box-shadow:
+        0 3px 12px rgba(37, 99, 235, 0.05);
+}
+
+.manual-progress-header {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.manual-progress-header strong {
+    color: #1e3a8a;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.manual-progress-header span {
+    color: #2563eb;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.manual-progress-bar {
+    width: 100%;
+    height: 10px;
+
+    overflow: hidden;
+
+    background: #dbeafe;
+
+    border-radius: 999px;
+}
+
+.manual-progress-fill {
+    height: 100%;
+    width: 0%;
+
+    background: linear-gradient(
+        90deg,
+        #2563eb,
+        #3b82f6,
+        #60a5fa
+    );
+
+    border-radius: inherit;
+
+    transition:
+        width 0.3s ease;
+}
+
+
+/* =========================================================
+   CONTENEDOR DE EJECUCIÓN
+========================================================= */
+
+#manualExecutionContainer {
+    width: 100%;
+}
+
+
+/* =========================================================
+   LAYOUT PRINCIPAL
+========================================================= */
+
+.manual-execution-layout {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        290px
+        minmax(0, 1fr);
+
+    gap: 22px;
+
+    align-items: start;
+}
+
+
+/* =========================================================
+   NAVEGACIÓN DE PASOS
+========================================================= */
+
+.manual-steps-navigation {
+    position: sticky;
+    top: 20px;
+
+    width: 100%;
+    max-height: calc(100vh - 40px);
+
+    display: flex;
+    flex-direction: column;
+
+    background: #ffffff;
+
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 4px 16px rgba(37, 99, 235, 0.06);
+}
+
+
+/* =========================================================
+   HEADER NAVEGACIÓN
+========================================================= */
+
+.manual-steps-navigation-header {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 16px;
+
+    border-bottom: 1px solid #dbeafe;
+
+    background:
+        linear-gradient(
+            135deg,
+            #eff6ff,
+            #f8fbff
+        );
+}
+
+.manual-steps-navigation-header strong {
+    color: #1e3a8a;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.manual-steps-navigation-header span {
+    color: #2563eb;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    padding: 4px 8px;
+
+    background: #dbeafe;
+
+    border-radius: 999px;
+}
+
+
+/* =========================================================
+   LISTA DE PASOS
+========================================================= */
+
+.manual-steps-list {
+    width: 100%;
+
+    padding: 8px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* =========================================================
+   ITEM DE NAVEGACIÓN
+========================================================= */
+
+.manual-step-nav-item {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        24px
+        28px
+        minmax(0, 1fr);
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 10px 9px;
+    margin: 0 0 4px;
+
+    border: 1px solid transparent;
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #4b5563;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.manual-step-nav-item:last-child {
+    margin-bottom: 0;
+}
+
+.manual-step-nav-item:hover {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+
+    transform: translateX(2px);
+}
+
+
+/* =========================================================
+   ESTADO DEL PASO
+========================================================= */
+
+.manual-step-nav-status {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    color: #9ca3af;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   NÚMERO DEL PASO
+========================================================= */
+
+.manual-step-nav-number {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 24px;
+    height: 24px;
+
+    color: #6b7280;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    background: #f3f4f6;
+
+    border-radius: 50%;
+}
+
+
+/* =========================================================
+   TÍTULO DEL PASO
+========================================================= */
+
+.manual-step-nav-title {
+    min-width: 0;
+
+    color: #4b5563;
+
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   PASO ACTUAL
+========================================================= */
+
+.manual-step-nav-item.active {
+    background:
+        linear-gradient(
+            90deg,
+            #dbeafe,
+            #eff6ff
+        );
+
+    border-color: #93c5fd;
+
+    box-shadow:
+        inset 3px 0 0 #2563eb;
+}
+
+.manual-step-nav-item.active .manual-step-nav-status {
+    color: #2563eb;
+}
+
+.manual-step-nav-item.active .manual-step-nav-number {
+    color: #ffffff;
+
+    background: #2563eb;
+
+    box-shadow:
+        0 2px 5px rgba(37, 99, 235, 0.25);
+}
+
+.manual-step-nav-item.active .manual-step-nav-title {
+    color: #1e40af;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   PASO COMPLETADO EN SIDEBAR
+========================================================= */
+
+.manual-step-nav-item.completed {
+    background: #f0fdf4;
+}
+
+.manual-step-nav-item.completed .manual-step-nav-status {
+    color: #16a34a;
+}
+
+.manual-step-nav-item.completed .manual-step-nav-number {
+    color: #ffffff;
+    background: #22c55e;
+}
+
+.manual-step-nav-item.completed .manual-step-nav-title {
+    color: #166534;
+}
+
+
+/* =========================================================
+   PASO COMPLETADO + ACTUAL
+========================================================= */
+
+.manual-step-nav-item.completed.active {
+    background:
+        linear-gradient(
+            90deg,
+            #dcfce7,
+            #eff6ff
+        );
+
+    border-color: #86efac;
+
+    box-shadow:
+        inset 3px 0 0 #16a34a;
+}
+
+.manual-step-nav-item.completed.active .manual-step-nav-status {
+    color: #16a34a;
+}
+
+.manual-step-nav-item.completed.active .manual-step-nav-number {
+    background: #16a34a;
+}
+
+.manual-step-nav-item.completed.active .manual-step-nav-title {
+    color: #166534;
+}
+
+
+/* =========================================================
+   CONTENEDOR DEL PASO ACTUAL
+========================================================= */
+
+.manual-current-step-container {
+    width: 100%;
+    min-width: 0;
+}
+
+
+/* =========================================================
+   PASOS
+========================================================= */
+
+.manual-execution-step {
+    width: 100%;
+
+    display: none;
+
+    padding: 26px;
+
+    background: #ffffff;
+
+    border: 1px solid #dbeafe;
+
+    border-top: 4px solid #3b82f6;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 5px 20px rgba(37, 99, 235, 0.06);
+}
+
+.manual-execution-step.active {
+    display: block;
+}
+
+
+/* =========================================================
+   HEADER DEL PASO ACTUAL
+========================================================= */
+
+.manual-current-step-header {
+    width: 100%;
+
+    display: flex;
+
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding-bottom: 20px;
+
+    border-bottom: 1px solid #dbeafe;
+}
+
+.manual-current-step-header > div:first-child {
+    min-width: 0;
+}
+
+.manual-current-step-label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #2563eb;
+
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.manual-current-step-header h2 {
+    margin: 0;
+
+    color: #111827;
+
+    font-size: 25px;
+    line-height: 1.3;
+    font-weight: 700;
+
+    overflow-wrap: anywhere;
+}
+
+.manual-current-step-section {
+    flex-shrink: 0;
+
+    padding: 7px 10px;
+
+    background: #eff6ff;
+
+    border: 1px solid #bfdbfe;
+
+    border-radius: 7px;
+
+    color: #1d4ed8;
+
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   DESCRIPCIÓN DEL PASO
+========================================================= */
+
+.manual-step-description {
+    width: 100%;
+
+    margin-top: 20px;
+
+    padding: 14px 16px;
+
+    background: #f8fbff;
+
+    border-left: 3px solid #60a5fa;
+
+    border-radius: 7px;
+
+    color: #4b5563;
+
+    font-size: 14px;
+    line-height: 1.7;
+
+    overflow-wrap: anywhere;
+}
+
+.manual-step-description p {
+    margin: 0;
+}
+
+
+/* =========================================================
+   BLOQUES DEL PASO
+========================================================= */
+
+.manual-step-block {
+    width: 100%;
+
+    margin-top: 20px;
+    padding: 16px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e2e8f0;
+
+    border-radius: 9px;
+
+    overflow: hidden;
+}
+
+.manual-step-block strong {
+    display: block;
+
+    margin-bottom: 9px;
+
+    color: #374151;
+
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 700;
+}
+
+.manual-step-block p {
+    margin: 0;
+
+    color: #4b5563;
+
+    font-size: 13px;
+    line-height: 1.65;
+
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   TÍTULOS DE BLOQUES
+========================================================= */
+
+.manual-step-block-title {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 10px;
+}
+
+.manual-step-block-title strong {
+    margin: 0;
+}
+
+.manual-step-block-icon {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 25px;
+    height: 25px;
+
+    background: #dbeafe;
+
+    color: #2563eb;
+
+    border-radius: 6px;
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   CÓDIGO / COMANDOS
+========================================================= */
+
+.manual-step-block pre {
+    width: 100%;
+
+    margin: 0;
+    padding: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #1f2937
+        );
+
+    border: 1px solid #374151;
+
+    border-radius: 7px;
+
+    overflow-x: auto;
+
+    -webkit-overflow-scrolling: touch;
+
+    white-space: pre;
+
+    tab-size: 4;
+
+    box-shadow:
+        0 4px 12px rgba(17, 24, 39, 0.12);
+}
+
+.manual-step-block code {
+    color: #f9fafb;
+
+    font-family:
+        Consolas,
+        Monaco,
+        "Courier New",
+        monospace;
+
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   RESULTADO ESPERADO
+========================================================= */
+
+.manual-step-block.manual-expected-block {
+    background: #f0fdf4;
+
+    border-color: #bbf7d0;
+
+    border-left: 4px solid #22c55e;
+}
+
+.manual-step-block.manual-expected-block
+.manual-step-block-icon {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.manual-step-block.manual-expected-block strong {
+    color: #166534;
+}
+
+
+/* =========================================================
+   NOTAS
+========================================================= */
+
+.manual-step-block.manual-notes-block {
+    background: #fffbeb;
+
+    border-color: #fde68a;
+
+    border-left: 4px solid #f59e0b;
+}
+
+.manual-step-block.manual-notes-block
+.manual-step-block-icon {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.manual-step-block.manual-notes-block strong {
+    color: #92400e;
+}
+
+
+/* =========================================================
+   ACCIONES DEL PASO
+========================================================= */
+
+.manual-step-actions {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: flex-start;
+
+    margin-top: 24px;
+}
+
+.manual-step-actions .btn-complete-step {
+    min-width: 180px;
+}
+
+
+/* =========================================================
+   ESTADO COMPLETADO
+========================================================= */
+
+.manual-execution-step.completed {
+    border-color: #bbf7d0;
+    border-top-color: #22c55e;
+}
+
+.manual-execution-step.completed
+.btn-complete-step {
+    background: #16a34a;
+
+    color: #ffffff;
+
+    box-shadow:
+        0 3px 8px rgba(22, 163, 74, 0.18);
+}
+
+.manual-execution-step.completed
+.btn-complete-step:hover {
+    background: #15803d;
+
+    box-shadow:
+        0 5px 12px rgba(22, 163, 74, 0.25);
+}
+
+
+/* =========================================================
+   NAVEGACIÓN ANTERIOR / SIGUIENTE
+========================================================= */
+
+.manual-step-navigation-buttons {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-top: 30px;
+    padding-top: 20px;
+
+    border-top: 1px solid #dbeafe;
+}
+
+.manual-step-navigation-buttons .btn-secondary {
+    min-width: 120px;
+}
+
+
+/* =========================================================
+   ESTADO VACÍO
+========================================================= */
+
+.manual-execution-section > .gestion-info {
+    margin-bottom: 0;
+}
+
+#manualExecutionContainer > .gestion-info {
+    margin-bottom: 0;
+}
+
+#manualExecutionContainer > .gestion-info h2 {
+    margin: 0 0 8px;
+
+    color: #111827;
+
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   SCROLLBAR SIDEBAR
+========================================================= */
+
+.manual-steps-list::-webkit-scrollbar {
+    width: 7px;
+}
+
+.manual-steps-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.manual-steps-list::-webkit-scrollbar-thumb {
+    background: #bfdbfe;
+    border-radius: 999px;
+}
+
+.manual-steps-list::-webkit-scrollbar-thumb:hover {
+    background: #60a5fa;
+}
+
+
+/* =========================================================
+   LARGE DESKTOP
+   > 1400px
+========================================================= */
+
+@media (min-width: 1401px) {
+
+    .gestion-container {
+        max-width: 1500px;
+        padding: 35px 40px;
+    }
+
+    .gestion-header {
+        margin-bottom: 28px;
+    }
+
+    .gestion-header h1 {
+        font-size: 30px;
+    }
+
+    .gestion-info {
+        padding: 23px;
+    }
+
+    .manual-progress-card {
+        padding: 20px 23px;
+    }
+
+    .manual-execution-layout {
+        grid-template-columns:
+            310px
+            minmax(0, 1fr);
+
+        gap: 25px;
+    }
+
+    .manual-execution-step {
+        padding: 30px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 28px;
+    }
+}
+
+
+/* =========================================================
+   LAPTOP
+   1200px - 1400px
+========================================================= */
+
+@media (max-width: 1400px) {
+
+    .gestion-container {
+        padding: 25px;
+    }
+
+    .manual-execution-layout {
+        grid-template-columns:
+            270px
+            minmax(0, 1fr);
+
+        gap: 20px;
+    }
+
+    .manual-execution-step {
+        padding: 23px;
+    }
+}
+
+
+/* =========================================================
+   TABLET HORIZONTAL
+   901px - 1199px
+========================================================= */
+
+@media (max-width: 1199px) {
+
+    .gestion-container {
+        padding: 22px;
+    }
+
+    .gestion-header h1 {
+        font-size: 25px;
+    }
+
+    .gestion-header p {
+        font-size: 13px;
+    }
+
+    .manual-execution-layout {
+        grid-template-columns:
+            240px
+            minmax(0, 1fr);
+
+        gap: 16px;
+    }
+
+    .manual-steps-navigation-header {
+        padding: 14px;
+    }
+
+    .manual-step-nav-item {
+        grid-template-columns:
+            22px
+            24px
+            minmax(0, 1fr);
+
+        gap: 5px;
+
+        padding: 9px 7px;
+    }
+
+    .manual-step-nav-title {
+        font-size: 11px;
+    }
+
+    .manual-execution-step {
+        padding: 20px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 22px;
+    }
+
+    .manual-step-description {
+        font-size: 13px;
+    }
+
+    .manual-step-block p {
+        font-size: 12px;
+    }
+
+    .manual-step-block code {
+        font-size: 11px;
+    }
+}
+
+
+/* =========================================================
+   TABLET
+   768px - 900px
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .gestion-container {
+        padding: 20px;
+    }
+
+    .gestion-header {
+        gap: 18px;
+    }
+
+    .gestion-header h1 {
+        font-size: 23px;
+    }
+
+    .gestion-header .btn-primary {
+        min-height: 40px;
+        padding: 9px 13px;
+        font-size: 12px;
+    }
+
+    .gestion-info {
+        padding: 17px;
+    }
+
+    .manual-progress-card {
+        padding: 16px 17px;
+    }
+
+    .manual-execution-layout {
+        grid-template-columns:
+            215px
+            minmax(0, 1fr);
+
+        gap: 14px;
+    }
+
+    .manual-step-nav-item {
+        grid-template-columns:
+            20px
+            22px
+            minmax(0, 1fr);
+
+        padding: 8px 6px;
+    }
+
+    .manual-step-nav-status {
+        font-size: 12px;
+    }
+
+    .manual-step-nav-number {
+        font-size: 10px;
+    }
+
+    .manual-step-nav-title {
+        font-size: 10px;
+    }
+
+    .manual-execution-step {
+        padding: 18px;
+    }
+
+    .manual-current-step-header {
+        gap: 12px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 20px;
+    }
+
+    .manual-current-step-section {
+        font-size: 10px;
+    }
+
+    .manual-step-description {
+        font-size: 12px;
+    }
+
+    .manual-step-block {
+        padding: 13px;
+    }
+
+    .manual-step-block p {
+        font-size: 11px;
+    }
+
+    .manual-step-block code {
+        font-size: 10px;
+    }
+}
+
+
+/* =========================================================
+   TABLET VERTICAL
+   600px - 767px
+========================================================= */
+
+@media (max-width: 767px) {
+
+    .gestion-container {
+        padding: 15px;
+    }
+
+    .gestion-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .gestion-header h1 {
+        font-size: 21px;
+    }
+
+    .gestion-header p {
+        margin-top: 6px;
+        font-size: 12px;
+    }
+
+    .gestion-header .btn-primary {
+        width: 100%;
+    }
+
+    .gestion-info {
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .gestion-info p {
+        font-size: 12px;
+        line-height: 1.55;
+    }
+
+    .manual-progress-card {
+        padding: 14px 15px;
+        border-radius: 10px;
+    }
+
+    .manual-progress-header strong,
+    .manual-progress-header span {
+        font-size: 12px;
+    }
+
+    .manual-progress-bar {
+        height: 8px;
+    }
+
+
+    /* =====================================================
+       SIDEBAR PASA ARRIBA EN MÓVIL
+    ====================================================== */
+
+    .manual-execution-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+
+    /* =====================================================
+       NAVEGACIÓN MÓVIL
+    ====================================================== */
+
+    .manual-steps-navigation {
+        position: static;
+        max-height: none;
+        border-radius: 10px;
+    }
+
+    .manual-steps-navigation-header {
+        padding: 13px 14px;
+    }
+
+    .manual-steps-list {
+        display: flex;
+
+        gap: 7px;
+
+        padding: 10px;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    .manual-step-nav-item {
+        flex-shrink: 0;
+
+        width: auto;
+        min-width: 145px;
+
+        grid-template-columns:
+            20px
+            22px
+            minmax(0, 1fr);
+
+        padding: 8px;
+
+        margin: 0;
+    }
+
+    .manual-step-nav-title {
+        max-width: 100px;
+    }
+
+
+    /* =====================================================
+       PASO
+    ====================================================== */
+
+    .manual-execution-step {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .manual-current-step-header {
+        flex-direction: column;
+
+        gap: 10px;
+
+        padding-bottom: 16px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 19px;
+    }
+
+    .manual-current-step-section {
+        align-self: flex-start;
+    }
+
+    .manual-step-description {
+        margin-top: 16px;
+
+        font-size: 12px;
+    }
+
+    .manual-step-block {
+        margin-top: 14px;
+        padding: 12px;
+    }
+
+    .manual-step-block strong {
+        margin-bottom: 7px;
+        font-size: 10px;
+    }
+
+    .manual-step-block p {
+        font-size: 11px;
+    }
+
+    .manual-step-block pre {
+        padding: 11px;
+    }
+
+    .manual-step-block code {
+        font-size: 10px;
+        line-height: 1.5;
+    }
+
+
+    /* =====================================================
+       BOTÓN COMPLETAR
+    ====================================================== */
+
+    .manual-step-actions {
+        margin-top: 18px;
+    }
+
+    .manual-step-actions .btn-complete-step {
+        width: 100%;
+        min-height: 40px;
+        font-size: 12px;
+    }
+
+
+    /* =====================================================
+       ANTERIOR / SIGUIENTE
+    ====================================================== */
+
+    .manual-step-navigation-buttons {
+        margin-top: 20px;
+        padding-top: 16px;
+    }
+
+    .manual-step-navigation-buttons .btn-secondary {
+        flex: 1;
+
+        min-width: 0;
+        min-height: 40px;
+
+        font-size: 12px;
+    }
+}
+
+
+/* =========================================================
+   PHONE
+   <= 599px
+========================================================= */
+
+@media (max-width: 599px) {
+
+    .gestion-container {
+        padding: 18px 14px;
+    }
+
+    .gestion-header {
+        margin-bottom: 18px;
+    }
+
+    .gestion-header h1 {
+        font-size: 19px;
+    }
+
+    .gestion-header p {
+        font-size: 11px;
+    }
+
+    .gestion-info {
+        margin-bottom: 14px;
+        padding: 14px;
+    }
+
+    .gestion-info h3 {
+        font-size: 14px;
+    }
+
+    .gestion-info p {
+        font-size: 11px;
+    }
+
+    .manual-progress-card {
+        margin-bottom: 16px;
+        padding: 13px 14px;
+    }
+
+    .manual-progress-header {
+        margin-bottom: 8px;
+    }
+
+    .manual-progress-header strong,
+    .manual-progress-header span {
+        font-size: 11px;
+    }
+
+
+    /* =====================================================
+       NAVEGACIÓN HORIZONTAL
+    ====================================================== */
+
+    .manual-steps-navigation-header {
+        padding: 11px 12px;
+    }
+
+    .manual-steps-navigation-header strong {
+        font-size: 12px;
+    }
+
+    .manual-steps-navigation-header span {
+        font-size: 10px;
+    }
+
+    .manual-steps-list {
+        gap: 6px;
+        padding: 8px;
+    }
+
+    .manual-step-nav-item {
+        min-width: 135px;
+        padding: 7px;
+    }
+
+    .manual-step-nav-status {
+        font-size: 11px;
+    }
+
+    .manual-step-nav-number {
+        font-size: 9px;
+    }
+
+    .manual-step-nav-title {
+        max-width: 90px;
+        font-size: 9px;
+    }
+
+
+    /* =====================================================
+       PASO
+    ====================================================== */
+
+    .manual-execution-step {
+        padding: 13px;
+    }
+
+    .manual-current-step-label {
+        margin-bottom: 5px;
+        font-size: 10px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 17px;
+    }
+
+    .manual-current-step-section {
+        padding: 5px 8px;
+        font-size: 9px;
+    }
+
+    .manual-step-description {
+        font-size: 10px;
+        line-height: 1.55;
+    }
+
+    .manual-step-block {
+        margin-top: 11px;
+        padding: 10px;
+    }
+
+    .manual-step-block strong {
+        font-size: 9px;
+    }
+
+    .manual-step-block p {
+        font-size: 10px;
+        line-height: 1.5;
+    }
+
+    .manual-step-block pre {
+        padding: 9px;
+    }
+
+    .manual-step-block code {
+        font-size: 9px;
+    }
+
+    .manual-step-actions {
+        margin-top: 14px;
+    }
+
+    .manual-step-actions .btn-complete-step {
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: 10px;
+    }
+
+    .manual-step-navigation-buttons {
+        gap: 8px;
+
+        margin-top: 16px;
+        padding-top: 13px;
+    }
+
+    .manual-step-navigation-buttons .btn-secondary {
+        min-height: 37px;
+        font-size: 10px;
+    }
+}
+
+
+/* =========================================================
+   SMALL PHONE
+   <= 400px
+========================================================= */
+
+@media (max-width: 400px) {
+
+    .gestion-container {
+        padding: 15px 10px;
+    }
+
+    .gestion-header h1 {
+        font-size: 18px;
+    }
+
+    .gestion-header p {
+        font-size: 10px;
+    }
+
+    .gestion-header .btn-primary {
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: 10px;
+    }
+
+    .gestion-info {
+        padding: 12px;
+    }
+
+    .manual-progress-card {
+        padding: 11px 12px;
+    }
+
+    .manual-steps-navigation-header {
+        padding: 10px;
+    }
+
+    .manual-steps-list {
+        padding: 7px;
+    }
+
+    .manual-step-nav-item {
+        min-width: 125px;
+
+        grid-template-columns:
+            18px
+            20px
+            minmax(0, 1fr);
+
+        gap: 4px;
+
+        padding: 6px;
+    }
+
+    .manual-step-nav-title {
+        max-width: 82px;
+        font-size: 8px;
+    }
+
+    .manual-execution-step {
+        padding: 11px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 15px;
+    }
+
+    .manual-current-step-label {
+        font-size: 9px;
+    }
+
+    .manual-step-description {
+        font-size: 9px;
+    }
+
+    .manual-step-block {
+        padding: 8px;
+    }
+
+    .manual-step-block strong {
+        font-size: 8px;
+    }
+
+    .manual-step-block p {
+        font-size: 9px;
+    }
+
+    .manual-step-block code {
+        font-size: 8px;
+    }
+
+    .manual-step-actions .btn-complete-step {
+        min-height: 36px;
+        font-size: 9px;
+    }
+
+    .manual-step-navigation-buttons .btn-secondary {
+        min-height: 35px;
+        padding: 7px;
+        font-size: 9px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL PHONE
+   <= 350px
+========================================================= */
+
+@media (max-width: 350px) {
+
+    .gestion-container {
+        padding: 12px 8px;
+    }
+
+    .gestion-header {
+        gap: 10px;
+    }
+
+    .gestion-header h1 {
+        font-size: 16px;
+    }
+
+    .gestion-header p {
+        font-size: 9px;
+    }
+
+    .gestion-info {
+        padding: 10px;
+    }
+
+    .manual-progress-card {
+        padding: 10px;
+    }
+
+    .manual-progress-header strong,
+    .manual-progress-header span {
+        font-size: 10px;
+    }
+
+    .manual-progress-bar {
+        height: 7px;
+    }
+
+    .manual-step-nav-item {
+        min-width: 115px;
+
+        grid-template-columns:
+            17px
+            18px
+            minmax(0, 1fr);
+
+        gap: 3px;
+    }
+
+    .manual-step-nav-title {
+        max-width: 75px;
+        font-size: 8px;
+    }
+
+    .manual-execution-step {
+        padding: 9px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 14px;
+    }
+
+    .manual-step-description {
+        font-size: 8px;
+    }
+
+    .manual-step-block {
+        margin-top: 9px;
+        padding: 7px;
+    }
+
+    .manual-step-block strong {
+        font-size: 8px;
+    }
+
+    .manual-step-block p {
+        font-size: 8px;
+    }
+
+    .manual-step-block pre {
+        padding: 7px;
+    }
+
+    .manual-step-block code {
+        font-size: 7px;
+    }
+
+    .manual-step-actions {
+        margin-top: 10px;
+    }
+
+    .manual-step-actions .btn-complete-step {
+        min-height: 34px;
+        padding: 7px;
+
+        font-size: 8px;
+
+        border-radius: 7px;
+    }
+
+    .manual-step-navigation-buttons {
+        gap: 6px;
+
+        margin-top: 13px;
+        padding-top: 10px;
+    }
+
+    .manual-step-navigation-buttons .btn-secondary {
+        min-height: 33px;
+        font-size: 8px;
+    }
+}
+
+
+/* =========================================
+   NOTAS DEL USUARIO
+   ========================================= */
+
+.manual-user-notes-block {
+    margin-top: 18px;
+    padding: 16px;
+    background: #f8fbff;
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #3b82f6;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.manual-user-notes-block .manual-step-block-title {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 10px;
+    color: #1e3a8a;
+}
+
+.manual-user-notes-block .manual-step-block-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #dbeafe;
+    color: #2563eb;
+    font-size: 15px;
+}
+
+.manual-step-user-notes {
+    display: block;
+    width: 100%;
+    min-height: 110px;
+    margin: 0;
+    padding: 12px 13px;
+
+    resize: vertical;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+
+    background: #ffffff;
+    color: #374151;
+
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+
+    outline: none;
+    box-sizing: border-box;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.manual-step-user-notes::placeholder {
+    color: #94a3b8;
+}
+
+.manual-step-user-notes:hover {
+    border-color: #94a3b8;
+}
+
+.manual-step-user-notes:focus {
+    border-color: #60a5fa;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+/* Acciones de la nota */
+
+.manual-step-notes-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-save-step-note {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 36px;
+    padding: 8px 14px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: #2563eb;
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.1s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn-save-step-note:hover {
+    background: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.btn-save-step-note:active {
+    transform: translateY(1px);
+}
+
+.btn-save-step-note:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Mensaje "Nota guardada" */
+
+.manual-step-note-status {
+    display: inline-flex;
+    align-items: center;
+
+    min-height: 20px;
+
+    color: #16a34a;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    .manual-user-notes-block {
+        margin-top: 15px;
+        padding: 13px;
+    }
+
+    .manual-step-user-notes {
+        min-height: 120px;
+        font-size: 13px;
+    }
+
+    .manual-step-notes-actions {
+        flex-wrap: wrap;
+    }
+
+    .btn-save-step-note {
+        width: 100%;
+    }
+}
+
+
+/* =========================================
+   RESUMEN MANUAL COMPLETADO
+========================================= */
+
+.manual-completed-summary {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-bottom: 24px;
+    padding: 24px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+    border-radius: 10px;
+}
+
+.manual-completed-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    flex-shrink: 0;
+    background: #dcfce7;
+    border-radius: 12px;
+    font-size: 28px;
+}
+
+.manual-completed-content {
+    flex: 1;
+}
+
+.manual-completed-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #16a34a;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.manual-completed-content h2 {
+    margin: 0 0 7px;
+    color: #166534;
+    font-size: 22px;
+}
+
+.manual-completed-content p {
+    margin: 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.manual-completed-stats {
+    display: flex;
+    gap: 28px;
+    margin-top: 18px;
+}
+
+.manual-completed-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.manual-completed-stat strong {
+    color: #166534;
+    font-size: 18px;
+}
+
+.manual-completed-stat span {
+    color: #64748b;
+    font-size: 11px;
+}
+
+.manual-completed-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+
+    .manual-completed-summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .manual-completed-stats {
+        gap: 20px;
+    }
+
+    .manual-completed-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .manual-completed-actions a {
+        width: 100%;
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+}

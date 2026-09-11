@@ -14,6 +14,10 @@ use App\Http\Controllers\EnglishManagementController;
 use App\Http\Controllers\EnglishCategoryController;
 use App\Http\Controllers\EnglishWordController;
 use App\Http\Controllers\EnglishMeaningController;
+use App\Http\Controllers\ManualController;
+use App\Http\Controllers\ManualSectionController;
+use App\Http\Controllers\ManualStepController;
+use App\Http\Controllers\ManualExecutionController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -45,34 +49,34 @@ Route::middleware('auth')->group(function () {
         ->name('english.index');
 
 
-        Route::get('/english/statistics', [EnglishLearningController::class, 'statistics'])
-    ->name('english.statistics');
+    Route::get('/english/statistics', [EnglishLearningController::class, 'statistics'])
+        ->name('english.statistics');
 
-        Route::get(
+    Route::get(
         '/english/category/{category}/mastery',
         [EnglishLearningController::class, 'mastery']
     )->name('english.mastery');
 
-            Route::get('/english/category/{category}/practice', [EnglishLearningController::class, 'practice'])
-    ->name('english.practice');
+    Route::get('/english/category/{category}/practice', [EnglishLearningController::class, 'practice'])
+        ->name('english.practice');
 
-Route::post(
-    '/english/category/{category}/practice/start',
-    [EnglishLearningController::class, 'startPractice']
-)->name('english.practice.start');
+    Route::post(
+        '/english/category/{category}/practice/start',
+        [EnglishLearningController::class, 'startPractice']
+    )->name('english.practice.start');
 
-Route::post(
-    '/english/category/{category}/practice/result',
-    [EnglishLearningController::class, 'savePracticeResult']
-)->name('english.practice.result');
+    Route::post(
+        '/english/category/{category}/practice/result',
+        [EnglishLearningController::class, 'savePracticeResult']
+    )->name('english.practice.result');
 
-Route::post(
-    '/english/category/{category}/practice/finish',
-    [EnglishLearningController::class, 'finishPractice']
-)->name('english.practice.finish');
+    Route::post(
+        '/english/category/{category}/practice/finish',
+        [EnglishLearningController::class, 'finishPractice']
+    )->name('english.practice.finish');
 
-Route::get('/english/category/{category}/{word?}', [EnglishLearningController::class, 'study'])
-    ->name('english.study');
+    Route::get('/english/category/{category}/{word?}', [EnglishLearningController::class, 'study'])
+        ->name('english.study');
 
 
 
@@ -139,21 +143,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/gestion/conocimiento', [KnowledgeManagementController::class, 'index'])
         ->name('gestion.knowledge.index');
 
-        // Gestión de inglés
-Route::get('/gestion/ingles', [EnglishManagementController::class, 'index'])
-    ->name('gestion.english.index');
+    // Gestión de inglés
+    Route::get('/gestion/ingles', [EnglishManagementController::class, 'index'])
+        ->name('gestion.english.index');
 
     // Categorías de inglés
-Route::get('/gestion/english/categories', [EnglishCategoryController::class, 'page'])
-    ->name('english.categories.index');
+    Route::get('/gestion/english/categories', [EnglishCategoryController::class, 'page'])
+        ->name('english.categories.index');
 
-// Palabras de inglés
-Route::get('/gestion/english/words', [EnglishWordController::class, 'page'])
-    ->name('english.words.index');
+    // Palabras de inglés
+    Route::get('/gestion/english/words', [EnglishWordController::class, 'page'])
+        ->name('english.words.index');
 
-// Significados de inglés
-Route::get('/gestion/english/meanings', [EnglishMeaningController::class, 'page'])
-    ->name('english.meanings.index');
+    // Significados de inglés
+    Route::get('/gestion/english/meanings', [EnglishMeaningController::class, 'page'])
+        ->name('english.meanings.index');
 
     // Tecnologías
     Route::get('/gestion/technologies', [TechnologyController::class, 'page'])
@@ -167,7 +171,53 @@ Route::get('/gestion/english/meanings', [EnglishMeaningController::class, 'page'
     Route::get('/gestion/concepts', [ConceptController::class, 'page'])
         ->name('concepts.index');
 
+    ////manuales
+
+
+    Route::get('/manuals', [ManualController::class, 'index']);
+    Route::get('/manuals/{id}', [ManualController::class, 'show']);
+    Route::post('/manuals', [ManualController::class, 'store']);
+    Route::put('/manuals/{id}', [ManualController::class, 'update']);
+    Route::delete('/manuals/{id}', [ManualController::class, 'destroy']);
+
+    Route::get('/manuals/{id}/sections', [ManualController::class, 'sections']);
+    Route::get('/manuals/{id}/full', [ManualController::class, 'full']);
+
+    Route::get('/gestion/manuals', [ManualController::class, 'page'])
+        ->name('gestion.manuals');
+
+
+    Route::get(
+        '/gestion/manuals/{manualId}/sections',
+        [ManualSectionController::class, 'page']
+    )->name('gestion.manual-sections');
+
+    Route::get(
+        '/gestion/manuals/{manualId}/sections/{sectionId}/steps',
+        [ManualStepController::class, 'page']
+    )->name('gestion.manual-steps');
+
+    Route::get(
+        '/manuals',
+        [ManualExecutionController::class, 'index']
+    )->name('manuals.index');
+    Route::get(
+        '/manuals/{manualId}/execute',
+        [ManualExecutionController::class, 'page']
+    )->name('manuals.execution');
+
+    Route::post(
+        '/manual-executions/{executionId}/steps/{stepId}/notes',
+        [ManualExecutionController::class, 'saveStepNote']
+    );
+
+
+    Route::get(
+        '/mis-manuales',
+        [ManualExecutionController::class, 'myManuals']
+    )->name('manuals.my');
+
 });
 
 // Rutas de Laravel Breeze
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

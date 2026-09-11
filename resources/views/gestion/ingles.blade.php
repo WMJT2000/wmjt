@@ -4,136 +4,53 @@
 
 @section('content')
 
-<div class="dashboard">
+    <div class="dashboard">
 
-    {{-- SIDEBAR --}}
+        {{-- SIDEBAR --}}
 
-    <aside class="dashboard-sidebar">
+        <x-dashboard-sidebar />
 
-        <div class="dashboard-brand">
+        {{-- CONTENIDO PRINCIPAL --}}
 
-            <div class="brand-icon">
-                ⚡
-            </div>
-
-            <div>
-                <strong>Tech Knowledge</strong>
-                <span>Knowledge Base</span>
-            </div>
-
-        </div>
+        <div class="dashboard-main">
 
 
-        <nav class="dashboard-nav">
+            {{-- HEADER --}}
 
-            <a
-                href="{{ route('home') }}"
-                class="dashboard-nav-item"
-            >
-                <span>📊</span>
-                Dashboard
-            </a>
-
-
-            <div class="nav-title">
-                CONOCIMIENTO
-            </div>
-
-
-            <a
-                href="{{ route('knowledge.index') }}"
-                class="dashboard-nav-item"
-            >
-                <span>🔎</span>
-                Explorar conocimiento
-            </a>
-
-
-            <div class="nav-title">
-                ADMINISTRACIÓN
-            </div>
-
-
-            <a
-                href="{{ route('gestion.index') }}"
-                class="dashboard-nav-item active"
-            >
-                <span>⚙️</span>
-                Gestión
-            </a>
-
-        </nav>
-
-
-        {{-- USUARIO --}}
-
-        <x-user-menu />
-
-    </aside>
-
-
-    {{-- CONTENIDO PRINCIPAL --}}
-
-    <div class="dashboard-main">
-
-
-        {{-- HEADER --}}
-
-        <header class="dashboard-topbar">
-
-            <div>
-
-                <h1>
-                    Inglés
-                </h1>
-
-                <p>
-                    Administra la información relacionada con el idioma inglés.
-                </p>
-
-            </div>
-
-        </header>
-
-
-        {{-- CONTENIDO --}}
-
-        <section class="dashboard-content">
-
-
-            {{-- BIENVENIDA --}}
-
-            <div class="welcome-section">
+            <header class="dashboard-topbar">
 
                 <div>
 
-                    <h2>
-                        Gestión de inglés
-                    </h2>
+                    <h1>
+                        Inglés
+                    </h1>
 
                     <p>
-                        Selecciona el área que deseas administrar.
+                        Administra la información relacionada con el idioma inglés.
                     </p>
 
                 </div>
 
-            </div>
+            </header>
 
 
-            {{-- MÓDULOS --}}
+            {{-- CONTENIDO --}}
 
-            <div class="dashboard-panel">
+            <section class="dashboard-content">
 
-                <div class="panel-header">
+
+                {{-- BIENVENIDA --}}
+
+                <div class="welcome-section">
 
                     <div>
 
                         <h2>
-                            Áreas disponibles
+                            Gestión de inglés
                         </h2>
 
                         <p>
-                            Gestiona categorías, palabras y significados.
+                            Selecciona el área que deseas administrar.
                         </p>
 
                     </div>
@@ -141,108 +58,120 @@
                 </div>
 
 
-                <div class="management-grid">
+                {{-- MÓDULOS --}}
 
+                <div class="dashboard-panel">
 
-                    {{-- CATEGORÍAS --}}
-
-                    <a
-                        href="{{ route('english.categories.index') }}"
-                        class="management-card"
-                    >
-
-                        <div class="management-icon">
-                            📂
-                        </div>
+                    <div class="panel-header">
 
                         <div>
 
-                            <strong>
-                                Categorías
-                            </strong>
+                            <h2>
+                                Áreas disponibles
+                            </h2>
 
-                            <span>
-                                Organiza las palabras por categorías.
-                            </span>
-
-                        </div>
-
-                        <b>
-                            →
-                        </b>
-
-                    </a>
-
-
-                    {{-- PALABRAS --}}
-
-                    <a
-                        href="{{ route('english.words.index') }}"
-                        class="management-card"
-                    >
-
-                        <div class="management-icon">
-                            📝
-                        </div>
-
-                        <div>
-
-                            <strong>
-                                Palabras
-                            </strong>
-
-                            <span>
-                                Administra las palabras en inglés.
-                            </span>
+                            <p>
+                                Gestiona categorías, palabras y significados.
+                            </p>
 
                         </div>
 
-                        <b>
-                            →
-                        </b>
-
-                    </a>
+                    </div>
 
 
-                    {{-- SIGNIFICADOS --}}
+                    <div class="management-grid">
 
-                    <a
-                        href="{{ route('english.meanings.index') }}"
-                        class="management-card"
-                    >
 
-                        <div class="management-icon">
-                            💡
-                        </div>
+                        {{-- CATEGORÍAS --}}
 
-                        <div>
+                        <a href="{{ route('english.categories.index') }}" class="management-card">
 
-                            <strong>
-                                Significados
-                            </strong>
+                            <div class="management-icon">
+                                📂
+                            </div>
 
-                            <span>
-                                Administra los significados de las palabras.
-                            </span>
+                            <div>
 
-                        </div>
+                                <strong>
+                                    Categorías
+                                </strong>
 
-                        <b>
-                            →
-                        </b>
+                                <span>
+                                    Organiza las palabras por categorías.
+                                </span>
 
-                    </a>
+                            </div>
 
+                            <b>
+                                →
+                            </b>
+
+                        </a>
+
+
+                        {{-- PALABRAS --}}
+
+                        <a href="{{ route('english.words.index') }}" class="management-card">
+
+                            <div class="management-icon">
+                                📝
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Palabras
+                                </strong>
+
+                                <span>
+                                    Administra las palabras en inglés.
+                                </span>
+
+                            </div>
+
+                            <b>
+                                →
+                            </b>
+
+                        </a>
+
+
+                        {{-- SIGNIFICADOS --}}
+
+                        <a href="{{ route('english.meanings.index') }}" class="management-card">
+
+                            <div class="management-icon">
+                                💡
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    Significados
+                                </strong>
+
+                                <span>
+                                    Administra los significados de las palabras.
+                                </span>
+
+                            </div>
+
+                            <b>
+                                →
+                            </b>
+
+                        </a>
+
+
+                    </div>
 
                 </div>
 
-            </div>
 
+            </section>
 
-        </section>
+        </div>
 
     </div>
-
-</div>
 
 @endsection
