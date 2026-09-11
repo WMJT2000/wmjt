@@ -662,16 +662,27 @@
 
         function generarPreguntas() {
 
-            const palabras =
+            let palabras =
                 obtenerPalabrasConSignificado();
 
+            /*
+            |--------------------------------------------------------------------------
+            | REPETIR PALABRAS INCORRECTAS
+            |--------------------------------------------------------------------------
+            */
 
-            if (palabras.length === 0) {
+            if (selectedPracticeMode === 'incorrect') {
 
-                return [];
-
+                palabras = palabras.filter(word =>
+                    practice.incorrectWordIds.includes(
+                        word.id
+                    )
+                );
             }
 
+            if (palabras.length === 0) {
+                return [];
+            }
 
             const palabrasSeleccionadas =
                 mezclar(palabras)
@@ -714,6 +725,15 @@
                 selectedPracticeMode ===
                 'mixed'
             ) {
+
+                tipos = [
+                    'english-spanish',
+                    'spanish-english',
+                    'listening'
+                ];
+
+            } else if (selectedPracticeMode ===
+                'incorrect') {
 
                 tipos = [
                     'english-spanish',

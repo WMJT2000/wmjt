@@ -6,7 +6,6 @@
 
 <div class="english-container">
 
-```
 <div class="english-header">
 
     <div>
@@ -162,6 +161,45 @@
                 </span>
 
             </button>
+
+
+            {{-- REPETIR INCORRECTAS --}}
+
+<button
+    type="button"
+    class="english-practice-mode-option"
+    data-practice-mode="incorrect"
+    @if(count($incorrectWordIds) === 0)
+        disabled
+    @endif
+>
+    <span class="english-practice-mode-icon">
+        🔄
+    </span>
+
+    <span class="english-practice-mode-content">
+
+        <strong>
+            Repetir incorrectas
+        </strong>
+
+        <small>
+            @if(count($incorrectWordIds) > 0)
+                Practica las palabras que has fallado anteriormente.
+            @else
+                Todavía no tienes palabras incorrectas.
+            @endif
+        </small>
+
+    </span>
+
+    @if(count($incorrectWordIds) > 0)
+        <span class="english-practice-mode-count">
+            {{ count($incorrectWordIds) }}
+        </span>
+    @endif
+
+</button>
 
         </div>
 
@@ -415,7 +453,6 @@
     </div>
 
 @endif
-```
 
 </div>
 
@@ -428,6 +465,8 @@ DATOS PARA JAVASCRIPT
 window.englishPractice = {
 
     words: @json($words),
+
+    incorrectWordIds: @json($incorrectWordIds),
 
     categoryId: {{ $category->id }},
 

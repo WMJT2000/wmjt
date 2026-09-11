@@ -119,3 +119,229 @@
     }
 
 }
+
+/* =========================================================
+   MI PROGRESO EN INGLÉS
+   ========================================================= */
+
+.english-progress-section {
+    margin-top: 32px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.english-progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.english-progress-item {
+    width: 100%;
+}
+
+.english-progress-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.english-progress-top strong {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.english-progress-top span {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+.english-progress-bar {
+    width: 100%;
+    height: 12px;
+    overflow: hidden;
+    background: #e5e7eb;
+    border-radius: 999px;
+}
+
+.english-progress-fill {
+    height: 100%;
+    min-width: 0;
+    background: #2563eb;
+    border-radius: 999px;
+    transition: width 0.5s ease;
+}
+
+.english-progress-empty {
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   ÚLTIMAS PRÁCTICAS
+   ========================================================= */
+
+.english-latest-practices-section {
+    margin-top: 32px;
+    margin-bottom: 32px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.english-practice-history {
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.english-practice-history-header,
+.english-practice-history-row {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 20px;
+}
+
+.english-practice-history-header {
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+
+    font-size: 13px;
+    font-weight: 700;
+    color: #6b7280;
+}
+
+.english-practice-history-row {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+
+    font-size: 15px;
+    color: #374151;
+}
+
+.english-practice-history-row:last-child {
+    border-bottom: none;
+}
+
+.english-practice-history-score {
+    font-weight: 700;
+    color: #2563eb;
+}
+
+.english-practice-history-score small {
+    margin-left: 5px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.english-history-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+
+    padding: 35px 20px;
+
+    text-align: center;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+}
+
+.english-history-empty strong {
+    font-size: 16px;
+    color: #1f2937;
+}
+
+.english-history-empty span {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+
+/* =========================================================
+   RESPONSIVE - PROGRESO E HISTORIAL
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .english-progress-section,
+    .english-latest-practices-section {
+        padding: 20px;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .english-progress-section,
+    .english-latest-practices-section {
+        margin-top: 24px;
+        padding: 18px;
+    }
+
+    .english-progress-top strong {
+        font-size: 15px;
+    }
+
+    .english-progress-top span {
+        font-size: 14px;
+    }
+
+    .english-progress-bar {
+        height: 10px;
+    }
+
+    .english-practice-history-header,
+    .english-practice-history-row {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        padding: 13px 10px;
+    }
+
+    .english-practice-history-header {
+        font-size: 11px;
+    }
+
+    .english-practice-history-row {
+        font-size: 13px;
+    }
+
+    .english-practice-history-score small {
+        display: block;
+        margin-left: 0;
+        margin-top: 3px;
+    }
+
+}
+
+
+@media (max-width: 450px) {
+
+    .english-practice-history-header,
+    .english-practice-history-row {
+        gap: 6px;
+        padding: 12px 8px;
+    }
+
+    .english-practice-history-header {
+        font-size: 10px;
+    }
+
+    .english-practice-history-row {
+        font-size: 12px;
+    }
+
+}

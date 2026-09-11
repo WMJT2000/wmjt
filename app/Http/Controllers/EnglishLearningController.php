@@ -12,14 +12,80 @@ use Illuminate\View\View;
 
 class EnglishLearningController extends Controller
 {
-    public function index(): View
-    {
-        $categories = EnglishCategory::withCount('words')
-            ->orderBy('name', 'asc')
-            ->get();
+public function index(): View
+{
+    $categories = EnglishCategory::withCount('words')
+        ->orderBy('name', 'asc')
+        ->get();
 
-        return view('english.index', compact('categories'));
+    /*
+    |--------------------------------------------------------------------------
+    | PROGRESO POR CATEGORÍA
+    |--------------------------------------------------------------------------
+    */
+
+    $progressByCategory = [];
+
+    foreach ($categories as $category) {
+
+$totalQuestions = EnglishPracticeResult::where(
+    'user_id',
+    auth()->id()
+)
+->where(
+    'english_category_id',
+    $category->id
+)
+->count();
+
+$correctAnswers = EnglishPracticeResult::where(
+    'user_id',
+    auth()->id()
+)
+->where(
+    'english_category_id',
+    $category->id
+)
+->where(
+    'is_correct',
+    true
+)
+->count();
+
+        $percentage = $totalQuestions > 0
+            ? (int) round(
+                ($correctAnswers / $totalQuestions) * 100
+            )
+            : 0;
+
+        $progressByCategory[$category->id] = [
+            'category' => $category,
+            'percentage' => $percentage,
+        ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ÚLTIMAS PRÁCTICAS
+    |--------------------------------------------------------------------------
+    */
+
+$latestPractices = EnglishPracticeSession::with('category')
+    ->where(
+        'user_id',
+        auth()->id()
+    )
+    ->whereNotNull('completed_at')
+    ->orderByDesc('completed_at')
+    ->limit(10)
+    ->get();
+
+    return view('english.index', compact(
+        'categories',
+        'progressByCategory',
+        'latestPractices'
+    ));
+}
 
     public function study(EnglishCategory $category, $word = 0): View
     {
@@ -57,18 +123,42 @@ class EnglishLearningController extends Controller
         ));
     }
 
-    public function practice(EnglishCategory $category): View
-    {
-        $words = $category->words()
-            ->with('meanings')
-            ->orderBy('id', 'asc')
-            ->get();
+public function practice(EnglishCategory $category): View
+{
+    $words = $category->words()
+        ->with('meanings')
+        ->orderBy('id', 'asc')
+        ->get();
 
-        return view('english.practice', compact(
-            'category',
-            'words'
-        ));
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | PALABRAS QUE EL USUARIO HA FALLADO
+    |--------------------------------------------------------------------------
+    */
+
+    $incorrectWordIds = EnglishPracticeResult::where(
+        'user_id',
+        auth()->id()
+    )
+        ->where(
+            'english_category_id',
+            $category->id
+        )
+        ->where(
+            'is_correct',
+            false
+        )
+        ->pluck('english_word_id')
+        ->unique()
+        ->values()
+        ->toArray();
+
+    return view('english.practice', compact(
+        'category',
+        'words',
+        'incorrectWordIds'
+    ));
+}
 
 
     public function startPractice(
