@@ -47,7 +47,12 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/english/statistics', [EnglishLearningController::class, 'statistics'])
     ->name('english.statistics');
-    
+
+        Route::get(
+        '/english/category/{category}/mastery',
+        [EnglishLearningController::class, 'mastery']
+    )->name('english.mastery');
+
             Route::get('/english/category/{category}/practice', [EnglishLearningController::class, 'practice'])
     ->name('english.practice');
 

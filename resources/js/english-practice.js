@@ -684,13 +684,161 @@
                 return [];
             }
 
-            const palabrasSeleccionadas =
-                mezclar(palabras)
-                    .slice(
-                        0,
-                        TOTAL_QUESTIONS
+            /*
+            |--------------------------------------------------------------------------
+            | PRIORIDAD SEGÚN DOMINIO
+            |--------------------------------------------------------------------------
+            |
+            | Las palabras con peor rendimiento tienen más posibilidades
+            | de aparecer en la práctica.
+            |
+            */
+
+            function obtenerPeso(word) {
+
+                const stats =
+                    practice.wordPracticeStats?.[word.id];
+
+                /*
+                | Nunca practicada
+                */
+
+                if (!stats || stats.total === 0) {
+                    return 3;
+                }
+
+                /*
+                | Muy bajo rendimiento
+                */
+
+                if (stats.accuracy < 50) {
+                    return 6;
+                }
+
+                /*
+                | En aprendizaje
+                */
+
+                if (stats.accuracy < 80) {
+                    return 4;
+                }
+
+                /*
+                | Buen rendimiento pero todavía no dominada
+                */
+
+                if (stats.total < 5) {
+                    return 3;
+                }
+
+                /*
+                | Palabra dominada
+                */
+
+                return 1;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | SELECCIÓN PONDERADA
+            |--------------------------------------------------------------------------
+            */
+
+            function seleccionarPalabrasPonderadas(
+                palabrasDisponibles,
+                cantidad
+            ) {
+
+                const seleccionadas = [];
+
+                const candidatos = [
+                    ...palabrasDisponibles
+                ];
+
+                while (
+                    candidatos.length > 0 &&
+                    seleccionadas.length < cantidad
+                ) {
+
+                    let pesoTotal = 0;
+
+                    candidatos.forEach(word => {
+
+                        pesoTotal +=
+                            obtenerPeso(word);
+
+                    });
+
+                    let objetivo =
+                        Math.random() * pesoTotal;
+
+                    let seleccionada = null;
+
+                    for (const word of candidatos) {
+
+                        objetivo -=
+                            obtenerPeso(word);
+
+                        if (objetivo <= 0) {
+
+                            seleccionada = word;
+
+                            break;
+                        }
+                    }
+
+                    if (!seleccionada) {
+                        break;
+                    }
+
+                    seleccionadas.push(
+                        seleccionada
                     );
 
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Evitamos repetir la misma palabra
+                    | dentro de esta práctica.
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const index =
+                        candidatos.indexOf(
+                            seleccionada
+                        );
+
+                    if (index !== -1) {
+
+                        candidatos.splice(
+                            index,
+                            1
+                        );
+                    }
+                }
+
+                return seleccionadas;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | SELECCIONAR PALABRAS
+            |--------------------------------------------------------------------------
+            */
+
+            const palabrasSeleccionadas =
+                seleccionarPalabrasPonderadas(
+                    palabras,
+                    TOTAL_QUESTIONS
+                );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | TIPOS DE PREGUNTA
+            |--------------------------------------------------------------------------
+            */
 
             let tipos = [];
 
@@ -732,20 +880,26 @@
                     'listening'
                 ];
 
-            } else if (selectedPracticeMode ===
-                'incorrect') {
+            } else if (
+                selectedPracticeMode ===
+                'incorrect'
+            ) {
 
                 tipos = [
                     'english-spanish',
                     'spanish-english',
                     'listening'
                 ];
-
             }
 
 
-            const resultado = [];
+            /*
+            |--------------------------------------------------------------------------
+            | CREAR PREGUNTAS
+            |--------------------------------------------------------------------------
+            */
 
+            const resultado = [];
 
             palabrasSeleccionadas.forEach(
                 word => {
@@ -753,9 +907,7 @@
                     let tiposDisponibles =
                         mezclar(tipos);
 
-
                     let pregunta = null;
-
 
                     for (
                         const tipo of tiposDisponibles
@@ -767,30 +919,21 @@
                                 tipo
                             );
 
-
                         if (pregunta) {
-
                             break;
-
                         }
-
                     }
-
 
                     if (pregunta) {
 
                         resultado.push(
                             pregunta
                         );
-
                     }
-
                 }
             );
 
-
             return resultado;
-
         }
 
 
@@ -1392,15 +1535,11 @@
         */
 
         function reproducirPalabra(palabra) {
-            if (!practiceSoundsEnabled) {
-                return;
-            }
 
             if (typeof pronunciarEnIngles === 'function') {
                 pronunciarEnIngles(palabra, 'ingles');
             }
         }
-
 
         function reproducirFeedback(texto) {
             if (!practiceSoundsEnabled) {

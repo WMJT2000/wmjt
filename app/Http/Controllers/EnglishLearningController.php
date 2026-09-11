@@ -14,10 +14,10 @@ class EnglishLearningController extends Controller
 {
 public function index(): View
 {
-    $categories = EnglishCategory::withCount('words')
+    $categories = EnglishCategory::with('words')
+        ->withCount('words')
         ->orderBy('name', 'asc')
         ->get();
-
     /*
     |--------------------------------------------------------------------------
     | PROGRESO POR CATEGORÍA
@@ -64,6 +64,108 @@ $correctAnswers = EnglishPracticeResult::where(
         ];
     }
 
+
+
+    /*
+|--------------------------------------------------------------------------
+| DOMINIO DE PALABRAS
+|--------------------------------------------------------------------------
+*/
+
+$practiceResults = EnglishPracticeResult::where(
+    'user_id',
+    auth()->id()
+)
+    ->get([
+        'english_category_id',
+        'english_word_id',
+        'is_correct',
+    ]);
+
+$wordMasteryByCategory = [];
+
+foreach ($categories as $category) {
+
+    $categoryResults = $practiceResults->where(
+        'english_category_id',
+        $category->id
+    );
+
+    $mastery = [];
+
+    foreach ($category->words as $word) {
+
+        $wordResults = $categoryResults->where(
+            'english_word_id',
+            $word->id
+        );
+
+        $total = $wordResults->count();
+
+        $correct = $wordResults
+            ->where('is_correct', true)
+            ->count();
+
+        $accuracy = $total > 0
+            ? (int) round(
+                ($correct / $total) * 100
+            )
+            : 0;
+
+        if ($total === 0) {
+
+            $level = 'not_started';
+            $label = 'Sin practicar';
+            $icon = '⚪';
+
+       } elseif ($total < 3) {
+
+    $level = 'learning';
+    $label = 'En aprendizaje';
+    $icon = '🟡';
+
+} elseif ($accuracy < 50) {
+
+    $level = 'needs_practice';
+    $label = 'Necesita práctica';
+    $icon = '🔴';
+
+} elseif ($accuracy < 80) {
+
+    $level = 'learning';
+    $label = 'En aprendizaje';
+    $icon = '🟡';
+
+} elseif ($total < 5) {
+
+    $level = 'learning';
+    $label = 'En aprendizaje';
+    $icon = '🟡';
+
+} else {
+
+    $level = 'mastered';
+    $label = 'Dominada';
+    $icon = '🟢';
+}
+
+        $mastery[$word->id] = [
+            'word' => $word,
+            'total' => $total,
+            'correct' => $correct,
+            'accuracy' => $accuracy,
+            'level' => $level,
+            'label' => $label,
+            'icon' => $icon,
+        ];
+    }
+
+    $wordMasteryByCategory[$category->id] = $mastery;
+}
+
+
+
+
     /*
     |--------------------------------------------------------------------------
     | ÚLTIMAS PRÁCTICAS
@@ -80,11 +182,12 @@ $latestPractices = EnglishPracticeSession::with('category')
     ->limit(10)
     ->get();
 
-    return view('english.index', compact(
-        'categories',
-        'progressByCategory',
-        'latestPractices'
-    ));
+return view('english.index', compact(
+    'categories',
+    'progressByCategory',
+    'latestPractices',
+    'wordMasteryByCategory'
+));
 }
 
 
@@ -360,9 +463,14 @@ return view('english.statistics', compact(
             'currentIndex'
         ));
     }
-
 public function practice(EnglishCategory $category): View
 {
+    /*
+    |--------------------------------------------------------------------------
+    | TODAS LAS PALABRAS DE LA CATEGORÍA
+    |--------------------------------------------------------------------------
+    */
+
     $words = $category->words()
         ->with('meanings')
         ->orderBy('id', 'asc')
@@ -370,11 +478,11 @@ public function practice(EnglishCategory $category): View
 
     /*
     |--------------------------------------------------------------------------
-    | PALABRAS QUE EL USUARIO HA FALLADO
+    | RESULTADOS DEL USUARIO EN ESTA CATEGORÍA
     |--------------------------------------------------------------------------
     */
 
-    $incorrectWordIds = EnglishPracticeResult::where(
+    $practiceResults = EnglishPracticeResult::where(
         'user_id',
         auth()->id()
     )
@@ -382,22 +490,269 @@ public function practice(EnglishCategory $category): View
             'english_category_id',
             $category->id
         )
-        ->where(
-            'is_correct',
-            false
-        )
+        ->get();
+
+
+    $wordPracticeStats = [];
+
+foreach ($words as $word) {
+
+    $wordResults = $practiceResults->where(
+        'english_word_id',
+        $word->id
+    );
+
+    $total = $wordResults->count();
+
+    $correct = $wordResults
+        ->where('is_correct', true)
+        ->count();
+
+    $accuracy = $total > 0
+        ? (int) round(($correct / $total) * 100)
+        : 0;
+
+    $wordPracticeStats[$word->id] = [
+        'total' => $total,
+        'correct' => $correct,
+        'accuracy' => $accuracy,
+    ];
+}
+
+    /*
+    |--------------------------------------------------------------------------
+    | FILTRO DE PRÁCTICA SEGÚN DOMINIO
+    |--------------------------------------------------------------------------
+    */
+
+    $focus = request()->query('focus');
+
+    if (
+        $focus === 'not_started' ||
+        $focus === 'learning' ||
+        $focus === 'needs_practice'
+    ) {
+
+        $words = $words->filter(function ($word) use ($practiceResults, $focus) {
+
+            $wordResults = $practiceResults->where(
+                'english_word_id',
+                $word->id
+            );
+
+            $total = $wordResults->count();
+
+            $correct = $wordResults
+                ->where('is_correct', true)
+                ->count();
+
+            $accuracy = $total > 0
+                ? (int) round(
+                    ($correct / $total) * 100
+                )
+                : 0;
+
+            /*
+            |--------------------------------------------------------------------------
+            | DETERMINAR NIVEL
+            |--------------------------------------------------------------------------
+            */
+
+            if ($total === 0) {
+
+                $level = 'not_started';
+
+            } elseif ($total < 3) {
+
+                $level = 'learning';
+
+            } elseif ($accuracy < 50) {
+
+                $level = 'needs_practice';
+
+            } elseif ($accuracy < 80) {
+
+                $level = 'learning';
+
+            } elseif ($total < 5) {
+
+                $level = 'learning';
+
+            } else {
+
+                $level = 'mastered';
+            }
+
+            return $level === $focus;
+        })->values();
+    }
+
+
+
+    $practiceEmptyMessage = null;
+
+if ($words->isEmpty()) {
+
+    if ($focus === 'not_started') {
+
+        $practiceEmptyMessage =
+            'No tienes palabras nuevas para practicar en esta categoría.';
+
+    } elseif ($focus === 'learning') {
+
+        $practiceEmptyMessage =
+            'No tienes palabras en aprendizaje para practicar en esta categoría.';
+
+    } elseif ($focus === 'needs_practice') {
+
+        $practiceEmptyMessage =
+            'No tienes palabras que necesiten práctica en esta categoría.';
+
+    }
+}
+
+    /*
+    |--------------------------------------------------------------------------
+    | PALABRAS QUE EL USUARIO HA FALLADO
+    |--------------------------------------------------------------------------
+    */
+
+    $incorrectWordIds = $practiceResults
+        ->where('is_correct', false)
         ->pluck('english_word_id')
         ->unique()
         ->values()
         ->toArray();
 
-    return view('english.practice', compact(
-        'category',
-        'words',
-        'incorrectWordIds'
-    ));
+return view('english.practice', compact(
+    'category',
+    'words',
+    'incorrectWordIds',
+    'practiceEmptyMessage',
+    'wordPracticeStats'
+));
 }
 
+public function mastery(EnglishCategory $category): View
+{
+    /*
+    |--------------------------------------------------------------------------
+    | PALABRAS DE LA CATEGORÍA
+    |--------------------------------------------------------------------------
+    */
+
+    $words = $category->words()
+        ->with('meanings')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESULTADOS DEL USUARIO
+    |--------------------------------------------------------------------------
+    */
+
+    $results = EnglishPracticeResult::where(
+        'user_id',
+        auth()->id()
+    )
+        ->where(
+            'english_category_id',
+            $category->id
+        )
+        ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | CALCULAR DOMINIO DE CADA PALABRA
+    |--------------------------------------------------------------------------
+    */
+
+    $wordMastery = [];
+
+    foreach ($words as $word) {
+
+        $wordResults = $results->where(
+            'english_word_id',
+            $word->id
+        );
+
+        $total = $wordResults->count();
+
+        $correct = $wordResults
+            ->where('is_correct', true)
+            ->count();
+
+        $incorrect = $wordResults
+            ->where('is_correct', false)
+            ->count();
+
+        $accuracy = $total > 0
+            ? (int) round(
+                ($correct / $total) * 100
+            )
+            : 0;
+
+        /*
+        |--------------------------------------------------------------------------
+        | ESTADO DE LA PALABRA
+        |--------------------------------------------------------------------------
+        */
+
+        if ($total === 0) {
+
+            $level = 'not_started';
+            $label = 'Sin practicar';
+            $icon = '⚪';
+
+       } elseif ($total < 3) {
+
+    $level = 'learning';
+    $label = 'En aprendizaje';
+    $icon = '🟡';
+
+} elseif ($accuracy < 50) {
+
+    $level = 'needs_practice';
+    $label = 'Necesita práctica';
+    $icon = '🔴';
+
+} elseif ($accuracy < 80) {
+
+    $level = 'learning';
+    $label = 'En aprendizaje';
+    $icon = '🟡';
+
+} elseif ($total < 5) {
+
+    $level = 'learning';
+    $label = 'En aprendizaje';
+    $icon = '🟡';
+
+} else {
+
+    $level = 'mastered';
+    $label = 'Dominada';
+    $icon = '🟢';
+}
+
+        $wordMastery[] = [
+            'word' => $word,
+            'total' => $total,
+            'correct' => $correct,
+            'incorrect' => $incorrect,
+            'accuracy' => $accuracy,
+            'level' => $level,
+            'label' => $label,
+            'icon' => $icon,
+        ];
+    }
+
+    return view('english.mastery', compact(
+        'category',
+        'wordMastery'
+    ));
+}
 
     public function startPractice(
     Request $request,
@@ -426,6 +781,9 @@ public function practice(EnglishCategory $category): View
         'practice_session_id' => $session->practice_session_id,
     ]);
 }
+
+
+
 
     public function savePracticeResult(
         Request $request,

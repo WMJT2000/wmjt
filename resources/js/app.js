@@ -15,6 +15,7 @@ import '../css/english.css';
 import '../css/english-study.css';
 import '../css/english-practice.css';
 import '../css/english-statistics.css';
+import '../css/english-dominio.css';
 // JavaScript
 import './form.js';
 import './technologies.js';

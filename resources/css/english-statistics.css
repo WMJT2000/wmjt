@@ -958,3 +958,210 @@
         transition: none;
     }
 }
+
+
+
+/* ==========================================================================
+   DOMINIO DE PALABRAS
+   ========================================================================== */
+
+.english-mastery-section {
+    width: 100%;
+    margin: 0 0 30px 0;
+        background: #ffffff;
+    border-radius: 16px;
+        margin-top: 32px;
+            padding: 24px;
+}
+
+.english-mastery-categories {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.english-mastery-category {
+    width: 100%;
+    min-width: 0;
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-sizing: border-box;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.english-mastery-category:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.english-mastery-category-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+    margin-bottom: 12px;
+}
+
+.english-mastery-category-top > div {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.english-mastery-category-top strong {
+    color: #111827;
+
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.english-mastery-category-top span {
+    color: #6b7280;
+
+    font-size: 13px;
+}
+
+.english-mastery-category-top > strong {
+    flex-shrink: 0;
+
+    font-size: 20px;
+}
+
+.english-mastery-progress {
+    width: 100%;
+    height: 9px;
+
+    background: #e5e7eb;
+
+    border-radius: 999px;
+
+    overflow: hidden;
+}
+
+.english-mastery-progress-fill {
+    height: 100%;
+
+    background: #111827;
+
+    border-radius: inherit;
+
+    transition: width 0.3s ease;
+}
+
+.english-mastery-summary {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 10px 16px;
+
+    margin-top: 13px;
+}
+
+.english-mastery-summary span {
+    font-size: 12px;
+    line-height: 1.4;
+
+    color: #6b7280;
+}
+
+
+/* ==========================================================================
+   TABLET
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+
+    .english-mastery-categories {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* ==========================================================================
+   MÓVIL
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+    .english-mastery-section {
+        margin-bottom: 24px;
+    }
+
+    .english-mastery-category {
+        padding: 18px;
+    }
+
+}
+
+
+/* ==========================================================================
+   MÓVIL PEQUEÑO
+   ========================================================================== */
+
+@media (max-width: 480px) {
+
+    .english-mastery-category {
+        padding: 15px;
+
+        border-radius: 14px;
+    }
+
+    .english-mastery-category-top strong {
+        font-size: 15px;
+    }
+
+    .english-mastery-category-top > strong {
+        font-size: 18px;
+    }
+
+    .english-mastery-summary {
+        gap: 7px 12px;
+    }
+
+    .english-mastery-summary span {
+        font-size: 11px;
+    }
+
+}
+
+
+/* ==========================================================================
+   DISPOSITIVOS TÁCTILES
+   ========================================================================== */
+
+@media (hover: none) {
+
+    .english-mastery-category:hover {
+        transform: none;
+
+        box-shadow: none;
+    }
+
+}
+
+
+/* ==========================================================================
+   REDUCIR ANIMACIONES
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .english-mastery-category,
+    .english-mastery-progress-fill {
+        transition: none;
+    }
+
+}

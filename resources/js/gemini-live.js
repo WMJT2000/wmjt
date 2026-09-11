@@ -471,9 +471,17 @@ function procesarRespuestaAudio(
     message
 ) {
 
+    console.log(
+        '══════════════════════════════════════'
+    );
+
+    console.log(
+        '📩 RESPUESTA COMPLETA DE GEMINI:',
+        message
+    );
+
     const serverContent =
         message?.serverContent;
-
 
     if (!serverContent) {
 
@@ -485,68 +493,289 @@ function procesarRespuestaAudio(
 
     }
 
+    console.log(
+        '📦 serverContent:',
+        serverContent
+    );
+
+    console.log(
+        '🏁 turnComplete:',
+        serverContent.turnComplete
+    );
+
+    console.log(
+        '🧩 modelTurn:',
+        serverContent.modelTurn
+    );
 
     const parts =
         serverContent.modelTurn?.parts || [];
 
+    console.log(
+        '🧩 Número de parts:',
+        parts.length
+    );
 
     for (
-        const part of parts
+        const [index, part]
+        of parts.entries()
     ) {
 
+        console.log(
+            `──────── PART ${index} ────────`
+        );
+
+        console.log(
+            '📦 Part:',
+            part
+        );
+
         if (!part.inlineData) {
+
+            console.log(
+                'ℹ️ Este part NO contiene inlineData'
+            );
 
             continue;
 
         }
 
-
         const mimeType =
             part.inlineData.mimeType;
-
 
         const base64Audio =
             part.inlineData.data;
 
+        console.log(
+            '🎵 MIME TYPE:',
+            mimeType
+        );
+
+        console.log(
+            '🔤 Base64 presente:',
+            !!base64Audio
+        );
+
+        if (base64Audio) {
+
+            console.log(
+                '🔤 Base64 longitud:',
+                base64Audio.length
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ANALIZAR MIME TYPE
+        |--------------------------------------------------------------------------
+        */
+
+        if (mimeType) {
+
+            const mimeParts =
+                mimeType.split(';');
+
+            const tipoPrincipal =
+                mimeParts[0]?.trim();
+
+            console.log(
+                '🎧 Tipo principal:',
+                tipoPrincipal
+            );
+
+            const parametros = {};
+
+            for (
+                let i = 1;
+                i < mimeParts.length;
+                i++
+            ) {
+
+                const parametro =
+                    mimeParts[i].trim();
+
+                const [clave, valor] =
+                    parametro.split('=');
+
+                if (clave) {
+
+                    parametros[
+                        clave.trim()
+                    ] =
+                        valor
+                            ? valor.trim()
+                            : true;
+
+                }
+
+            }
+
+            console.log(
+                '⚙️ Parámetros de audio:',
+                parametros
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | VERIFICAR QUE SEA AUDIO
+        |--------------------------------------------------------------------------
+        */
 
         if (
             !mimeType ||
             !mimeType.startsWith('audio/')
         ) {
 
+            console.log(
+                '⚠️ Este part no es audio'
+            );
+
             continue;
 
         }
 
+        if (!base64Audio) {
 
-        console.log(
-            '🎵 AUDIO RECIBIDO:',
-            mimeType
-        );
+            console.log(
+                '⚠️ El audio no contiene data'
+            );
 
+            continue;
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | DECODIFICAR BASE64
+        |--------------------------------------------------------------------------
+        */
 
         const audioBytes =
             base64ToUint8Array(
                 base64Audio
             );
 
-
         console.log(
-            '🔊 PCM:',
-            audioBytes.byteLength,
-            'bytes'
+            '🔊 Bytes recibidos:',
+            audioBytes.byteLength
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | INFORMACIÓN PARA PCM 16-BIT
+        |--------------------------------------------------------------------------
+        */
+
+        console.log(
+            '🧮 ¿Bytes pares?:',
+            audioBytes.byteLength % 2 === 0
+        );
+
+        const cantidadSamples =
+            Math.floor(
+                audioBytes.byteLength / 2
+            );
+
+        console.log(
+            '🎚️ Samples si fuera PCM 16-bit:',
+            cantidadSamples
+        );
+
+        console.log(
+            '⏱️ Duración aprox. a 24000 Hz:',
+            (
+                cantidadSamples / 24000
+            ).toFixed(4),
+            'segundos'
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | MOSTRAR PRIMEROS BYTES
+        |--------------------------------------------------------------------------
+        */
+
+        console.log(
+            '🔢 Primeros 32 bytes:',
+            Array.from(
+                audioBytes.slice(0, 32)
+            )
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | CONVERTIR TEMPORALMENTE A INT16
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            audioBytes.byteLength >= 2
+        ) {
+
+            const samples =
+                new Int16Array(
+                    audioBytes.buffer,
+                    audioBytes.byteOffset,
+                    Math.floor(
+                        audioBytes.byteLength / 2
+                    )
+                );
+
+            console.log(
+                '📊 Primeros 16 samples PCM:',
+                Array.from(
+                    samples.slice(0, 16)
+                )
+            );
+
+            console.log(
+                '📈 Sample mínimo:',
+                Math.min(
+                    ...Array.from(
+                        samples.slice(
+                            0,
+                            Math.min(
+                                samples.length,
+                                1000
+                            )
+                        )
+                    )
+                )
+            );
+
+            console.log(
+                '📉 Sample máximo:',
+                Math.max(
+                    ...Array.from(
+                        samples.slice(
+                            0,
+                            Math.min(
+                                samples.length,
+                                1000
+                            )
+                        )
+                    )
+                )
+            );
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | GUARDAR EN COLA
+        |--------------------------------------------------------------------------
+        */
 
         audioQueue.push(
             audioBytes
         );
 
-
         reproducirColaAudio();
 
     }
-
 
     if (
         serverContent.turnComplete
@@ -558,8 +787,11 @@ function procesarRespuestaAudio(
 
     }
 
-}
+    console.log(
+        '══════════════════════════════════════'
+    );
 
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -604,78 +836,32 @@ function base64ToUint8Array(
 |--------------------------------------------------------------------------
 */
 
+let siguienteTiempoAudio = 0;
+
 async function reproducirColaAudio() {
 
-    if (reproduciendo) {
-
-        return;
-
+    if (!audioContext) {
+        audioContext = new AudioContext({
+            sampleRate: 24000,
+        });
     }
 
+    if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+    }
 
-    reproduciendo = true;
+    while (audioQueue.length > 0) {
 
+        const pcmBytes = audioQueue.shift();
 
-    try {
-
-        if (!audioContext) {
-
-            audioContext =
-                new AudioContext({
-
-                    sampleRate: 24000,
-
-                });
-
-        }
-
-
-        if (
-            audioContext.state ===
-            'suspended'
-        ) {
-
-            await audioContext.resume();
-
-        }
-
-
-        while (
-            audioQueue.length > 0
-        ) {
-
-            const pcmBytes =
-                audioQueue.shift();
-
-
-            console.log(
-                '▶️ Reproduciendo:',
-                pcmBytes.byteLength,
-                'bytes'
-            );
-
-
-            await reproducirPCM(
-                pcmBytes
-            );
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            '❌ Error reproduciendo:',
-            error
+        console.log(
+            '▶️ Programando:',
+            pcmBytes.byteLength,
+            'bytes'
         );
 
-
-    } finally {
-
-        reproduciendo = false;
-
+        programarPCM(pcmBytes);
     }
-
 }
 
 
@@ -685,86 +871,74 @@ async function reproducirColaAudio() {
 |--------------------------------------------------------------------------
 */
 
-async function reproducirPCM(
-    bytes
-) {
+function programarPCM(bytes) {
 
     if (!audioContext) {
-
         return;
-
     }
 
+    const samples = new Int16Array(
+        bytes.buffer,
+        bytes.byteOffset,
+        Math.floor(bytes.byteLength / 2)
+    );
 
-    const samples =
-        new Int16Array(
-
-            bytes.buffer,
-
-            bytes.byteOffset,
-
-            Math.floor(
-                bytes.byteLength / 2
-            )
-
-        );
-
+    const sampleRate = 24000;
 
     const audioBuffer =
         audioContext.createBuffer(
-
             1,
-
             samples.length,
-
-            24000
-
+            sampleRate
         );
-
 
     const channelData =
         audioBuffer.getChannelData(0);
-
 
     for (
         let i = 0;
         i < samples.length;
         i++
     ) {
-
         channelData[i] =
             samples[i] / 32768;
-
     }
-
 
     const source =
         audioContext.createBufferSource();
 
-
-    source.buffer =
-        audioBuffer;
-
+    source.buffer = audioBuffer;
 
     source.connect(
         audioContext.destination
     );
 
+    const ahora =
+        audioContext.currentTime;
 
-    return new Promise(
-        (resolve) => {
+    if (
+        siguienteTiempoAudio <
+        ahora
+    ) {
+        siguienteTiempoAudio =
+            ahora;
+    }
 
-            source.onended =
-                resolve;
-
-
-            source.start();
-
-        }
+    source.start(
+        siguienteTiempoAudio
     );
 
-}
+    siguienteTiempoAudio +=
+        audioBuffer.duration;
 
+    console.log(
+        '🎵 Chunk programado:',
+        audioBuffer.duration.toFixed(4),
+        's',
+        '→',
+        siguienteTiempoAudio.toFixed(4)
+    );
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -1003,6 +1177,8 @@ export function cerrarGeminiLive() {
     */
 
     audioQueue = [];
+
+    siguienteTiempoAudio = 0;
 
 
     /*

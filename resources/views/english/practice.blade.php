@@ -4,482 +4,417 @@
 
 @section('content')
 
-<div class="english-container">
+    <div class="english-container">
 
-<div class="english-header">
+        <div class="english-header">
 
-    <div>
+            <div>
 
-        <h1>
-            🧠 Practicar {{ $category->name }}
-        </h1>
+                <h1>
+                    🧠 Practicar {{ $category->name }}
+                </h1>
 
-        <p>
-            Pon a prueba lo que has aprendido.
-        </p>
+                <p>
+                    Pon a prueba lo que has aprendido.
+                </p>
 
-    </div>
-
-</div>
-
-
-@if($words->count() > 0)
-
-    {{-- BOTÓN DE SONIDOS --}}
-
-    <button
-        type="button"
-        id="btn-toggle-practice-sounds"
-        class="english-practice-sound-toggle"
-        aria-pressed="false"
-    >
-        🔊 Sonidos
-    </button>
-
-
-    {{-- SELECCIÓN DEL MODO DE PRÁCTICA --}}
-
-    <div
-        id="practice-mode-selector"
-        class="english-practice-mode-selector"
-    >
-
-        <div class="english-practice-mode-header">
-
-            <h2>
-                ¿Cómo quieres practicar?
-            </h2>
-
-            <p>
-                Elige el tipo de ejercicio.
-            </p>
+            </div>
 
         </div>
 
 
-        <div class="english-practice-mode-options">
+        @if ($words->count() > 0)
 
-            {{-- INGLÉS → ESPAÑOL --}}
+            {{-- BOTÓN DE SONIDOS --}}
 
-            <button
-                type="button"
-                class="english-practice-mode-option"
-                data-practice-mode="english-spanish"
-            >
-                <span class="english-practice-mode-icon">
-                    🇬🇧
-                </span>
-
-                <span class="english-practice-mode-content">
-
-                    <strong>
-                        Inglés → Español
-                    </strong>
-
-                    <small>
-                        Mira la palabra en inglés y elige su significado.
-                    </small>
-
-                </span>
-
+            <button type="button" id="btn-toggle-practice-sounds" class="english-practice-sound-toggle" aria-pressed="false">
+                🔊 Sonidos
             </button>
 
 
-            {{-- ESPAÑOL → INGLÉS --}}
+            {{-- SELECCIÓN DEL MODO DE PRÁCTICA --}}
 
-            <button
-                type="button"
-                class="english-practice-mode-option"
-                data-practice-mode="spanish-english"
-            >
-                <span class="english-practice-mode-icon">
-                    🇪🇸
-                </span>
+            <div id="practice-mode-selector" class="english-practice-mode-selector">
 
-                <span class="english-practice-mode-content">
+                <div class="english-practice-mode-header">
 
-                    <strong>
-                        Español → Inglés
-                    </strong>
+                    <h2>
+                        ¿Cómo quieres practicar?
+                    </h2>
 
-                    <small>
-                        Mira el significado en español y elige la palabra.
-                    </small>
+                    <p>
+                        Elige el tipo de ejercicio.
+                    </p>
 
-                </span>
-
-            </button>
+                </div>
 
 
-            {{-- ESCUCHAR → INGLÉS --}}
+                <div class="english-practice-mode-options">
 
-            <button
-                type="button"
-                class="english-practice-mode-option"
-                data-practice-mode="listening"
-            >
-                <span class="english-practice-mode-icon">
-                    🔊
-                </span>
+                    {{-- INGLÉS → ESPAÑOL --}}
 
-                <span class="english-practice-mode-content">
+                    <button type="button" class="english-practice-mode-option" data-practice-mode="english-spanish">
+                        <span class="english-practice-mode-icon">
+                            🇬🇧
+                        </span>
 
-                    <strong>
-                        Escuchar → Inglés
-                    </strong>
+                        <span class="english-practice-mode-content">
 
-                    <small>
-                        Escucha la pronunciación y selecciona la palabra.
-                    </small>
+                            <strong>
+                                Inglés → Español
+                            </strong>
 
-                </span>
+                            <small>
+                                Mira la palabra en inglés y elige su significado.
+                            </small>
 
-            </button>
+                        </span>
+
+                    </button>
 
 
-            {{-- MODO MEZCLADO --}}
+                    {{-- ESPAÑOL → INGLÉS --}}
 
-            <button
-                type="button"
-                class="english-practice-mode-option"
-                data-practice-mode="mixed"
-            >
-                <span class="english-practice-mode-icon">
-                    🎲
-                </span>
+                    <button type="button" class="english-practice-mode-option" data-practice-mode="spanish-english">
+                        <span class="english-practice-mode-icon">
+                            🇪🇸
+                        </span>
 
-                <span class="english-practice-mode-content">
+                        <span class="english-practice-mode-content">
 
-                    <strong>
-                        Mezclado
-                    </strong>
+                            <strong>
+                                Español → Inglés
+                            </strong>
 
-                    <small>
-                        Combina los diferentes tipos de preguntas.
-                    </small>
+                            <small>
+                                Mira el significado en español y elige la palabra.
+                            </small>
 
-                </span>
+                        </span>
 
-            </button>
+                    </button>
 
 
-            {{-- REPETIR INCORRECTAS --}}
+                    {{-- ESCUCHAR → INGLÉS --}}
 
-<button
-    type="button"
-    class="english-practice-mode-option"
-    data-practice-mode="incorrect"
-    @if(count($incorrectWordIds) === 0)
-        disabled
-    @endif
->
-    <span class="english-practice-mode-icon">
-        🔄
-    </span>
+                    <button type="button" class="english-practice-mode-option" data-practice-mode="listening">
+                        <span class="english-practice-mode-icon">
+                            🔊
+                        </span>
 
-    <span class="english-practice-mode-content">
+                        <span class="english-practice-mode-content">
 
-        <strong>
-            Repetir incorrectas
-        </strong>
+                            <strong>
+                                Escuchar → Inglés
+                            </strong>
 
-        <small>
-            @if(count($incorrectWordIds) > 0)
-                Practica las palabras que has fallado anteriormente.
-            @else
-                Todavía no tienes palabras incorrectas.
-            @endif
-        </small>
+                            <small>
+                                Escucha la pronunciación y selecciona la palabra.
+                            </small>
 
-    </span>
+                        </span>
 
-    @if(count($incorrectWordIds) > 0)
-        <span class="english-practice-mode-count">
-            {{ count($incorrectWordIds) }}
-        </span>
-    @endif
-
-</button>
-
-        </div>
+                    </button>
 
 
-        {{-- COMENZAR PRÁCTICA --}}
+                    {{-- MODO MEZCLADO --}}
 
-        <button
-            type="button"
-            id="btn-start-practice"
-            class="english-practice-start-button"
-            disabled
-        >
-            Comenzar práctica →
-        </button>
+                    <button type="button" class="english-practice-mode-option" data-practice-mode="mixed">
+                        <span class="english-practice-mode-icon">
+                            🎲
+                        </span>
 
-    </div>
+                        <span class="english-practice-mode-content">
+
+                            <strong>
+                                Mezclado
+                            </strong>
+
+                            <small>
+                                Combina los diferentes tipos de preguntas.
+                            </small>
+
+                        </span>
+
+                    </button>
 
 
-    {{-- =========================================================
+                    {{-- REPETIR INCORRECTAS --}}
+
+                    <button type="button" class="english-practice-mode-option" data-practice-mode="incorrect"
+                        @if (count($incorrectWordIds) === 0) disabled @endif>
+                        <span class="english-practice-mode-icon">
+                            🔄
+                        </span>
+
+                        <span class="english-practice-mode-content">
+
+                            <strong>
+                                Repetir incorrectas
+                            </strong>
+
+                            <small>
+                                @if (count($incorrectWordIds) > 0)
+                                    Practica las palabras que has fallado anteriormente.
+                                @else
+                                    Todavía no tienes palabras incorrectas.
+                                @endif
+                            </small>
+
+                        </span>
+
+                        @if (count($incorrectWordIds) > 0)
+                            <span class="english-practice-mode-count">
+                                {{ count($incorrectWordIds) }}
+                            </span>
+                        @endif
+
+                    </button>
+
+                </div>
+
+
+                {{-- COMENZAR PRÁCTICA --}}
+
+                <button type="button" id="btn-start-practice" class="english-practice-start-button" disabled>
+                    Comenzar práctica →
+                </button>
+
+            </div>
+
+
+            {{-- =========================================================
          TARJETA DE LA PRÁCTICA
          ========================================================= --}}
 
-    <div
-        id="practice-card"
-        class="english-practice-card"
-        style="display: none;"
-    >
+            <div id="practice-card" class="english-practice-card" style="display: none;">
 
-        {{-- PROGRESO --}}
+                {{-- PROGRESO --}}
 
-        <div class="english-practice-progress">
+                <div class="english-practice-progress">
 
-            <span>
-                Pregunta
-            </span>
+                    <span>
+                        Pregunta
+                    </span>
 
-            <strong id="practice-progress">
-                1 / 10
-            </strong>
+                    <strong id="practice-progress">
+                        1 / 10
+                    </strong>
 
-        </div>
+                </div>
 
 
-        {{-- PREGUNTA --}}
+                {{-- PREGUNTA --}}
 
-        <div class="english-practice-question">
+                <div class="english-practice-question">
 
-            <span
-                id="practice-question-type"
-                class="english-practice-question-type"
-            ></span>
+                    <span id="practice-question-type" class="english-practice-question-type"></span>
 
 
-            <h2 id="practice-question"></h2>
+                    <h2 id="practice-question"></h2>
 
 
-            {{-- CONTENEDOR DE AUDIO --}}
+                    {{-- CONTENEDOR DE AUDIO --}}
 
-            <div
-                id="practice-listen"
-                class="english-practice-listen-container"
-                style="display: none;"
-            ></div>
+                    <div id="practice-listen" class="english-practice-listen-container" style="display: none;"></div>
 
-        </div>
+                </div>
 
 
-        {{-- OPCIONES DE RESPUESTA --}}
+                {{-- OPCIONES DE RESPUESTA --}}
 
-        <div
-            id="practice-options"
-            class="english-practice-options"
-        ></div>
+                <div id="practice-options" class="english-practice-options"></div>
 
 
-        {{-- FEEDBACK DE LA RESPUESTA --}}
+                {{-- FEEDBACK DE LA RESPUESTA --}}
 
-        <div
-            id="practice-feedback"
-            class="english-practice-feedback"
-            style="display: none;"
-        >
+                <div id="practice-feedback" class="english-practice-feedback" style="display: none;">
 
-            <strong id="practice-feedback-title"></strong>
+                    <strong id="practice-feedback-title"></strong>
 
-            <p id="practice-feedback-text"></p>
+                    <p id="practice-feedback-text"></p>
 
-        </div>
+                </div>
 
 
-        {{-- ACCIONES DE LA PRÁCTICA --}}
+                {{-- ACCIONES DE LA PRÁCTICA --}}
 
-        <div class="english-practice-actions">
+                <div class="english-practice-actions">
 
-            <button
-                type="button"
-                id="btn-toggle-auto-next"
-                class="english-practice-auto-next-button"
-                aria-pressed="true"
-            >
-                ⚡ Auto: ON
-            </button>
+                    <button type="button" id="btn-toggle-auto-next" class="english-practice-auto-next-button"
+                        aria-pressed="true">
+                        ⚡ Auto: ON
+                    </button>
 
 
-            <button
-                type="button"
-                id="btn-next-practice"
-                style="display: none;"
-            >
-                Siguiente →
-            </button>
+                    <button type="button" id="btn-next-practice" style="display: none;">
+                        Siguiente →
+                    </button>
 
-        </div>
+                </div>
 
-    </div>
+            </div>
 
 
-    {{-- =========================================================
+            {{-- =========================================================
          RESULTADO FINAL
          
          IMPORTANTE:
          ESTE BLOQUE ESTÁ FUERA DE practice-card.
          ========================================================= --}}
 
-    <div
-        id="practice-result"
-        class="english-practice-result"
-        style="display: none;"
-    >
+            <div id="practice-result" class="english-practice-result" style="display: none;">
 
-        <h2>
-            🎉 ¡Práctica terminada!
-        </h2>
+                <h2>
+                    🎉 ¡Práctica terminada!
+                </h2>
 
 
-        <div class="english-practice-summary">
+                <div class="english-practice-summary">
 
-            {{-- CATEGORÍA --}}
+                    {{-- CATEGORÍA --}}
 
-            <p>
+                    <p>
 
-                <strong>
-                    Categoría:
-                </strong>
+                        <strong>
+                            Categoría:
+                        </strong>
 
-                <span id="practice-result-category"></span>
+                        <span id="practice-result-category"></span>
 
-            </p>
-
-
-            {{-- CORRECTAS --}}
-
-            <p>
-
-                <strong>
-                    Correctas:
-                </strong>
-
-                <span id="practice-correct-answers">
-                    0
-                </span>
-
-            </p>
+                    </p>
 
 
-            {{-- INCORRECTAS --}}
+                    {{-- CORRECTAS --}}
 
-            <p>
+                    <p>
 
-                <strong>
-                    Incorrectas:
-                </strong>
+                        <strong>
+                            Correctas:
+                        </strong>
 
-                <span id="practice-incorrect-answers">
-                    0
-                </span>
+                        <span id="practice-correct-answers">
+                            0
+                        </span>
 
-            </p>
-
-
-            {{-- PUNTAJE --}}
-
-            <p>
-
-                <strong>
-                    Puntaje:
-                </strong>
-
-                <span id="practice-score">
-                    0%
-                </span>
-
-            </p>
-
-        </div>
+                    </p>
 
 
-        {{-- MENSAJE FINAL --}}
+                    {{-- INCORRECTAS --}}
 
-        <p id="practice-result-message"></p>
+                    <p>
 
+                        <strong>
+                            Incorrectas:
+                        </strong>
 
-        {{-- BOTONES DEL RESULTADO --}}
+                        <span id="practice-incorrect-answers">
+                            0
+                        </span>
 
-        <div class="english-practice-result-actions">
-
-            <button
-                type="button"
-                id="btn-retry-practice"
-                class="english-practice-retry-button"
-            >
-                🔄 Intentar nuevamente
-            </button>
+                    </p>
 
 
-            <button
-                type="button"
-                id="btn-change-practice-mode"
-                class="english-practice-change-mode-button"
-            >
-                🔄 Cambiar modo
-            </button>
+                    {{-- PUNTAJE --}}
+
+                    <p>
+
+                        <strong>
+                            Puntaje:
+                        </strong>
+
+                        <span id="practice-score">
+                            0%
+                        </span>
+
+                    </p>
+
+                </div>
 
 
-            <a
-                href="{{ route('english.study', $category) }}"
-                class="english-practice-study-link"
-            >
-                📚 Volver a estudiar
-            </a>
+                {{-- MENSAJE FINAL --}}
 
-        </div>
+                <p id="practice-result-message"></p>
+
+
+                {{-- BOTONES DEL RESULTADO --}}
+
+                <div class="english-practice-result-actions">
+
+                    <button type="button" id="btn-retry-practice" class="english-practice-retry-button">
+                        🔄 Intentar nuevamente
+                    </button>
+
+
+                    <button type="button" id="btn-change-practice-mode" class="english-practice-change-mode-button">
+                        🔄 Cambiar modo
+                    </button>
+
+
+                    <a href="{{ route('english.study', $category) }}" class="english-practice-study-link">
+                        📚 Volver a estudiar
+                    </a>
+
+                </div>
+
+            </div>
+        @else
+            {{-- SIN PALABRAS PARA ESTE TIPO DE PRÁCTICA --}}
+
+            <div class="english-empty">
+
+                @if ($practiceEmptyMessage)
+                    <strong>
+                        🎉 ¡Muy bien!
+                    </strong>
+
+                    <span>
+                        {{ $practiceEmptyMessage }}
+                    </span>
+
+                    <a href="{{ route('english.mastery', $category) }}" class="english-practice-empty-button">
+                        ← Volver al dominio
+                    </a>
+                @else
+                    <strong>
+                        Esta categoría todavía no tiene palabras.
+                    </strong>
+
+                    <span>
+                        Agrega palabras antes de comenzar a practicar.
+                    </span>
+                @endif
+
+            </div>
+
+        @endif
 
     </div>
 
-
-@else
-
-    {{-- SIN PALABRAS --}}
-
-    <div class="english-empty">
-
-        <strong>
-            Esta categoría todavía no tiene palabras.
-        </strong>
-
-        <span>
-            Agrega palabras antes de comenzar a practicar.
-        </span>
-
-    </div>
-
-@endif
-
-</div>
-
-{{-- =========================================================
+    {{-- =========================================================
 DATOS PARA JAVASCRIPT
 ========================================================= --}}
 
-<script>
+    <script>
+        window.englishPractice = {
 
-window.englishPractice = {
+            words: @json($words),
 
-    words: @json($words),
+            incorrectWordIds: @json($incorrectWordIds),
 
-    incorrectWordIds: @json($incorrectWordIds),
+            wordPracticeStats: @json($wordPracticeStats),
 
-    categoryId: {{ $category->id }},
+            categoryId: {{ $category->id }},
 
-    categoryName: @json($category->name),
+            categoryName: @json($category->name),
 
-    questionCount: 10,
+            questionCount: 10,
 
-    selectedMode: null,
+            selectedMode: null,
 
-    sessionId: crypto.randomUUID()
+            sessionId: crypto.randomUUID()
 
-};
-
-</script>
+        };
+    </script>
 
 @endsection

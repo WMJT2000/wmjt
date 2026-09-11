@@ -345,3 +345,97 @@
     }
 
 }
+
+
+/* =========================================================
+   ACCIONES DE LAS CATEGORÍAS
+   ========================================================= */
+
+.english-category-card > a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    box-sizing: border-box;
+
+    margin-top: 10px;
+    padding: 10px 16px;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+/* =========================================================
+   ESTUDIAR
+   ========================================================= */
+
+.english-category-card > a:nth-of-type(1) {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #2563eb;
+}
+
+.english-category-card > a:nth-of-type(1):hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   PRACTICAR
+   ========================================================= */
+
+.english-category-card > a:nth-of-type(2) {
+    background: #f5f3ff;
+    border: 1px solid #ddd6fe;
+    color: #7c3aed;
+}
+
+.english-category-card > a:nth-of-type(2):hover {
+    background: #ede9fe;
+    border-color: #c4b5fd;
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   VER DOMINIO
+   ========================================================= */
+
+.english-category-card > a:nth-of-type(3) {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+}
+
+.english-category-card > a:nth-of-type(3):hover {
+    background: #dcfce7;
+    border-color: #86efac;
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
+@media (hover: none) {
+
+    .english-category-card > a:hover {
+        transform: none;
+    }
+
+}
