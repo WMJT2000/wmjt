@@ -214,6 +214,6 @@
 
 @push('scripts')
 
-    @vite('resources/js/manual-steps.js')
+
 
 @endpush

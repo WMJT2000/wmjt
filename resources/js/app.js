@@ -37,4 +37,5 @@ import './manuals.js';
 import './manual-sections.js';
 import './manual-steps.js';
 import './manual-mio.js';
+import './manual-execution.js';
 

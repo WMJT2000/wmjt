@@ -480,6 +480,6 @@
 
 @push('scripts')
 
-    @vite('resources/js/manual-execution.js')
+
 
 @endpush
