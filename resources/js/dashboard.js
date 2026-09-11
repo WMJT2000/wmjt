@@ -9,6 +9,30 @@ window.toggleUserMenu = function () {
 };
 
 
+document.addEventListener('DOMContentLoaded', () => {
+           
+    const sidebar =
+        document.getElementById('dashboardSidebar');
+
+    const toggle =
+        document.getElementById('sidebarToggle');
+
+    if (!sidebar || !toggle) {
+        return;
+    }
+
+
+    toggle.addEventListener('click', () => {
+
+        console.log(
+            'TOGGLE SIDEBAR')
+
+        sidebar.classList.toggle('collapsed');
+
+    });
+
+});
+
 document.addEventListener('click', function (event) {
 
     const menu = document.getElementById('user-menu');

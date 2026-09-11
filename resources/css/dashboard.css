@@ -1894,3 +1894,337 @@ body {
 .topbar-user-menu form button:hover {
     background: #f3f4f6;
 }
+
+/* =========================================================
+   SIDEBAR COLAPSABLE
+========================================================= */
+
+
+/* =========================================================
+   BOTÓN ABRIR / CERRAR
+========================================================= */
+
+.sidebar-toggle {
+    position: fixed;
+
+    top: 26px;
+    left: 236px;
+
+    width: 28px;
+    height: 28px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #1f2937;
+    color: #ffffff;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1100;
+
+    font-size: 14px;
+    line-height: 1;
+
+    transition:
+        left 0.25s ease,
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+    background: #374151;
+    transform: scale(1.05);
+}
+
+
+/* =========================================================
+   SIDEBAR CERRADO
+========================================================= */
+
+.dashboard-sidebar.collapsed {
+    width: 72px;
+    min-width: 72px;
+}
+
+
+/* =========================================================
+   OCULTAR TEXTOS
+========================================================= */
+
+.dashboard-sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+
+/* =========================================================
+   MARCA
+========================================================= */
+
+.dashboard-sidebar.collapsed .dashboard-brand {
+    justify-content: center;
+
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.dashboard-sidebar.collapsed .brand-icon {
+    margin-right: 0;
+}
+
+
+/* =========================================================
+   MENÚ
+========================================================= */
+
+.dashboard-sidebar.collapsed .dashboard-nav {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.dashboard-sidebar.collapsed .dashboard-nav-item {
+    justify-content: center;
+
+    padding-left: 0;
+    padding-right: 0;
+
+    gap: 0;
+}
+
+.dashboard-sidebar.collapsed .dashboard-nav-item span {
+    margin: 0;
+}
+
+
+/* =========================================================
+   TÍTULOS DE SECCIÓN
+========================================================= */
+
+.dashboard-sidebar.collapsed .nav-title {
+    height: 8px;
+
+    margin-top: 15px;
+    margin-bottom: 8px;
+
+    font-size: 0;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.dashboard-sidebar.collapsed .dashboard-sidebar-footer {
+    justify-content: center;
+
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+
+/* =========================================================
+   CONTENIDO PRINCIPAL
+========================================================= */
+
+.dashboard-main {
+    transition:
+        width 0.25s ease,
+        margin-left 0.25s ease;
+}
+
+.dashboard-sidebar.collapsed + .dashboard-main {
+    width: calc(100% - 72px);
+    margin-left: 72px;
+}
+
+
+/* =========================================================
+   SIDEBAR ABIERTO
+   El botón se coloca automáticamente en el borde
+========================================================= */
+
+/* > 1400px */
+@media (min-width: 1401px) {
+
+    .sidebar-toggle {
+        left: 256px;
+    }
+}
+
+
+/* 1200px - 1400px */
+@media (min-width: 1200px) and (max-width: 1400px) {
+
+    .sidebar-toggle {
+        left: 236px;
+    }
+}
+
+
+/* 901px - 1199px */
+@media (min-width: 901px) and (max-width: 1199px) {
+
+    .sidebar-toggle {
+        left: 206px;
+    }
+}
+
+
+/* 768px - 900px */
+@media (min-width: 768px) and (max-width: 900px) {
+
+    .sidebar-toggle {
+        left: 186px;
+    }
+}
+
+
+/* 600px - 767px */
+@media (min-width: 600px) and (max-width: 767px) {
+
+    .sidebar-toggle {
+        left: 166px;
+    }
+}
+
+
+/* =========================================================
+   SIDEBAR CERRADO
+   El botón siempre queda en el borde de 72px
+========================================================= */
+
+@media (min-width: 600px) {
+
+    .dashboard-sidebar.collapsed ~ .dashboard-main {
+        width: calc(100% - 72px);
+        margin-left: 72px;
+    }
+
+    .dashboard-sidebar.collapsed .sidebar-toggle {
+        left: 58px;
+    }
+
+}
+
+
+/* =========================================================
+   MÓVIL
+   <= 599px
+========================================================= */
+
+@media (max-width: 599px) {
+
+    /*
+       En móvil NO usamos el sidebar colapsable.
+       Se mantiene el comportamiento horizontal
+       que ya tienes.
+    */
+
+    .dashboard-sidebar.collapsed {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .dashboard-sidebar.collapsed .sidebar-text {
+        display: block;
+    }
+
+    .dashboard-sidebar.collapsed .dashboard-brand {
+        justify-content: flex-start;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .dashboard-sidebar.collapsed .brand-icon {
+        margin-right: 12px;
+    }
+
+    .dashboard-sidebar.collapsed .dashboard-nav {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .dashboard-sidebar.collapsed .dashboard-nav-item {
+        justify-content: center;
+        gap: 0;
+    }
+
+    .dashboard-sidebar.collapsed .nav-title {
+        display: none;
+    }
+
+    .dashboard-sidebar.collapsed + .dashboard-main {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .sidebar-toggle {
+        position: absolute;
+
+        top: 16px;
+        right: 10px;
+        left: auto;
+    }
+
+}
+
+
+/* =========================================================
+   MÓVIL: SOLO ICONOS + SCROLL HORIZONTAL
+========================================================= */
+
+@media (max-width: 599px) {
+
+    /* Ocultar todos los textos */
+    .dashboard-sidebar .sidebar-text {
+        display: none;
+    }
+
+    /* Menú horizontal */
+    .dashboard-nav {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        white-space: nowrap;
+    }
+
+    /* Cada icono ocupa su espacio */
+    .dashboard-nav-item {
+        flex-shrink: 0;
+        min-width: 50px;
+
+        justify-content: center;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    /* Ocultar títulos */
+    .dashboard-sidebar .nav-title {
+        display: none;
+    }
+
+    /* Evitar que el usuario se comprima */
+    .sidebar-user {
+        flex-shrink: 0;
+    }
+
+    /* Aunque tenga .collapsed, en móvil no mostrar textos */
+    .dashboard-sidebar.collapsed .sidebar-text {
+        display: none;
+    }
+
+        .sidebar-toggle,.sidebar-user {
+        display: none;
+    }
+
+}
