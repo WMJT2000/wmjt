@@ -50,46 +50,46 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
 
 
- Route::get('/planificaciones', [PlanificacionController::class, 'index'])
-    ->name('planificaciones.index');
+    Route::get('/planificaciones', [PlanificacionController::class, 'index'])
+        ->name('planificaciones.index');
 
-Route::get('/planificaciones/crear', [PlanificacionController::class, 'create'])
-    ->name('planificaciones.create');
+    Route::get('/planificaciones/crear', [PlanificacionController::class, 'create'])
+        ->name('planificaciones.create');
 
-Route::post('/planificaciones', [PlanificacionController::class, 'store'])
-    ->name('planificaciones.store');
+    Route::post('/planificaciones', [PlanificacionController::class, 'store'])
+        ->name('planificaciones.store');
 
-Route::put('/planificaciones/{id}', [PlanificacionController::class, 'update'])
-    ->name('planificaciones.update');
+    Route::put('/planificaciones/{id}', [PlanificacionController::class, 'update'])
+        ->name('planificaciones.update');
 
     Route::delete('/planificaciones/{id}', [PlanificacionController::class, 'destroy'])
-    ->name('planificaciones.destroy');
+        ->name('planificaciones.destroy');
 
 
 
 
 
-Route::get('/word/crear', [WordController::class, 'crear'])
-    ->name('word.crear');
+    Route::get('/word/crear', [WordController::class, 'crear'])
+        ->name('word.crear');
 
-Route::post('/word/generar', [WordController::class, 'generar'])
-    ->name('word.generar');
+    Route::post('/word/generar', [WordController::class, 'generar'])
+        ->name('word.generar');
 
-Route::get('/prueba-word', [PruebaWordController::class, 'generar']);
-//planificaciones educacion inicial
-Route::get('/hellad', [HelladController::class, 'index'])
-    ->name('hellad.index');
+    Route::get('/prueba-word', [PruebaWordController::class, 'generar']);
+    //planificaciones educacion inicial
+    Route::get('/hellad', [HelladController::class, 'index'])
+        ->name('hellad.index');
 
     Route::get('/hellad/eje/{id}', [HelladController::class, 'eje'])
-    ->name('hellad.eje');
+        ->name('hellad.eje');
 
     Route::get('/hellad/ambito/{id}', [HelladController::class, 'ambito'])
-    ->name('hellad.ambito');
+        ->name('hellad.ambito');
 
     Route::get('/hellad/objetivo/{id}', [HelladController::class, 'objetivo'])
-    ->name('hellad.objetivo');
+        ->name('hellad.objetivo');
 
-//
+    //
 
     Route::get('/english', [EnglishLearningController::class, 'index'])
         ->name('english.index');
@@ -123,9 +123,6 @@ Route::get('/hellad', [HelladController::class, 'index'])
 
     Route::get('/english/category/{category}/{word?}', [EnglishLearningController::class, 'study'])
         ->name('english.study');
-
-
-
 });
 
 // Dashboard principal
@@ -217,6 +214,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/gestion/concepts', [ConceptController::class, 'page'])
         ->name('concepts.index');
 
+    // Gestión de planificaciones
+    Route::get('/gestion/planificaciones', [PlanificacionController::class, 'index'])
+        ->name('gestion.planificacion.index');
+
     ////manuales
 
 
@@ -262,7 +263,6 @@ Route::middleware('auth')->group(function () {
         '/mis-manuales',
         [ManualExecutionController::class, 'myManuals']
     )->name('manuals.my');
-
 });
 
 // Rutas de Laravel Breeze

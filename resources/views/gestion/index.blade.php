@@ -7,54 +7,75 @@
 
 @section('content')
 
-    <div class="dashboard">
+<div class="dashboard">
 
-        {{-- SIDEBAR --}}
+    {{-- SIDEBAR --}}
 
-        <x-dashboard-sidebar />
+    <x-dashboard-sidebar />
+
+
+    {{-- CONTENIDO --}}
+
+    <div class="dashboard-main">
+
+
+        {{-- HEADER --}}
+
+        <header class="dashboard-topbar">
+
+            <div>
+
+                <h1>
+                    Gestión
+                </h1>
+
+                <p>
+                    Administra los diferentes módulos de la aplicación.
+                </p>
+
+            </div>
+
+        </header>
 
 
         {{-- CONTENIDO --}}
 
-        <div class="dashboard-main">
+        <section class="dashboard-content">
 
 
-            {{-- HEADER --}}
+            {{-- BIENVENIDA --}}
 
-            <header class="dashboard-topbar">
+            <div class="welcome-section">
 
                 <div>
 
-                    <h1>
-                        Gestión
-                    </h1>
+                    <h2>
+                        Módulos de gestión
+                    </h2>
 
                     <p>
-                        Administra los diferentes módulos de la aplicación.
+                        Selecciona el área que deseas administrar.
                     </p>
 
                 </div>
 
-            </header>
+            </div>
 
 
-            {{-- CONTENIDO --}}
+            {{-- MÓDULOS --}}
 
-            <section class="dashboard-content">
+            <div class="dashboard-panel">
 
-
-                {{-- BIENVENIDA --}}
-
-                <div class="welcome-section">
+                <div class="panel-header">
 
                     <div>
 
                         <h2>
-                            Módulos de gestión
+                            Áreas disponibles
                         </h2>
 
                         <p>
-                            Selecciona el área que deseas administrar.
+                            Gestiona la información de cada módulo.
                         </p>
 
                     </div>
@@ -62,120 +83,126 @@
                 </div>
 
 
-                {{-- MÓDULOS --}}
+                <div class="management-grid">
 
-                <div class="dashboard-panel">
 
-                    <div class="panel-header">
+                    {{-- CONOCIMIENTO TÉCNICO --}}
+
+                    <a href="{{ route('gestion.knowledge.index') }}" class="management-card">
+
+                        <div class="management-icon">
+                            🔎
+                        </div>
 
                         <div>
 
-                            <h2>
-                                Áreas disponibles
-                            </h2>
+                            <strong>
+                                Conocimiento técnico
+                            </strong>
 
-                            <p>
-                                Gestiona la información de cada módulo.
-                            </p>
+                            <span>
+                                Tecnologías, categorías y conceptos
+                            </span>
 
                         </div>
 
-                    </div>
+                        <b>
+                            →
+                        </b>
+
+                    </a>
 
 
-                    <div class="management-grid">
+                    {{-- MANUALES --}}
+
+                    <a href="{{ route('gestion.manuals') }}" class="management-card">
+
+                        <div class="management-icon">
+                            📚
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Manuales
+                            </strong>
+
+                            <span>
+                                Manuales, secciones y pasos prácticos
+                            </span>
+
+                        </div>
+
+                        <b>
+                            →
+                        </b>
+
+                    </a>
 
 
-                        {{-- CONOCIMIENTO TÉCNICO --}}
+                    {{-- INGLÉS --}}
 
-                        <a href="{{ route('gestion.knowledge.index') }}" class="management-card">
+                    <a href="{{ route('gestion.english.index') }}" class="management-card">
 
-                            <div class="management-icon">
-                                🔎
-                            </div>
+                        <div class="management-icon">
+                            🇬🇧
+                        </div>
 
-                            <div>
+                        <div>
 
-                                <strong>
-                                    Conocimiento técnico
-                                </strong>
+                            <strong>
+                                Inglés
+                            </strong>
 
-                                <span>
-                                    Tecnologías, categorías y conceptos
-                                </span>
+                            <span>
+                                Categorías, palabras y significados
+                            </span>
 
-                            </div>
+                        </div>
 
-                            <b>
-                                →
-                            </b>
+                        <b>
+                            →
+                        </b>
 
-                        </a>
-
-
-                        {{-- MANUALES --}}
-
-                        <a href="{{ route('gestion.manuals') }}" class="management-card">
-
-                            <div class="management-icon">
-                                📚
-                            </div>
-
-                            <div>
-
-                                <strong>
-                                    Manuales
-                                </strong>
-
-                                <span>
-                                    Manuales, secciones y pasos prácticos
-                                </span>
-
-                            </div>
-
-                            <b>
-                                →
-                            </b>
-
-                        </a>
+                    </a>
 
 
-                        {{-- INGLÉS --}}
+                    {{-- PLANIFICACIONES --}}
 
-                        <a href="{{ route('gestion.english.index') }}" class="management-card">
+                    <a href="{{ route('gestion.planificacion.index') }}" class="management-card">
 
-                            <div class="management-icon">
-                                🇬🇧
-                            </div>
+                        <div class="management-icon">
+                            📋
+                        </div>
 
-                            <div>
+                        <div>
 
-                                <strong>
-                                    Inglés
-                                </strong>
+                            <strong>
+                                Planificaciones
+                            </strong>
 
-                                <span>
-                                    Categorías, palabras y significados
-                                </span>
+                            <span>
+                                Gestiona las planificaciones y sus configuraciones
+                            </span>
 
-                            </div>
+                        </div>
 
-                            <b>
-                                →
-                            </b>
+                        <b>
+                            →
+                        </b>
 
-                        </a>
+                    </a>
 
-
-                    </div>
 
                 </div>
 
+            </div>
 
-            </section>
 
-        </div>
+        </section>
 
     </div>
+
+</div>
 
 @endsection
