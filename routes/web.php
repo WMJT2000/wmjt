@@ -18,6 +18,10 @@ use App\Http\Controllers\ManualController;
 use App\Http\Controllers\ManualSectionController;
 use App\Http\Controllers\ManualStepController;
 use App\Http\Controllers\ManualExecutionController;
+use App\Http\Controllers\HelladController;
+use App\Http\Controllers\PruebaWordController;
+use App\Http\Controllers\WordController;
+use App\Http\Controllers\PlanificacionController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -44,6 +48,48 @@ Route::get('/', function () {
 // Aprendizaje de inglés
 // Aprendizaje de inglés
 Route::middleware('auth')->group(function () {
+
+
+ Route::get('/planificaciones', [PlanificacionController::class, 'index'])
+    ->name('planificaciones.index');
+
+Route::get('/planificaciones/crear', [PlanificacionController::class, 'create'])
+    ->name('planificaciones.create');
+
+Route::post('/planificaciones', [PlanificacionController::class, 'store'])
+    ->name('planificaciones.store');
+
+Route::put('/planificaciones/{id}', [PlanificacionController::class, 'update'])
+    ->name('planificaciones.update');
+
+    Route::delete('/planificaciones/{id}', [PlanificacionController::class, 'destroy'])
+    ->name('planificaciones.destroy');
+
+
+
+
+
+Route::get('/word/crear', [WordController::class, 'crear'])
+    ->name('word.crear');
+
+Route::post('/word/generar', [WordController::class, 'generar'])
+    ->name('word.generar');
+
+Route::get('/prueba-word', [PruebaWordController::class, 'generar']);
+//planificaciones educacion inicial
+Route::get('/hellad', [HelladController::class, 'index'])
+    ->name('hellad.index');
+
+    Route::get('/hellad/eje/{id}', [HelladController::class, 'eje'])
+    ->name('hellad.eje');
+
+    Route::get('/hellad/ambito/{id}', [HelladController::class, 'ambito'])
+    ->name('hellad.ambito');
+
+    Route::get('/hellad/objetivo/{id}', [HelladController::class, 'objetivo'])
+    ->name('hellad.objetivo');
+
+//
 
     Route::get('/english', [EnglishLearningController::class, 'index'])
         ->name('english.index');

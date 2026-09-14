@@ -14,8 +14,22 @@ use App\Http\Controllers\ManualSectionController;
 use App\Http\Controllers\ManualStepController;
 use App\Http\Controllers\ManualController;
 use App\Http\Controllers\ManualExecutionController;
-
+use App\Http\Controllers\PlanificacionController;
 Route::middleware('auth')->group(function () {
+
+// ==========================================
+// PLANIFICACIONES
+// ==========================================
+
+Route::get('/planificaciones', [
+    PlanificacionController::class,
+    'apiIndex'
+]);
+
+Route::get('/planificaciones/{id}', [
+    PlanificacionController::class,
+    'apiShow'
+]);
 
     Route::post('/english/pronunciation', [EnglishPronunciationController::class, 'pronounce']);
 

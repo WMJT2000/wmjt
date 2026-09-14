@@ -19,6 +19,8 @@ import '../css/english-dominio.css';
 import '../css/manuals.css';
 import '../css/manuals-execution.css';
 import '../css/manuals-mio.css';
+import '../css/hellad.css';
+import '../css/planificacion-crear.css';
 // JavaScript
 import './form.js';
 import './technologies.js';
@@ -38,4 +40,6 @@ import './manual-sections.js';
 import './manual-steps.js';
 import './manual-mio.js';
 import './manual-execution.js';
+import './planificaciones.js';
+import './planificacion-crear.js';
 
