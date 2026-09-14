@@ -54,7 +54,7 @@
 
 
 /* =========================================================
-   BOTONES PRINCIPALES
+   BOTONES
 ========================================================= */
 
 .gestion-container .btn-primary,
@@ -62,17 +62,14 @@
     min-height: 42px;
     padding: 10px 16px;
     border-radius: 8px;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     text-align: center;
-
+    font-family: inherit;
     font-size: 13px;
     font-weight: 600;
     line-height: 1.2;
-
     cursor: pointer;
 
     transition:
@@ -90,10 +87,8 @@
 
 .gestion-container .btn-primary {
     border: none;
-
     background: #2563eb;
     color: #ffffff;
-
     text-decoration: none;
 
     box-shadow:
@@ -121,7 +116,6 @@
 
 .gestion-container .btn-secondary {
     border: 1px solid #d1d5db;
-
     background: #ffffff;
     color: #374151;
 }
@@ -153,11 +147,12 @@
 
     border: 1px solid #dbeafe;
     border-left: 4px solid #3b82f6;
-
     border-radius: 12px;
 
     box-shadow:
         0 2px 8px rgba(37, 99, 235, 0.04);
+
+    box-sizing: border-box;
 }
 
 .gestion-info p {
@@ -202,6 +197,8 @@
 
     box-shadow:
         0 3px 12px rgba(37, 99, 235, 0.05);
+
+    box-sizing: border-box;
 }
 
 .manual-progress-header {
@@ -287,7 +284,7 @@
 
 
 /* =========================================================
-   NAVEGACIÓN DE PASOS
+   PANEL DE NAVEGACIÓN
 ========================================================= */
 
 .manual-steps-navigation {
@@ -295,7 +292,6 @@
     top: 20px;
 
     width: 100%;
-    max-height: calc(100vh - 40px);
 
     display: flex;
     flex-direction: column;
@@ -309,11 +305,13 @@
 
     box-shadow:
         0 4px 16px rgba(37, 99, 235, 0.06);
+
+    box-sizing: border-box;
 }
 
 
 /* =========================================================
-   HEADER NAVEGACIÓN
+   HEADER DE NAVEGACIÓN
 ========================================================= */
 
 .manual-steps-navigation-header {
@@ -323,7 +321,7 @@
     align-items: center;
     justify-content: space-between;
 
-    gap: 10px;
+    gap: 12px;
 
     padding: 16px;
 
@@ -335,6 +333,16 @@
             #eff6ff,
             #f8fbff
         );
+
+    box-sizing: border-box;
+}
+
+.manual-steps-navigation-header > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    min-width: 0;
 }
 
 .manual-steps-navigation-header strong {
@@ -344,13 +352,22 @@
     font-weight: 700;
 }
 
-.manual-steps-navigation-header span {
+.manual-steps-navigation-header > div > span {
+    color: #64748b;
+
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.manual-steps-navigation-header > #stepCounter {
+    flex-shrink: 0;
+
     color: #2563eb;
 
     font-size: 12px;
     font-weight: 700;
 
-    padding: 4px 8px;
+    padding: 5px 9px;
 
     background: #dbeafe;
 
@@ -359,222 +376,111 @@
 
 
 /* =========================================================
-   LISTA DE PASOS
+   SELECTOR DE PASOS
 ========================================================= */
 
-.manual-steps-list {
+.manual-step-selector-container {
     width: 100%;
 
-    padding: 8px;
+    padding: 16px;
 
-    overflow-y: auto;
-    overflow-x: hidden;
+    box-sizing: border-box;
+}
 
-    -webkit-overflow-scrolling: touch;
+.manual-step-selector-container label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #374151;
+
+    font-size: 12px;
+    font-weight: 700;
 }
 
 
 /* =========================================================
-   ITEM DE NAVEGACIÓN
+   SELECT
 ========================================================= */
 
-.manual-step-nav-item {
+.manual-step-selector {
     width: 100%;
 
-    display: grid;
+    min-height: 42px;
 
-    grid-template-columns:
-        24px
-        28px
-        minmax(0, 1fr);
+    padding: 9px 36px 9px 12px;
 
-    align-items: center;
-
-    gap: 7px;
-
-    padding: 10px 9px;
-    margin: 0 0 4px;
-
-    border: 1px solid transparent;
+    border: 1px solid #cbd5e1;
     border-radius: 8px;
 
-    background: transparent;
+    background-color: #ffffff;
+    color: #374151;
 
-    color: #4b5563;
-
-    text-align: left;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
 
     cursor: pointer;
 
+    outline: none;
+
+    box-sizing: border-box;
+
     transition:
-        background 0.2s ease,
         border-color 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease;
+        box-shadow 0.2s ease,
+        background 0.2s ease;
 }
 
-.manual-step-nav-item:last-child {
-    margin-bottom: 0;
+.manual-step-selector:hover {
+    border-color: #93c5fd;
+    background: #f8fbff;
 }
 
-.manual-step-nav-item:hover {
-    background: #eff6ff;
-    border-color: #bfdbfe;
+.manual-step-selector:focus {
+    border-color: #3b82f6;
 
-    transform: translateX(2px);
-}
-
-
-/* =========================================================
-   ESTADO DEL PASO
-========================================================= */
-
-.manual-step-nav-status {
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    width: 20px;
-    height: 20px;
-
-    color: #9ca3af;
-
-    font-size: 14px;
-    font-weight: 700;
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.12);
 }
 
 
 /* =========================================================
-   NÚMERO DEL PASO
+   INFORMACIÓN DE NAVEGACIÓN
 ========================================================= */
 
-.manual-step-nav-number {
+.manual-navigation-info {
+    width: 100%;
+
     display: flex;
-
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 
-    width: 24px;
-    height: 24px;
+    gap: 10px;
 
-    color: #6b7280;
+    margin-top: auto;
+
+    padding: 14px 16px;
+
+    border-top: 1px solid #e5e7eb;
+
+    background: #f8fafc;
+
+    box-sizing: border-box;
+}
+
+.manual-navigation-info span {
+    color: #64748b;
 
     font-size: 11px;
-    font-weight: 700;
-
-    background: #f3f4f6;
-
-    border-radius: 50%;
-}
-
-
-/* =========================================================
-   TÍTULO DEL PASO
-========================================================= */
-
-.manual-step-nav-title {
-    min-width: 0;
-
-    color: #4b5563;
-
-    font-size: 12px;
     font-weight: 500;
-    line-height: 1.4;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
+.manual-navigation-info strong {
+    color: #1e3a8a;
 
-/* =========================================================
-   PASO ACTUAL
-========================================================= */
-
-.manual-step-nav-item.active {
-    background:
-        linear-gradient(
-            90deg,
-            #dbeafe,
-            #eff6ff
-        );
-
-    border-color: #93c5fd;
-
-    box-shadow:
-        inset 3px 0 0 #2563eb;
-}
-
-.manual-step-nav-item.active .manual-step-nav-status {
-    color: #2563eb;
-}
-
-.manual-step-nav-item.active .manual-step-nav-number {
-    color: #ffffff;
-
-    background: #2563eb;
-
-    box-shadow:
-        0 2px 5px rgba(37, 99, 235, 0.25);
-}
-
-.manual-step-nav-item.active .manual-step-nav-title {
-    color: #1e40af;
+    font-size: 13px;
     font-weight: 700;
-}
-
-
-/* =========================================================
-   PASO COMPLETADO EN SIDEBAR
-========================================================= */
-
-.manual-step-nav-item.completed {
-    background: #f0fdf4;
-}
-
-.manual-step-nav-item.completed .manual-step-nav-status {
-    color: #16a34a;
-}
-
-.manual-step-nav-item.completed .manual-step-nav-number {
-    color: #ffffff;
-    background: #22c55e;
-}
-
-.manual-step-nav-item.completed .manual-step-nav-title {
-    color: #166534;
-}
-
-
-/* =========================================================
-   PASO COMPLETADO + ACTUAL
-========================================================= */
-
-.manual-step-nav-item.completed.active {
-    background:
-        linear-gradient(
-            90deg,
-            #dcfce7,
-            #eff6ff
-        );
-
-    border-color: #86efac;
-
-    box-shadow:
-        inset 3px 0 0 #16a34a;
-}
-
-.manual-step-nav-item.completed.active .manual-step-nav-status {
-    color: #16a34a;
-}
-
-.manual-step-nav-item.completed.active .manual-step-nav-number {
-    background: #16a34a;
-}
-
-.manual-step-nav-item.completed.active .manual-step-nav-title {
-    color: #166534;
 }
 
 
@@ -590,25 +496,29 @@
 
 /* =========================================================
    PASOS
+   IMPORTANTE:
+   Solo el paso .active se muestra
 ========================================================= */
 
 .manual-execution-step {
+    display: none;
+
     width: 100%;
-
-
+    min-width: 0;
 
     padding: 26px;
 
     background: #ffffff;
 
     border: 1px solid #dbeafe;
-
     border-top: 4px solid #3b82f6;
 
     border-radius: 12px;
 
     box-shadow:
         0 5px 20px rgba(37, 99, 235, 0.06);
+
+    box-sizing: border-box;
 }
 
 .manual-execution-step.active {
@@ -617,14 +527,13 @@
 
 
 /* =========================================================
-   HEADER DEL PASO ACTUAL
+   HEADER DEL PASO
 ========================================================= */
 
 .manual-current-step-header {
     width: 100%;
 
     display: flex;
-
     align-items: flex-start;
     justify-content: space-between;
 
@@ -648,9 +557,11 @@
 
     font-size: 12px;
     font-weight: 700;
+
     line-height: 1.4;
 
     text-transform: uppercase;
+
     letter-spacing: 0.04em;
 }
 
@@ -661,6 +572,7 @@
 
     font-size: 25px;
     line-height: 1.3;
+
     font-weight: 700;
 
     overflow-wrap: anywhere;
@@ -674,13 +586,13 @@
     background: #eff6ff;
 
     border: 1px solid #bfdbfe;
-
     border-radius: 7px;
 
     color: #1d4ed8;
 
     font-size: 11px;
     font-weight: 600;
+
     line-height: 1.4;
 }
 
@@ -693,13 +605,11 @@
     width: 100%;
 
     margin-top: 20px;
-
     padding: 14px 16px;
 
     background: #f8fbff;
 
     border-left: 3px solid #60a5fa;
-
     border-radius: 7px;
 
     color: #4b5563;
@@ -708,6 +618,8 @@
     line-height: 1.7;
 
     overflow-wrap: anywhere;
+
+    box-sizing: border-box;
 }
 
 .manual-step-description p {
@@ -728,10 +640,11 @@
     background: #f8fafc;
 
     border: 1px solid #e2e8f0;
-
     border-radius: 9px;
 
     overflow: hidden;
+
+    box-sizing: border-box;
 }
 
 .manual-step-block strong {
@@ -764,7 +677,6 @@
 
 .manual-step-block-title {
     display: flex;
-
     align-items: center;
 
     gap: 8px;
@@ -784,6 +696,8 @@
 
     width: 25px;
     height: 25px;
+
+    flex-shrink: 0;
 
     background: #dbeafe;
 
@@ -814,7 +728,6 @@
         );
 
     border: 1px solid #374151;
-
     border-radius: 7px;
 
     overflow-x: auto;
@@ -827,6 +740,8 @@
 
     box-shadow:
         0 4px 12px rgba(17, 24, 39, 0.12);
+
+    box-sizing: border-box;
 }
 
 .manual-step-block code {
@@ -867,7 +782,7 @@
 
 
 /* =========================================================
-   NOTAS
+   NOTAS DEL MANUAL
 ========================================================= */
 
 .manual-step-block.manual-notes-block {
@@ -890,7 +805,182 @@
 
 
 /* =========================================================
-   ACCIONES DEL PASO
+   NOTAS DEL USUARIO
+========================================================= */
+
+.manual-user-notes-block {
+    margin-top: 18px;
+    padding: 16px;
+
+    background: #f8fbff;
+
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #3b82f6;
+
+    border-radius: 8px;
+
+    box-sizing: border-box;
+}
+
+.manual-user-notes-block .manual-step-block-title {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    margin-bottom: 10px;
+
+    color: #1e3a8a;
+}
+
+.manual-user-notes-block .manual-step-block-icon {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 6px;
+
+    background: #dbeafe;
+
+    color: #2563eb;
+
+    font-size: 15px;
+}
+
+.manual-step-user-notes {
+    display: block;
+
+    width: 100%;
+
+    min-height: 110px;
+
+    margin: 0;
+    padding: 12px 13px;
+
+    resize: vertical;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+
+    background: #ffffff;
+
+    color: #374151;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    line-height: 1.6;
+
+    outline: none;
+
+    box-sizing: border-box;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.manual-step-user-notes::placeholder {
+    color: #94a3b8;
+}
+
+.manual-step-user-notes:hover {
+    border-color: #94a3b8;
+}
+
+.manual-step-user-notes:focus {
+    border-color: #60a5fa;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+
+/* =========================================================
+   ACCIONES DE NOTA
+========================================================= */
+
+.manual-step-notes-actions {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 10px;
+}
+
+.btn-save-step-note {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 36px;
+
+    padding: 8px 14px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    font-family: inherit;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.1s ease,
+        box-shadow 0.2s ease;
+}
+
+.btn-save-step-note:hover {
+    background: #1d4ed8;
+
+    box-shadow:
+        0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.btn-save-step-note:active {
+    transform: translateY(1px);
+}
+
+.btn-save-step-note:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+
+    box-shadow: none;
+}
+
+.manual-step-note-status {
+    display: inline-flex;
+
+    align-items: center;
+
+    min-height: 20px;
+
+    color: #16a34a;
+
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   ACCIÓN COMPLETAR
 ========================================================= */
 
 .manual-step-actions {
@@ -938,16 +1028,20 @@
 
 
 /* =========================================================
-   NAVEGACIÓN ANTERIOR / SIGUIENTE
+   PAGINACIÓN
 ========================================================= */
 
 .manual-step-navigation-buttons {
     width: 100%;
 
-    display: flex;
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        auto
+        1fr;
 
     align-items: center;
-    justify-content: space-between;
 
     gap: 15px;
 
@@ -957,18 +1051,68 @@
     border-top: 1px solid #dbeafe;
 }
 
+.manual-step-navigation-buttons
+.btn-previous-step {
+    justify-self: start;
+}
+
+.manual-step-navigation-buttons
+.btn-next-step {
+    justify-self: end;
+}
+
 .manual-step-navigation-buttons .btn-secondary {
     min-width: 120px;
 }
 
 
 /* =========================================================
-   ESTADO VACÍO
+   CONTADOR DE PAGINACIÓN
 ========================================================= */
 
-.manual-execution-section > .gestion-info {
-    margin-bottom: 0;
+.manual-pagination-counter {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    min-width: 110px;
+
+    color: #64748b;
+
+    font-size: 12px;
+    font-weight: 500;
+
+    white-space: nowrap;
 }
+
+.manual-pagination-counter strong {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 30px;
+    height: 30px;
+
+    padding: 0 7px;
+
+    background: #dbeafe;
+
+    color: #1d4ed8;
+
+    border-radius: 50%;
+
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   ESTADO VACÍO
+========================================================= */
 
 #manualExecutionContainer > .gestion-info {
     margin-bottom: 0;
@@ -985,24 +1129,120 @@
 
 
 /* =========================================================
-   SCROLLBAR SIDEBAR
+   RESUMEN MANUAL COMPLETADO
 ========================================================= */
 
-.manual-steps-list::-webkit-scrollbar {
-    width: 7px;
+.manual-completed-summary {
+    display: flex;
+
+    align-items: center;
+
+    gap: 22px;
+
+    margin-bottom: 24px;
+    padding: 24px;
+
+    background: #f0fdf4;
+
+    border: 1px solid #bbf7d0;
+    border-left: 4px solid #22c55e;
+
+    border-radius: 10px;
+
+    box-sizing: border-box;
 }
 
-.manual-steps-list::-webkit-scrollbar-track {
-    background: transparent;
+.manual-completed-icon {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 58px;
+    height: 58px;
+
+    flex-shrink: 0;
+
+    background: #dcfce7;
+
+    border-radius: 12px;
+
+    font-size: 28px;
 }
 
-.manual-steps-list::-webkit-scrollbar-thumb {
-    background: #bfdbfe;
-    border-radius: 999px;
+.manual-completed-content {
+    flex: 1;
+
+    min-width: 0;
 }
 
-.manual-steps-list::-webkit-scrollbar-thumb:hover {
-    background: #60a5fa;
+.manual-completed-label {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #16a34a;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.05em;
+}
+
+.manual-completed-content h2 {
+    margin: 0 0 7px;
+
+    color: #166534;
+
+    font-size: 22px;
+}
+
+.manual-completed-content p {
+    margin: 0;
+
+    color: #475569;
+
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.manual-completed-stats {
+    display: flex;
+
+    gap: 28px;
+
+    margin-top: 18px;
+}
+
+.manual-completed-stat {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.manual-completed-stat strong {
+    color: #166534;
+
+    font-size: 18px;
+}
+
+.manual-completed-stat span {
+    color: #64748b;
+
+    font-size: 11px;
+}
+
+.manual-completed-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 20px;
 }
 
 
@@ -1108,19 +1348,12 @@
         padding: 14px;
     }
 
-    .manual-step-nav-item {
-        grid-template-columns:
-            22px
-            24px
-            minmax(0, 1fr);
-
-        gap: 5px;
-
-        padding: 9px 7px;
+    .manual-step-selector-container {
+        padding: 14px;
     }
 
-    .manual-step-nav-title {
-        font-size: 11px;
+    .manual-navigation-info {
+        padding: 12px 14px;
     }
 
     .manual-execution-step {
@@ -1186,25 +1419,21 @@
         gap: 14px;
     }
 
-    .manual-step-nav-item {
-        grid-template-columns:
-            20px
-            22px
-            minmax(0, 1fr);
-
-        padding: 8px 6px;
+    .manual-steps-navigation-header {
+        padding: 13px;
     }
 
-    .manual-step-nav-status {
-        font-size: 12px;
+    .manual-step-selector-container {
+        padding: 13px;
     }
 
-    .manual-step-nav-number {
-        font-size: 10px;
+    .manual-step-selector {
+        min-height: 40px;
+        font-size: 11px;
     }
 
-    .manual-step-nav-title {
-        font-size: 10px;
+    .manual-navigation-info {
+        padding: 11px 13px;
     }
 
     .manual-execution-step {
@@ -1254,7 +1483,9 @@
 
     .gestion-header {
         flex-direction: column;
+
         align-items: stretch;
+
         gap: 14px;
     }
 
@@ -1297,12 +1528,13 @@
 
 
     /* =====================================================
-       SIDEBAR PASA ARRIBA EN MÓVIL
+       LAYOUT MÓVIL
     ====================================================== */
 
     .manual-execution-layout {
         display: flex;
         flex-direction: column;
+
         gap: 14px;
     }
 
@@ -1313,7 +1545,9 @@
 
     .manual-steps-navigation {
         position: static;
+
         max-height: none;
+
         border-radius: 10px;
     }
 
@@ -1321,35 +1555,20 @@
         padding: 13px 14px;
     }
 
-    .manual-steps-list {
-        display: flex;
-
-        gap: 7px;
-
-        padding: 10px;
-
-        overflow-x: auto;
-        overflow-y: hidden;
+    .manual-step-selector-container {
+        padding: 13px 14px;
     }
 
-    .manual-step-nav-item {
-        flex-shrink: 0;
+    .manual-step-selector {
+        width: 100%;
 
-        width: auto;
-        min-width: 145px;
+        min-height: 42px;
 
-        grid-template-columns:
-            20px
-            22px
-            minmax(0, 1fr);
-
-        padding: 8px;
-
-        margin: 0;
+        font-size: 12px;
     }
 
-    .manual-step-nav-title {
-        max-width: 100px;
+    .manual-navigation-info {
+        padding: 11px 14px;
     }
 
 
@@ -1359,6 +1578,7 @@
 
     .manual-execution-step {
         padding: 16px;
+
         border-radius: 10px;
     }
 
@@ -1409,6 +1629,29 @@
 
 
     /* =====================================================
+       NOTAS
+    ====================================================== */
+
+    .manual-user-notes-block {
+        margin-top: 15px;
+        padding: 13px;
+    }
+
+    .manual-step-user-notes {
+        min-height: 120px;
+        font-size: 13px;
+    }
+
+    .manual-step-notes-actions {
+        flex-wrap: wrap;
+    }
+
+    .btn-save-step-note {
+        width: 100%;
+    }
+
+
+    /* =====================================================
        BOTÓN COMPLETAR
     ====================================================== */
 
@@ -1418,27 +1661,84 @@
 
     .manual-step-actions .btn-complete-step {
         width: 100%;
+
         min-height: 40px;
+
         font-size: 12px;
     }
 
 
     /* =====================================================
-       ANTERIOR / SIGUIENTE
+       PAGINACIÓN
     ====================================================== */
 
     .manual-step-navigation-buttons {
+        grid-template-columns:
+            1fr
+            auto
+            1fr;
+
+        gap: 8px;
+
         margin-top: 20px;
         padding-top: 16px;
     }
 
     .manual-step-navigation-buttons .btn-secondary {
-        flex: 1;
-
         min-width: 0;
+
         min-height: 40px;
 
+        padding: 8px 10px;
+
         font-size: 12px;
+    }
+
+    .manual-pagination-counter {
+        min-width: 80px;
+
+        gap: 4px;
+
+        font-size: 10px;
+    }
+
+    .manual-pagination-counter strong {
+        min-width: 26px;
+        height: 26px;
+
+        font-size: 10px;
+    }
+
+
+    /* =====================================================
+       RESUMEN COMPLETADO
+    ====================================================== */
+
+    .manual-completed-summary {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 15px;
+    }
+
+    .manual-completed-stats {
+        gap: 20px;
+    }
+
+    .manual-completed-actions {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+    .manual-completed-actions a,
+    .manual-completed-actions button {
+        width: 100%;
+
+        box-sizing: border-box;
+
+        text-align: center;
     }
 }
 
@@ -1495,7 +1795,7 @@
 
 
     /* =====================================================
-       NAVEGACIÓN HORIZONTAL
+       NAVEGACIÓN
     ====================================================== */
 
     .manual-steps-navigation-header {
@@ -1506,31 +1806,42 @@
         font-size: 12px;
     }
 
-    .manual-steps-navigation-header span {
+    .manual-steps-navigation-header > div > span {
+        font-size: 9px;
+    }
+
+    .manual-steps-navigation-header > #stepCounter {
+        font-size: 10px;
+
+        padding: 4px 7px;
+    }
+
+    .manual-step-selector-container {
+        padding: 11px 12px;
+    }
+
+    .manual-step-selector-container label {
         font-size: 10px;
     }
 
-    .manual-steps-list {
-        gap: 6px;
-        padding: 8px;
+    .manual-step-selector {
+        min-height: 40px;
+
+        padding: 8px 10px;
+
+        font-size: 10px;
     }
 
-    .manual-step-nav-item {
-        min-width: 135px;
-        padding: 7px;
+    .manual-navigation-info {
+        padding: 10px 12px;
     }
 
-    .manual-step-nav-status {
+    .manual-navigation-info span {
+        font-size: 9px;
+    }
+
+    .manual-navigation-info strong {
         font-size: 11px;
-    }
-
-    .manual-step-nav-number {
-        font-size: 9px;
-    }
-
-    .manual-step-nav-title {
-        max-width: 90px;
-        font-size: 9px;
     }
 
 
@@ -1544,6 +1855,7 @@
 
     .manual-current-step-label {
         margin-bottom: 5px;
+
         font-size: 10px;
     }
 
@@ -1553,6 +1865,7 @@
 
     .manual-current-step-section {
         padding: 5px 8px;
+
         font-size: 9px;
     }
 
@@ -1583,26 +1896,123 @@
         font-size: 9px;
     }
 
+
+    /* =====================================================
+       NOTAS
+    ====================================================== */
+
+    .manual-user-notes-block {
+        margin-top: 12px;
+        padding: 10px;
+    }
+
+    .manual-step-user-notes {
+        min-height: 110px;
+        font-size: 11px;
+    }
+
+    .manual-step-notes-actions {
+        gap: 7px;
+    }
+
+    .btn-save-step-note {
+        min-height: 34px;
+        padding: 7px 10px;
+
+        font-size: 10px;
+    }
+
+    .manual-step-note-status {
+        font-size: 9px;
+    }
+
+
+    /* =====================================================
+       BOTÓN COMPLETAR
+    ====================================================== */
+
     .manual-step-actions {
         margin-top: 14px;
     }
 
     .manual-step-actions .btn-complete-step {
         min-height: 38px;
+
         padding: 8px 10px;
+
         font-size: 10px;
     }
 
+
+    /* =====================================================
+       PAGINACIÓN
+    ====================================================== */
+
     .manual-step-navigation-buttons {
-        gap: 8px;
+        gap: 6px;
 
         margin-top: 16px;
+
         padding-top: 13px;
     }
 
     .manual-step-navigation-buttons .btn-secondary {
         min-height: 37px;
+
+        padding: 7px 8px;
+
         font-size: 10px;
+    }
+
+    .manual-pagination-counter {
+        min-width: 68px;
+
+        font-size: 9px;
+    }
+
+    .manual-pagination-counter strong {
+        min-width: 24px;
+        height: 24px;
+
+        font-size: 9px;
+    }
+
+
+    /* =====================================================
+       RESUMEN COMPLETADO
+    ====================================================== */
+
+    .manual-completed-summary {
+        margin-bottom: 16px;
+
+        padding: 16px;
+    }
+
+    .manual-completed-icon {
+        width: 48px;
+        height: 48px;
+
+        font-size: 22px;
+    }
+
+    .manual-completed-label {
+        font-size: 9px;
+    }
+
+    .manual-completed-content h2 {
+        font-size: 18px;
+    }
+
+    .manual-completed-content p {
+        font-size: 11px;
+    }
+
+    .manual-completed-stat strong {
+        font-size: 16px;
+    }
+
+    .manual-completed-stat span {
+        font-size: 9px;
     }
 }
 
@@ -1628,7 +2038,9 @@
 
     .gestion-header .btn-primary {
         min-height: 38px;
+
         padding: 8px 10px;
+
         font-size: 10px;
     }
 
@@ -1640,31 +2052,33 @@
         padding: 11px 12px;
     }
 
+
+    /* =====================================================
+       NAVEGACIÓN
+    ====================================================== */
+
     .manual-steps-navigation-header {
         padding: 10px;
     }
 
-    .manual-steps-list {
-        padding: 7px;
+    .manual-step-selector-container {
+        padding: 10px;
     }
 
-    .manual-step-nav-item {
-        min-width: 125px;
+    .manual-step-selector {
+        min-height: 38px;
 
-        grid-template-columns:
-            18px
-            20px
-            minmax(0, 1fr);
-
-        gap: 4px;
-
-        padding: 6px;
+        font-size: 9px;
     }
 
-    .manual-step-nav-title {
-        max-width: 82px;
-        font-size: 8px;
+    .manual-navigation-info {
+        padding: 9px 10px;
     }
+
+
+    /* =====================================================
+       PASO
+    ====================================================== */
 
     .manual-execution-step {
         padding: 11px;
@@ -1698,15 +2112,34 @@
         font-size: 8px;
     }
 
-    .manual-step-actions .btn-complete-step {
-        min-height: 36px;
-        font-size: 9px;
+
+    /* =====================================================
+       PAGINACIÓN
+    ====================================================== */
+
+    .manual-step-navigation-buttons {
+        gap: 5px;
     }
 
     .manual-step-navigation-buttons .btn-secondary {
         min-height: 35px;
+
         padding: 7px;
+
         font-size: 9px;
+    }
+
+    .manual-pagination-counter {
+        min-width: 60px;
+
+        font-size: 8px;
+    }
+
+    .manual-pagination-counter strong {
+        min-width: 22px;
+        height: 22px;
+
+        font-size: 8px;
     }
 }
 
@@ -1751,21 +2184,61 @@
         height: 7px;
     }
 
-    .manual-step-nav-item {
-        min-width: 115px;
 
-        grid-template-columns:
-            17px
-            18px
-            minmax(0, 1fr);
+    /* =====================================================
+       NAVEGACIÓN
+    ====================================================== */
 
-        gap: 3px;
+    .manual-steps-navigation-header {
+        padding: 9px;
     }
 
-    .manual-step-nav-title {
-        max-width: 75px;
+    .manual-steps-navigation-header strong {
+        font-size: 10px;
+    }
+
+    .manual-steps-navigation-header > div > span {
         font-size: 8px;
     }
+
+    .manual-steps-navigation-header > #stepCounter {
+        font-size: 8px;
+
+        padding: 3px 6px;
+    }
+
+    .manual-step-selector-container {
+        padding: 9px;
+    }
+
+    .manual-step-selector-container label {
+        font-size: 8px;
+    }
+
+    .manual-step-selector {
+        min-height: 36px;
+
+        padding: 7px 8px;
+
+        font-size: 8px;
+    }
+
+    .manual-navigation-info {
+        padding: 8px 9px;
+    }
+
+    .manual-navigation-info span {
+        font-size: 8px;
+    }
+
+    .manual-navigation-info strong {
+        font-size: 9px;
+    }
+
+
+    /* =====================================================
+       PASO
+    ====================================================== */
 
     .manual-execution-step {
         padding: 9px;
@@ -1800,12 +2273,41 @@
         font-size: 7px;
     }
 
+
+    /* =====================================================
+       NOTAS
+    ====================================================== */
+
+    .manual-user-notes-block {
+        padding: 8px;
+    }
+
+    .manual-step-user-notes {
+        min-height: 95px;
+
+        padding: 8px;
+
+        font-size: 9px;
+    }
+
+    .btn-save-step-note {
+        min-height: 32px;
+
+        font-size: 8px;
+    }
+
+
+    /* =====================================================
+       COMPLETAR
+    ====================================================== */
+
     .manual-step-actions {
         margin-top: 10px;
     }
 
     .manual-step-actions .btn-complete-step {
         min-height: 34px;
+
         padding: 7px;
 
         font-size: 8px;
@@ -1813,289 +2315,37 @@
         border-radius: 7px;
     }
 
+
+    /* =====================================================
+       PAGINACIÓN
+    ====================================================== */
+
     .manual-step-navigation-buttons {
-        gap: 6px;
+        gap: 4px;
 
         margin-top: 13px;
+
         padding-top: 10px;
     }
 
     .manual-step-navigation-buttons .btn-secondary {
         min-height: 33px;
+
+        padding: 6px;
+
         font-size: 8px;
     }
-}
 
+    .manual-pagination-counter {
+        min-width: 54px;
 
-/* =========================================
-   NOTAS DEL USUARIO
-   ========================================= */
-
-.manual-user-notes-block {
-    margin-top: 18px;
-    padding: 16px;
-    background: #f8fbff;
-    border: 1px solid #bfdbfe;
-    border-left: 4px solid #3b82f6;
-    border-radius: 8px;
-    box-sizing: border-box;
-}
-
-.manual-user-notes-block .manual-step-block-title {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    margin-bottom: 10px;
-    color: #1e3a8a;
-}
-
-.manual-user-notes-block .manual-step-block-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    background: #dbeafe;
-    color: #2563eb;
-    font-size: 15px;
-}
-
-.manual-step-user-notes {
-    display: block;
-    width: 100%;
-    min-height: 110px;
-    margin: 0;
-    padding: 12px 13px;
-
-    resize: vertical;
-
-    border: 1px solid #cbd5e1;
-    border-radius: 7px;
-
-    background: #ffffff;
-    color: #374151;
-
-    font-family: inherit;
-    font-size: 13px;
-    line-height: 1.6;
-
-    outline: none;
-    box-sizing: border-box;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background 0.2s ease;
-}
-
-.manual-step-user-notes::placeholder {
-    color: #94a3b8;
-}
-
-.manual-step-user-notes:hover {
-    border-color: #94a3b8;
-}
-
-.manual-step-user-notes:focus {
-    border-color: #60a5fa;
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-}
-
-/* Acciones de la nota */
-
-.manual-step-notes-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.btn-save-step-note {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    min-height: 36px;
-    padding: 8px 14px;
-
-    border: none;
-    border-radius: 7px;
-
-    background: #2563eb;
-    color: #ffffff;
-
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 600;
-
-    cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        transform 0.1s ease,
-        box-shadow 0.2s ease;
-}
-
-.btn-save-step-note:hover {
-    background: #1d4ed8;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
-}
-
-.btn-save-step-note:active {
-    transform: translateY(1px);
-}
-
-.btn-save-step-note:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
-/* Mensaje "Nota guardada" */
-
-.manual-step-note-status {
-    display: inline-flex;
-    align-items: center;
-
-    min-height: 20px;
-
-    color: #16a34a;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-/* =========================================
-   RESPONSIVE
-   ========================================= */
-
-@media (max-width: 768px) {
-
-    .manual-user-notes-block {
-        margin-top: 15px;
-        padding: 13px;
+        font-size: 7px;
     }
 
-    .manual-step-user-notes {
-        min-height: 120px;
-        font-size: 13px;
+    .manual-pagination-counter strong {
+        min-width: 20px;
+        height: 20px;
+
+        font-size: 7px;
     }
-
-    .manual-step-notes-actions {
-        flex-wrap: wrap;
-    }
-
-    .btn-save-step-note {
-        width: 100%;
-    }
-}
-
-
-/* =========================================
-   RESUMEN MANUAL COMPLETADO
-========================================= */
-
-.manual-completed-summary {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    margin-bottom: 24px;
-    padding: 24px;
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    border-left: 4px solid #22c55e;
-    border-radius: 10px;
-}
-
-.manual-completed-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 58px;
-    height: 58px;
-    flex-shrink: 0;
-    background: #dcfce7;
-    border-radius: 12px;
-    font-size: 28px;
-}
-
-.manual-completed-content {
-    flex: 1;
-}
-
-.manual-completed-label {
-    display: block;
-    margin-bottom: 5px;
-    color: #16a34a;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.manual-completed-content h2 {
-    margin: 0 0 7px;
-    color: #166534;
-    font-size: 22px;
-}
-
-.manual-completed-content p {
-    margin: 0;
-    color: #475569;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.manual-completed-stats {
-    display: flex;
-    gap: 28px;
-    margin-top: 18px;
-}
-
-.manual-completed-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.manual-completed-stat strong {
-    color: #166534;
-    font-size: 18px;
-}
-
-.manual-completed-stat span {
-    color: #64748b;
-    font-size: 11px;
-}
-
-.manual-completed-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-@media (max-width: 768px) {
-
-    .manual-completed-summary {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .manual-completed-stats {
-        gap: 20px;
-    }
-
-    .manual-completed-actions {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .manual-completed-actions a {
-        width: 100%;
-        box-sizing: border-box;
-        text-align: center;
-    }
-
 }

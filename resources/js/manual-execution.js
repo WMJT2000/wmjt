@@ -30,17 +30,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         'stepCounter'
     );
 
+    const manualStepSelector = document.getElementById(
+        'manualStepSelector'
+    );
+
     const steps = Array.from(
         container.querySelectorAll(
             '.manual-execution-step'
         )
     );
 
-    const navigationItems = Array.from(
-        container.querySelectorAll(
-            '.manual-step-nav-item'
-        )
-    );
+
 
     let currentStepIndex = 0;
 
@@ -526,62 +526,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Actualizar navegación lateral
-        |--------------------------------------------------------------------------
-        */
 
-        navigationItems.forEach(
-            navItem => {
-
-                const stepId =
-                    navItem.dataset.stepId;
-
-                const progress =
-                    obtenerProgreso(stepId);
-
-                const status =
-                    navItem.querySelector(
-                        '.manual-step-nav-status'
-                    );
-
-
-                const estaCompletado =
-                    progress &&
-                    String(progress.status).toLowerCase() ===
-                    'completed';
-
-
-                if (estaCompletado) {
-
-                    navItem.classList.add(
-                        'completed'
-                    );
-
-
-                    if (status) {
-
-                        status.textContent =
-                            '✓';
-                    }
-
-                } else {
-
-                    navItem.classList.remove(
-                        'completed'
-                    );
-
-
-                    if (status) {
-
-                        status.textContent =
-                            '○';
-                    }
-                }
-
-            }
-        );
 
     }
 
@@ -750,30 +695,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
         /*
-         * Actualizar navegación lateral
+         * Actualizar selector de pasos
          */
 
-        navigationItems.forEach(
-            (navItem, index) => {
+        if (manualStepSelector) {
 
-                if (
-                    index === currentStepIndex
-                ) {
-
-                    navItem.classList.add(
-                        'active'
-                    );
-
-                } else {
-
-                    navItem.classList.remove(
-                        'active'
-                    );
-                }
-
-            }
-        );
-
+            manualStepSelector.value =
+                String(currentStepIndex);
+        }
 
         /*
          * Actualizar contador
@@ -1224,6 +1153,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     /*
+|--------------------------------------------------------------------------
+| Selector de pasos
+|--------------------------------------------------------------------------
+*/
+
+    if (manualStepSelector) {
+
+        manualStepSelector.addEventListener(
+            'change',
+            event => {
+
+                const index =
+                    Number(event.target.value);
+
+                if (Number.isInteger(index)) {
+
+                    irAlPaso(index);
+                }
+
+            }
+        );
+
+    }
+
+    /*
     |--------------------------------------------------------------------------
     | Clicks
     |--------------------------------------------------------------------------
@@ -1340,32 +1294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
 
-            /*
-             * Navegación lateral
-             */
-
-            const navigationButton =
-                event.target.closest(
-                    '.manual-step-nav-item'
-                );
-
-
-            if (navigationButton) {
-
-                const index =
-                    Number(
-                        navigationButton.dataset.stepIndex
-                    );
-
-
-                if (
-                    Number.isInteger(index)
-                ) {
-
-                    irAlPaso(index);
-                }
-
-            }
+          
 
         }
     );

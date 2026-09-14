@@ -6,7 +6,10 @@
 
     <div class="gestion-container">
 
+        {{-- ===================================================== --}}
         {{-- HEADER --}}
+        {{-- ===================================================== --}}
+
         <div class="gestion-header">
 
             <div>
@@ -32,7 +35,10 @@
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- INFORMACIÓN DEL MANUAL --}}
+        {{-- ===================================================== --}}
+
         <div class="gestion-info">
 
             @if($manual->description)
@@ -42,6 +48,7 @@
                 </p>
 
             @endif
+
 
             @if($manual->objective)
 
@@ -58,7 +65,10 @@
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- PROGRESO --}}
+        {{-- ===================================================== --}}
+
         <div class="manual-progress-card">
 
             <div class="manual-progress-header">
@@ -75,15 +85,25 @@
 
             <div class="manual-progress-bar">
 
-                <div id="progressBar" class="manual-progress-fill" style="width: 0%;"></div>
+                <div
+                    id="progressBar"
+                    class="manual-progress-fill"
+                    style="width: 0%;">
+                </div>
 
             </div>
 
         </div>
 
 
+        {{-- ===================================================== --}}
         {{-- RESUMEN DE MANUAL COMPLETADO --}}
-        <div id="manualCompletedSummary" class="manual-completed-summary" style="display: none;">
+        {{-- ===================================================== --}}
+
+        <div
+            id="manualCompletedSummary"
+            class="manual-completed-summary"
+            style="display: none;">
 
             <div class="manual-completed-icon">
                 🎉
@@ -103,6 +123,7 @@
                     Has completado todos los pasos de
                     <strong>{{ $manual->title }}</strong>.
                 </p>
+
 
                 <div class="manual-completed-stats">
 
@@ -136,100 +157,152 @@
 
                 <div class="manual-completed-actions">
 
-                    <button type="button" id="btnRestartManual" class="btn-primary">
+                    <button
+                        type="button"
+                        id="btnRestartManual"
+                        class="btn-primary">
+
                         ↻ Volver a realizar
+
                     </button>
 
-                    <a href="{{ route('manuals.my') }}" class="btn-secondary">
-                        Ver mis manuales
-                    </a>
 
-                    <a href="{{ route('manuals.my') }}" class="btn-secondary">
+                    <a
+                        href="{{ route('manuals.my') }}"
+                        class="btn-secondary">
+
                         ← Mis manuales
+
                     </a>
 
                 </div>
+
             </div>
 
         </div>
 
 
+        {{-- ===================================================== --}}
+        {{-- EJECUCIÓN DEL MANUAL --}}
+        {{-- ===================================================== --}}
 
-        {{-- EJECUCIÓN --}}
-        <div id="manualExecutionContainer" data-manual-id="{{ $manual->id }}">
+        <div
+            id="manualExecutionContainer"
+            data-manual-id="{{ $manual->id }}">
 
             @php
+
                 $globalStepNumber = 0;
 
                 $totalSteps = $manual->sections->sum(
                     fn($section) => $section->steps->count()
                 );
+
             @endphp
 
 
             @if($totalSteps > 0)
 
+
                 <div class="manual-execution-layout">
 
 
-                    {{-- ===================================================== --}}
+                    {{-- ================================================= --}}
                     {{-- NAVEGACIÓN DE PASOS --}}
-                    {{-- ===================================================== --}}
+                    {{-- ================================================= --}}
 
                     <aside class="manual-steps-navigation">
 
+
+                        {{-- CABECERA DE NAVEGACIÓN --}}
+
                         <div class="manual-steps-navigation-header">
 
-                            <strong>
-                                Pasos
-                            </strong>
+                            <div>
+
+                                <strong>
+                                    Navegación
+                                </strong>
+
+                                <span>
+                                    Paso actual
+                                </span>
+
+                            </div>
+
 
                             <span id="stepCounter">
-                                0 / {{ $totalSteps }}
+                                1 / {{ $totalSteps }}
                             </span>
 
                         </div>
 
 
-                        <div class="manual-steps-list">
+                        {{-- SELECTOR DE PASOS --}}
 
-                            @foreach($manual->sections as $section)
+                        <div class="manual-step-selector-container">
 
-                                @foreach($section->steps as $step)
+                            <label for="manualStepSelector">
+                                Ir al paso
+                            </label>
 
-                                    @php
-                                        $globalStepNumber++;
-                                    @endphp
 
-                                    <button type="button" class="manual-step-nav-item" data-step-id="{{ $step->id }}"
-                                        data-step-index="{{ $globalStepNumber - 1 }}">
+                            <select
+                                id="manualStepSelector"
+                                class="manual-step-selector">
 
-                                        <span class="manual-step-nav-status">
-                                            ○
-                                        </span>
+                                @php
+                                    $selectorStepNumber = 0;
+                                @endphp
 
-                                        <span class="manual-step-nav-number">
-                                            {{ $globalStepNumber }}
-                                        </span>
 
-                                        <span class="manual-step-nav-title">
+                                @foreach($manual->sections as $section)
+
+                                    @foreach($section->steps as $step)
+
+                                        @php
+                                            $selectorStepNumber++;
+                                        @endphp
+
+
+                                        <option
+                                            value="{{ $selectorStepNumber - 1 }}">
+
+                                            Paso {{ $selectorStepNumber }}
+                                            ·
                                             {{ $step->title }}
-                                        </span>
 
-                                    </button>
+                                        </option>
+
+                                    @endforeach
 
                                 @endforeach
 
-                            @endforeach
+                            </select>
+
+                        </div>
+
+
+                        {{-- INFORMACIÓN DE SECCIONES --}}
+
+                        <div class="manual-navigation-info">
+
+                            <span>
+                                Total de pasos
+                            </span>
+
+                            <strong>
+                                {{ $totalSteps }}
+                            </strong>
 
                         </div>
 
                     </aside>
 
 
-                    {{-- ===================================================== --}}
+                    {{-- ================================================= --}}
                     {{-- CONTENIDO DEL PASO ACTUAL --}}
-                    {{-- ===================================================== --}}
+                    {{-- ================================================= --}}
 
                     <main class="manual-current-step-container">
 
@@ -248,24 +321,37 @@
                                 @endphp
 
 
-                                <article class="manual-execution-step" data-step-id="{{ $step->id }}"
-                                    data-step-index="{{ $globalStepNumber - 1 }}" data-section-id="{{ $section->id }}">
+                                <article
+                                    class="manual-execution-step"
+                                    data-step-id="{{ $step->id }}"
+                                    data-step-index="{{ $globalStepNumber - 1 }}"
+                                    data-section-id="{{ $section->id }}">
 
+
+                                    {{-- ========================================= --}}
                                     {{-- CABECERA DEL PASO --}}
+                                    {{-- ========================================= --}}
 
                                     <div class="manual-current-step-header">
 
                                         <div>
 
                                             <span class="manual-current-step-label">
-                                                Paso {{ $globalStepNumber }} de {{ $totalSteps }}
+
+                                                Paso
+                                                {{ $globalStepNumber }}
+                                                de
+                                                {{ $totalSteps }}
+
                                             </span>
+
 
                                             <h2>
                                                 {{ $step->title }}
                                             </h2>
 
                                         </div>
+
 
                                         <div class="manual-current-step-section">
 
@@ -276,7 +362,9 @@
                                     </div>
 
 
+                                    {{-- ========================================= --}}
                                     {{-- DESCRIPCIÓN --}}
+                                    {{-- ========================================= --}}
 
                                     @if($step->description)
 
@@ -291,7 +379,9 @@
                                     @endif
 
 
+                                    {{-- ========================================= --}}
                                     {{-- INSTRUCCIONES --}}
+                                    {{-- ========================================= --}}
 
                                     @if($step->instructions)
 
@@ -310,7 +400,9 @@
                                     @endif
 
 
+                                    {{-- ========================================= --}}
                                     {{-- COMANDO --}}
+                                    {{-- ========================================= --}}
 
                                     @if($step->command)
 
@@ -327,7 +419,9 @@
                                     @endif
 
 
+                                    {{-- ========================================= --}}
                                     {{-- CÓDIGO --}}
+                                    {{-- ========================================= --}}
 
                                     @if($step->code)
 
@@ -344,7 +438,9 @@
                                     @endif
 
 
+                                    {{-- ========================================= --}}
                                     {{-- RESULTADO ESPERADO --}}
+                                    {{-- ========================================= --}}
 
                                     @if($step->expected_result)
 
@@ -363,7 +459,9 @@
                                     @endif
 
 
+                                    {{-- ========================================= --}}
                                     {{-- NOTAS DEL MANUAL --}}
+                                    {{-- ========================================= --}}
 
                                     @if($step->notes)
 
@@ -382,11 +480,12 @@
                                     @endif
 
 
-                                    {{-- ===================================================== --}}
-                                    {{-- NOTAS PERSONALES DEL USUARIO --}}
-                                    {{-- ===================================================== --}}
+                                    {{-- ========================================= --}}
+                                    {{-- NOTAS PERSONALES --}}
+                                    {{-- ========================================= --}}
 
                                     <div class="manual-step-block manual-user-notes-block">
+
 
                                         <div class="manual-step-block-title">
 
@@ -401,15 +500,23 @@
                                         </div>
 
 
-                                        <textarea class="manual-step-user-notes" data-step-id="{{ $step->id }}"
+                                        <textarea
+                                            class="manual-step-user-notes"
+                                            data-step-id="{{ $step->id }}"
                                             placeholder="Escribe aquí tus notas, observaciones, comandos realizados o problemas encontrados..."></textarea>
 
 
                                         <div class="manual-step-notes-actions">
 
-                                            <button type="button" class="btn-save-step-note" data-step-id="{{ $step->id }}">
+                                            <button
+                                                type="button"
+                                                class="btn-save-step-note"
+                                                data-step-id="{{ $step->id }}">
+
                                                 Guardar nota
+
                                             </button>
+
 
                                             <span class="manual-step-note-status"></span>
 
@@ -418,28 +525,63 @@
                                     </div>
 
 
+                                    {{-- ========================================= --}}
                                     {{-- ACCIÓN DEL PASO --}}
+                                    {{-- ========================================= --}}
 
                                     <div class="manual-step-actions">
 
-                                        <button type="button" class="btn-primary btn-complete-step" data-step-id="{{ $step->id }}">
+                                        <button
+                                            type="button"
+                                            class="btn-primary btn-complete-step"
+                                            data-step-id="{{ $step->id }}">
+
                                             ✓ Completar paso
+
                                         </button>
 
                                     </div>
 
 
-                                    {{-- NAVEGACIÓN --}}
+                                    {{-- ========================================= --}}
+                                    {{-- PAGINACIÓN --}}
+                                    {{-- ========================================= --}}
 
                                     <div class="manual-step-navigation-buttons">
 
-                                        <button type="button" class="btn-secondary btn-previous-step">
+
+                                        <button
+                                            type="button"
+                                            class="btn-secondary btn-previous-step">
+
                                             ← Anterior
+
                                         </button>
 
 
-                                        <button type="button" class="btn-secondary btn-next-step">
+                                        <div class="manual-pagination-counter">
+
+                                            <span>
+                                                Paso
+                                            </span>
+
+                                            <strong>
+                                                {{ $globalStepNumber }}
+                                            </strong>
+
+                                            <span>
+                                                de {{ $totalSteps }}
+                                            </span>
+
+                                        </div>
+
+
+                                        <button
+                                            type="button"
+                                            class="btn-secondary btn-next-step">
+
                                             Siguiente →
+
                                         </button>
 
                                     </div>
@@ -455,7 +597,12 @@
 
                 </div>
 
+
             @else
+
+                {{-- ============================================= --}}
+                {{-- MANUAL SIN CONTENIDO --}}
+                {{-- ============================================= --}}
 
                 <div class="gestion-info">
 
@@ -478,8 +625,3 @@
 @endsection
 
 
-@push('scripts')
-
-
-
-@endpush
