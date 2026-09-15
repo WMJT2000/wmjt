@@ -2,7 +2,10 @@ const study = window.englishStudy;
 
 if (study) {
 
-    let currentIndex = study.currentIndex;
+    let currentIndex = 0;
+
+    // Mezclar las palabras aleatoriamente
+    study.words.sort(() => Math.random() - 0.5);
 
     const progress =
         document.getElementById('study-progress');
@@ -208,7 +211,7 @@ if (study) {
 
             nextButton.style.display =
                 currentIndex <
-                study.words.length - 1
+                    study.words.length - 1
                     ? 'inline-block'
                     : 'none';
         }
@@ -224,7 +227,7 @@ if (study) {
 
             completed.style.display =
                 currentIndex ===
-                study.words.length - 1
+                    study.words.length - 1
                     ? 'inline-block'
                     : 'none';
         }
