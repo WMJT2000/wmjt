@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+
 use PhpOffice\PhpWord\TemplateProcessor;
+use PhpOffice\PhpWord\Settings;
+
 use ZipArchive;
 use DOMDocument;
 use DOMXPath;
@@ -12,10 +15,10 @@ use DOMElement;
 class WordController extends Controller
 {
     private const WORD_NS =
-    'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+        'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
     private const XML_NS =
-    'http://www.w3.org/XML/1998/namespace';
+        'http://www.w3.org/XML/1998/namespace';
 
     public function crear()
     {
@@ -24,33 +27,61 @@ class WordController extends Controller
 
     public function generar(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | DIRECTORIO TEMPORAL
+        |--------------------------------------------------------------------------
+        */
+
+        $tmpDir = storage_path('app/tmp');
+
+        if (!is_dir($tmpDir)) {
+            mkdir($tmpDir, 0775, true);
+        }
+
+        if (!is_writable($tmpDir)) {
+            throw new \Exception(
+                'El directorio temporal no tiene permisos de escritura: ' . $tmpDir
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | SOLUCIÓN 1
+        |--------------------------------------------------------------------------
+        | Decimos directamente a PhpWord dónde crear sus archivos temporales.
+        */
+
+        Settings::setTempDir($tmpDir);
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESPALDO PARA PHP
+        |--------------------------------------------------------------------------
+        */
+
+        putenv('TMPDIR=' . $tmpDir);
+        putenv('TMP=' . $tmpDir);
+        putenv('TEMP=' . $tmpDir);
+
+        @ini_set('sys_temp_dir', $tmpDir);
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDACIÓN
+        |--------------------------------------------------------------------------
+        */
+
         $request->validate([
-            '1_experiencia_prendizaje' =>
-            'required',
-
-            '2_descripcion_general_experiencia' =>
-            'required',
-
-            '3_nombre_maestra' =>
-            'required',
-
-            '4_tiempo_estimado' =>
-            'required',
-
-            '5_fecha' =>
-            'required',
-
-            '6_nivel_educativo' =>
-            'required',
-
-            '7_objetivo_aprendizaje' =>
-            'required',
-
-            '8_elemento_integrador' =>
-            'required',
-
-            '9_nocion_dia' =>
-            'required',
+            '1_experiencia_prendizaje' => 'required',
+            '2_descripcion_general_experiencia' => 'required',
+            '3_nombre_maestra' => 'required',
+            '4_tiempo_estimado' => 'required',
+            '5_fecha' => 'required',
+            '6_nivel_educativo' => 'required',
+            '7_objetivo_aprendizaje' => 'required',
+            '8_elemento_integrador' => 'required',
+            '9_nocion_dia' => 'required',
 
             /*
             |--------------------------------------------------------------------------
@@ -59,7 +90,7 @@ class WordController extends Controller
             */
 
             'tamano_letra_actividades' =>
-            'nullable|integer|min:8|max:20',
+                'nullable|integer|min:8|max:20',
 
             /*
             |--------------------------------------------------------------------------
@@ -68,40 +99,40 @@ class WordController extends Controller
             */
 
             'part1' =>
-            'nullable|array|max:10',
+                'nullable|array|max:10',
 
             'part2' =>
-            'nullable|array|max:10',
+                'nullable|array|max:10',
 
             'part1.*.ambito' =>
-            'nullable|string',
+                'nullable|string',
 
             'part1.*.destreza' =>
-            'nullable|string',
+                'nullable|string',
 
             'part1.*.estrategias_metologicas' =>
-            'nullable|string',
+                'nullable|string',
 
             'part1.*.recursos' =>
-            'nullable|string',
+                'nullable|string',
 
             'part1.*.indicadores_logro' =>
-            'nullable|string',
+                'nullable|string',
 
             'part2.*.ambito' =>
-            'nullable|string',
+                'nullable|string',
 
             'part2.*.destreza' =>
-            'nullable|string',
+                'nullable|string',
 
             'part2.*.estrategias_metologicas' =>
-            'nullable|string',
+                'nullable|string',
 
             'part2.*.recursos' =>
-            'nullable|string',
+                'nullable|string',
 
             'part2.*.indicadores_logro' =>
-            'nullable|string',
+                'nullable|string',
         ]);
 
         $part1 = $request->input(
@@ -118,9 +149,6 @@ class WordController extends Controller
         |--------------------------------------------------------------------------
         | TAMAÑO DE LETRA
         |--------------------------------------------------------------------------
-        |
-        | Si no viene desde Blade usamos 10 pt.
-        |
         */
 
         $tamanoLetraActividades = (int) $request->input(
@@ -148,18 +176,21 @@ class WordController extends Controller
         |--------------------------------------------------------------------------
         | ARCHIVO TEMPORAL
         |--------------------------------------------------------------------------
+        |
+        | Este archivo NO se guarda permanentemente.
+        |
         */
 
-        $temporal = storage_path(
-            'app/plantillas/temporal_planificacion_' .
-                uniqid() .
-                '.docx'
-        );
+        $temporal = $tmpDir .
+            '/temporal_planificacion_' .
+            uniqid('', true) .
+            '.docx';
 
-        copy(
-            $plantilla,
-            $temporal
-        );
+        if (!copy($plantilla, $temporal)) {
+            throw new \Exception(
+                'No se pudo crear el archivo temporal de Word.'
+            );
+        }
 
         try {
 
@@ -442,11 +473,15 @@ class WordController extends Controller
             |--------------------------------------------------------------------------
             | ARCHIVO GENERADO
             |--------------------------------------------------------------------------
+            |
+            | También se crea dentro del directorio temporal.
+            |
             */
 
-            $archivo = storage_path(
-                'app/planificacion_generada.docx'
-            );
+            $archivo = $tmpDir .
+                '/planificacion_generada_' .
+                uniqid('', true) .
+                '.docx';
 
             $template->saveAs(
                 $archivo
@@ -458,12 +493,6 @@ class WordController extends Controller
             |--------------------------------------------------------------------------
             | FORMATO GLOBAL
             |--------------------------------------------------------------------------
-            |
-            | NO enviamos el tamaño aquí.
-            |
-            | Esto es importante porque queremos que el tamaño elegido
-            | afecte únicamente a las actividades dinámicas.
-            |
             */
 
             $this->aplicarFormatoGlobal(
@@ -483,11 +512,18 @@ class WordController extends Controller
                     'planificacion_generada.docx'
                 )
                 ->deleteFileAfterSend(true);
+
         } finally {
 
             if (isset($template)) {
                 unset($template);
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | ELIMINAR ARCHIVO TEMPORAL
+            |--------------------------------------------------------------------------
+            */
 
             $this->eliminarTemporal(
                 $temporal
@@ -629,10 +665,7 @@ self::WORD_NS,
 strtoupper(
 substr(
 md5(
-uniqid(
-'',
-true
-)
+uniqid('', true)
 ),
 0,
 8
@@ -913,14 +946,8 @@ $fila
 );
 
 if (
-str_contains(
-$texto,
-'ambito'
-) &&
-str_contains(
-$texto,
-'destreza'
-)
+str_contains($texto, 'ambito') &&
+str_contains($texto, 'destreza')
 ) {
 return $fila;
 }
@@ -951,10 +978,7 @@ $fila
 );
 
 if (
-stripos(
-$texto,
-'Snack'
-) !== false
+stripos($texto, 'Snack') !== false
 ) {
 return $fila;
 }
@@ -1003,6 +1027,7 @@ true
 );
 
 if (!$clon instanceof DOMElement) {
+
 throw new \Exception(
 'No se pudo clonar la fila.'
 );
@@ -1027,7 +1052,6 @@ int $tamanoLetraActividades
 ): void {
 
 $datos = [
-
 '${ambito}' =>
 $actividad['ambito'] ?? '',
 
@@ -1044,9 +1068,7 @@ $actividad['recursos'] ?? '',
 $actividad['indicadores_logro'] ?? '',
 ];
 
-foreach (
-$datos as $placeholder => $valor
-) {
+foreach ($datos as $placeholder => $valor) {
 
 $this->reemplazarPlaceholder(
 $dom,
@@ -1203,7 +1225,10 @@ $trPr
 );
 
 foreach ($alturas as $altura) {
-$trPr->removeChild($altura);
+
+$trPr->removeChild(
+$altura
+);
 }
 }
 }
@@ -1359,19 +1384,6 @@ string $valor,
 ?int $tamanoLetraActividades = null
 ): void {
 
-/*
-|--------------------------------------------------------------------------
-| NORMALIZAR SALTOS
-|--------------------------------------------------------------------------
-|
-| Aceptamos:
-|
-| 1. Enter real
-| 2. \n
-| 3. /n
-|
-*/
-
 $valor = str_replace(
 [
 "\r\n",
@@ -1382,12 +1394,6 @@ $valor = str_replace(
 "\n",
 $valor
 );
-
-/*
-|--------------------------------------------------------------------------
-| DETECTAR LISTAS
-|--------------------------------------------------------------------------
-*/
 
 $lineas = preg_split(
 "/\r\n|\r|\n/",
@@ -1404,16 +1410,12 @@ preg_match(
 $linea
 )
 ) {
+
 $tieneLista = true;
+
 break;
 }
 }
-
-/*
-|--------------------------------------------------------------------------
-| SIN LISTA
-|--------------------------------------------------------------------------
-*/
 
 if (!$tieneLista) {
 
@@ -1427,12 +1429,6 @@ $tamanoLetraActividades
 
 return;
 }
-
-/*
-|--------------------------------------------------------------------------
-| CON LISTA
-|--------------------------------------------------------------------------
-*/
 
 $primerParrafo = true;
 
@@ -1468,6 +1464,7 @@ $tamanoLetraActividades
 );
 
 $primerParrafo = false;
+
 } else {
 
 $nuevoParrafo =
@@ -1515,6 +1512,7 @@ $tamanoLetraActividades
 );
 
 $primerParrafo = false;
+
 } else {
 
 $nuevoParrafo =
@@ -1676,10 +1674,6 @@ $tamanoLetraActividades
 |--------------------------------------------------------------------------
 | CREAR RUNS CON FORMATO
 |--------------------------------------------------------------------------
-|
-| *texto* = negrita
-| **texto** = cursiva
-|
 */
 
 private function crearRunsConFormato(
@@ -1689,12 +1683,6 @@ string $valor,
 ?int $numIdLista = null,
 ?int $tamanoLetraActividades = null
 ): void {
-
-/*
-|--------------------------------------------------------------------------
-| SALTOS
-|--------------------------------------------------------------------------
-*/
 
 $valor = str_replace(
 [
@@ -1711,6 +1699,10 @@ $valor
 |--------------------------------------------------------------------------
 | FORMATO
 |--------------------------------------------------------------------------
+|
+| *texto* = negrita
+| **texto** = cursiva
+|
 */
 
 $regex =
@@ -1802,13 +1794,6 @@ $rFonts
 |--------------------------------------------------------------------------
 | TAMAÑO DE LETRA
 |--------------------------------------------------------------------------
-|
-| Word utiliza half-points.
-|
-| 10 pt = 20
-| 11 pt = 22
-| 12 pt = 24
-|
 */
 
 if (
@@ -2024,13 +2009,14 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
     false,
     true
     );
-    }
 
     /*
     |--------------------------------------------------------------------------
     | NEGRITA
     |--------------------------------------------------------------------------
-    */ elseif (
+    */
+
+    } elseif (
     str_starts_with(
     $parte,
     '*'
@@ -2067,12 +2053,12 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
     */
 
     if (
-    $posicionActual < strlen($valor) ) { $textoFinal=substr($valor, $posicionActual); $crearRun($textoFinal); } /*
+    $posicionActual < strlen($valor) ) { $textoFinal=substr( $valor, $posicionActual ); $crearRun( $textoFinal ); } /*
         |-------------------------------------------------------------------------- | TEXTO VACÍO
         |-------------------------------------------------------------------------- */ if ($valor==='' ) {
         $crearRun(''); } } /* |-------------------------------------------------------------------------- | APLICAR
         FORMATO GLOBAL |-------------------------------------------------------------------------- */ private function
-        aplicarFormatoGlobal(string $archivo, ?int $numIdLista=null): void { $zip=new ZipArchive(); if ( $zip->
+        aplicarFormatoGlobal( string $archivo, ?int $numIdLista=null ): void { $zip=new ZipArchive(); if ( $zip->
         open($archivo) !== true
         ) {
 
@@ -2372,6 +2358,7 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         );
 
         $primera = false;
+
         } else {
 
         $nuevoParrafo =
@@ -2401,6 +2388,7 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         $parrafo =
         $nuevoParrafo;
         }
+
         } elseif (
         trim($linea) !== ''
         ) {
@@ -2415,6 +2403,7 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         );
 
         $primera = false;
+
         } else {
 
         $nuevoParrafo =
@@ -2634,8 +2623,7 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         $rPrOriginal = null;
 
         foreach (
-        $runReferencia->childNodes
-        as $hijo
+        $runReferencia->childNodes as $hijo
         ) {
 
         if (
@@ -2659,6 +2647,7 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         $run->appendChild(
         $rPrOriginal
         );
+
         } else {
 
         $rPr =
@@ -2717,8 +2706,7 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         $rPr = null;
 
         foreach (
-        $run->childNodes
-        as $hijo
+        $run->childNodes as $hijo
         ) {
 
         if (
@@ -2727,6 +2715,7 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         ) {
 
         $rPr = $hijo;
+
         break;
         }
         }
@@ -2756,8 +2745,7 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         $rPr = null;
 
         foreach (
-        $run->childNodes
-        as $hijo
+        $run->childNodes as $hijo
         ) {
 
         if (
@@ -2766,6 +2754,7 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         ) {
 
         $rPr = $hijo;
+
         break;
         }
         }
@@ -2786,19 +2775,6 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
 
         /*
         |--------------------------------------------------------------------------
-        | rPr VACÍO TEMPORAL
-        |--------------------------------------------------------------------------
-        */
-
-        $run->appendChild(
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:rPr'
-        )
-        );
-
-        /*
-        |--------------------------------------------------------------------------
         | TEXTO Y SALTOS
         |--------------------------------------------------------------------------
         */
@@ -2809,238 +2785,203 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         $texto
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | ELIMINAR rPr VACÍO DUPLICADO
-        |--------------------------------------------------------------------------
-        */
-
-        $rPrs = [];
-
         foreach (
-        $run->childNodes as $hijo
+        $lineas as $indice => $linea
         ) {
+
+        if ($linea !== '') {
+
+        $textoWord =
+        $dom->createElementNS(
+        self::WORD_NS,
+        'w:t'
+        );
+
+        $textoWord->setAttributeNS(
+        self::XML_NS,
+        'xml:space',
+        'preserve'
+        );
+
+        $textoWord->appendChild(
+        $dom->createTextNode(
+        $linea
+        )
+        );
+
+        $run->appendChild(
+        $textoWord
+        );
+        }
 
         if (
-        $hijo instanceof DOMElement &&
-        $hijo->localName === 'rPr'
-        ) {
-
-        $rPrs[] =
-        $hijo;
-        }
-        }
-
-        if (
-        count($rPrs) > 1
-        ) {
-
-        for (
-        $i = 1;
-        $i < count($rPrs); $i++ ) { $run->removeChild(
-            $rPrs[$i]
-            );
-            }
-            }
-
-            foreach (
-            $lineas as $indice => $linea
-            ) {
-
-            if ($linea !== '') {
-
-            $textoWord =
-            $dom->createElementNS(
+        $indice < count($lineas) - 1 ) { $br=$dom->createElementNS(
             self::WORD_NS,
-            'w:t'
-            );
-
-            $textoWord->setAttributeNS(
-            self::XML_NS,
-            'xml:space',
-            'preserve'
-            );
-
-            $textoWord->appendChild(
-            $dom->createTextNode(
-            $linea
-            )
+            'w:br'
             );
 
             $run->appendChild(
-            $textoWord
+            $br
+            );
+            }
+            }
+
+            $parrafo->insertBefore(
+            $run,
+            $runReferencia
+            );
+            };
+
+            /*
+            |--------------------------------------------------------------------------
+            | RECORRER FORMATO
+            |--------------------------------------------------------------------------
+            */
+
+            $posicionActual = 0;
+
+            foreach (
+            $matches[0] as $match
+            ) {
+
+            $parte =
+            $match[0];
+
+            $posicion =
+            $match[1];
+
+            /*
+            |--------------------------------------------------------------------------
+            | TEXTO NORMAL
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+            $posicion >
+            $posicionActual
+            ) {
+
+            $normal =
+            substr(
+            $valor,
+            $posicionActual,
+            $posicion -
+            $posicionActual
+            );
+
+            $crearRun(
+            $normal
             );
             }
 
+            /*
+            |--------------------------------------------------------------------------
+            | CURSIVA
+            |--------------------------------------------------------------------------
+            */
+
             if (
-            $indice < count($lineas) - 1 ) { $br=$dom->createElementNS(
-                self::WORD_NS,
-                'w:br'
+            str_starts_with(
+            $parte,
+            '**'
+            ) &&
+            str_ends_with(
+            $parte,
+            '**'
+            )
+            ) {
+
+            $texto =
+            substr(
+            $parte,
+            2,
+            -2
+            );
+
+            $crearRun(
+            $texto,
+            false,
+            true
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | NEGRITA
+            |--------------------------------------------------------------------------
+            */
+
+            } elseif (
+            str_starts_with(
+            $parte,
+            '*'
+            ) &&
+            str_ends_with(
+            $parte,
+            '*'
+            )
+            ) {
+
+            $texto =
+            substr(
+            $parte,
+            1,
+            -1
+            );
+
+            $crearRun(
+            $texto,
+            true,
+            false
+            );
+            }
+
+            $posicionActual =
+            $posicion +
+            strlen($parte);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | TEXTO FINAL
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+            $posicionActual < strlen($valor) ) { $final=substr( $valor, $posicionActual ); $crearRun( $final ); } } /*
+                |-------------------------------------------------------------------------- | INSERTAR DESPUÉS
+                |-------------------------------------------------------------------------- */ private function
+                insertarDespues( DOMElement $referencia, DOMElement $nuevaFila ): void { $padre=$referencia->parentNode;
+
+                $siguiente =
+                $referencia->nextSibling;
+
+                if ($siguiente !== null) {
+
+                $padre->insertBefore(
+                $nuevaFila,
+                $siguiente
                 );
 
-                $run->appendChild(
-                $br
+                } else {
+
+                $padre->appendChild(
+                $nuevaFila
                 );
                 }
                 }
-
-                $parrafo->insertBefore(
-                $run,
-                $runReferencia
-                );
-                };
 
                 /*
                 |--------------------------------------------------------------------------
-                | RECORRER FORMATO
+                | ELIMINAR TEMPORAL
                 |--------------------------------------------------------------------------
                 */
 
-                $posicionActual = 0;
+                private function eliminarTemporal(
+                string $archivo
+                ): void {
 
-                foreach (
-                $matches[0] as $match
-                ) {
-
-                $parte =
-                $match[0];
-
-                $posicion =
-                $match[1];
-
-                /*
-                |--------------------------------------------------------------------------
-                | TEXTO NORMAL
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-                $posicion >
-                $posicionActual
-                ) {
-
-                $normal =
-                substr(
-                $valor,
-                $posicionActual,
-                $posicion -
-                $posicionActual
-                );
-
-                $crearRun(
-                $normal
-                );
+                if (!file_exists($archivo)) {
+                return;
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | CURSIVA
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-                str_starts_with(
-                $parte,
-                '**'
-                ) &&
-                str_ends_with(
-                $parte,
-                '**'
-                )
-                ) {
-
-                $texto =
-                substr(
-                $parte,
-                2,
-                -2
-                );
-
-                $crearRun(
-                $texto,
-                false,
-                true
-                );
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | NEGRITA
-                |--------------------------------------------------------------------------
-                */ elseif (
-                str_starts_with(
-                $parte,
-                '*'
-                ) &&
-                str_ends_with(
-                $parte,
-                '*'
-                )
-                ) {
-
-                $texto =
-                substr(
-                $parte,
-                1,
-                -1
-                );
-
-                $crearRun(
-                $texto,
-                true,
-                false
-                );
-                }
-
-                $posicionActual =
-                $posicion +
-                strlen($parte);
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | TEXTO FINAL
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-                $posicionActual < strlen($valor) ) { $final=substr($valor, $posicionActual); $crearRun($final); } } /*
-                    |-------------------------------------------------------------------------- | INSERTAR DESPUÉS
-                    |-------------------------------------------------------------------------- */ private function
-                    insertarDespues(DOMElement $referencia, DOMElement $nuevaFila): void { $padre=$referencia->
-                    parentNode;
-
-                    $siguiente =
-                    $referencia->nextSibling;
-
-                    if ($siguiente !== null) {
-
-                    $padre->insertBefore(
-                    $nuevaFila,
-                    $siguiente
-                    );
-                    } else {
-
-                    $padre->appendChild(
-                    $nuevaFila
-                    );
-                    }
-                    }
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | ELIMINAR TEMPORAL
-                    |--------------------------------------------------------------------------
-                    */
-
-                    private function eliminarTemporal(
-                    string $archivo
-                    ): void {
-
-                    if (!file_exists($archivo)) {
-                    return;
-                    }
-
-                    for (
-                    $i = 0;
-                    $i < 10; $i++ ) { if (@unlink($archivo)) { return; } usleep(100000); } } }
+                for ($i = 0; $i < 10; $i++) { if (@unlink($archivo)) { return; } usleep(100000); } } }
