@@ -22,6 +22,7 @@ use App\Http\Controllers\HelladController;
 use App\Http\Controllers\PruebaWordController;
 use App\Http\Controllers\WordController;
 use App\Http\Controllers\PlanificacionController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -50,6 +51,10 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
 
 
+    // ==========================================================
+    // PLANIFICACIONES
+    // ==========================================================
+
     Route::get('/planificaciones', [PlanificacionController::class, 'index'])
         ->name('planificaciones.index');
 
@@ -66,6 +71,33 @@ Route::middleware('auth')->group(function () {
         ->name('planificaciones.destroy');
 
 
+    // ==========================================================
+    // API - PLANIFICACIONES
+    // ==========================================================
+
+    Route::get('/api/planificaciones', [PlanificacionController::class, 'apiIndex'])
+        ->name('planificaciones.api.index');
+
+    Route::get('/api/planificaciones/{id}', [PlanificacionController::class, 'apiShow'])
+        ->name('planificaciones.api.show');
+
+
+    // ==========================================================
+    // API - PLANTILLAS
+    // ==========================================================
+
+    Route::get('/api/plantillas', [PlanificacionController::class, 'apiPlantillas'])
+        ->name('plantillas.api.index');
+
+
+    // ==========================================================
+    // CONVERTIR PLANIFICACIÓN EN PLANTILLA
+    // ==========================================================
+
+    Route::put('/api/planificaciones/{id}/plantilla', [PlanificacionController::class, 'convertirEnPlantilla'])
+        ->name('planificaciones.convertir.plantilla');
+
+
 
 
 
@@ -76,7 +108,9 @@ Route::middleware('auth')->group(function () {
         ->name('word.generar');
 
     Route::get('/prueba-word', [PruebaWordController::class, 'generar']);
-    //planificaciones educacion inicial
+
+
+    // planificaciones educacion inicial
     Route::get('/hellad', [HelladController::class, 'index'])
         ->name('hellad.index');
 
@@ -89,11 +123,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/hellad/objetivo/{id}', [HelladController::class, 'objetivo'])
         ->name('hellad.objetivo');
 
-    //
+
+    // ==========================================================
+    // INGLÉS
+    // ==========================================================
 
     Route::get('/english', [EnglishLearningController::class, 'index'])
         ->name('english.index');
-
 
     Route::get('/english/statistics', [EnglishLearningController::class, 'statistics'])
         ->name('english.statistics');
@@ -103,8 +139,10 @@ Route::middleware('auth')->group(function () {
         [EnglishLearningController::class, 'mastery']
     )->name('english.mastery');
 
-    Route::get('/english/category/{category}/practice', [EnglishLearningController::class, 'practice'])
-        ->name('english.practice');
+    Route::get(
+        '/english/category/{category}/practice',
+        [EnglishLearningController::class, 'practice']
+    )->name('english.practice');
 
     Route::post(
         '/english/category/{category}/practice/start',
@@ -121,11 +159,17 @@ Route::middleware('auth')->group(function () {
         [EnglishLearningController::class, 'finishPractice']
     )->name('english.practice.finish');
 
-    Route::get('/english/category/{category}/{word?}', [EnglishLearningController::class, 'study'])
-        ->name('english.study');
+    Route::get(
+        '/english/category/{category}/{word?}',
+        [EnglishLearningController::class, 'study']
+    )->name('english.study');
 });
 
-// Dashboard principal
+
+// ==========================================================
+// DASHBOARD PRINCIPAL
+// ==========================================================
+
 // Después de iniciar sesión, se muestra inicio.blade.php
 Route::get('/home', [KnowledgeController::class, 'home'])
     ->middleware(['auth', 'verified'])
@@ -140,7 +184,10 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
-// Perfil
+// ==========================================================
+// PERFIL
+// ==========================================================
+
 Route::middleware('auth')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'edit'])
@@ -154,84 +201,141 @@ Route::middleware('auth')->group(function () {
 });
 
 
-// Conocimiento
+// ==========================================================
+// CONOCIMIENTO
+// ==========================================================
+
 Route::middleware('auth')->group(function () {
 
     Route::get('/knowledge', [KnowledgeController::class, 'index'])
         ->name('knowledge.index');
 
-    Route::get('/knowledge/technology/{id}', [KnowledgeController::class, 'technology'])
-        ->name('knowledge.technology');
+    Route::get(
+        '/knowledge/technology/{id}',
+        [KnowledgeController::class, 'technology']
+    )->name('knowledge.technology');
 
-    Route::get('/knowledge/category/{id}', [KnowledgeController::class, 'category'])
-        ->name('knowledge.category');
+    Route::get(
+        '/knowledge/category/{id}',
+        [KnowledgeController::class, 'category']
+    )->name('knowledge.category');
 
-    Route::get('/knowledge/concept/{id}', [KnowledgeController::class, 'concept'])
-        ->name('knowledge.concept');
+    Route::get(
+        '/knowledge/concept/{id}',
+        [KnowledgeController::class, 'concept']
+    )->name('knowledge.concept');
 
-    Route::get('/knowledge/search', [KnowledgeController::class, 'search'])
-        ->name('knowledge.search');
+    Route::get(
+        '/knowledge/search',
+        [KnowledgeController::class, 'search']
+    )->name('knowledge.search');
 });
 
 
-// Gestión
-// Gestión
+// ==========================================================
+// GESTIÓN
+// ==========================================================
+
 Route::middleware('auth')->group(function () {
 
     // Página principal de gestión
     Route::get('/gestion', [ManagementController::class, 'index'])
         ->name('gestion.index');
 
+
     // Gestión del conocimiento técnico
-    Route::get('/gestion/conocimiento', [KnowledgeManagementController::class, 'index'])
-        ->name('gestion.knowledge.index');
+    Route::get(
+        '/gestion/conocimiento',
+        [KnowledgeManagementController::class, 'index']
+    )->name('gestion.knowledge.index');
+
 
     // Gestión de inglés
-    Route::get('/gestion/ingles', [EnglishManagementController::class, 'index'])
-        ->name('gestion.english.index');
+    Route::get(
+        '/gestion/ingles',
+        [EnglishManagementController::class, 'index']
+    )->name('gestion.english.index');
+
 
     // Categorías de inglés
-    Route::get('/gestion/english/categories', [EnglishCategoryController::class, 'page'])
-        ->name('english.categories.index');
+    Route::get(
+        '/gestion/english/categories',
+        [EnglishCategoryController::class, 'page']
+    )->name('english.categories.index');
+
 
     // Palabras de inglés
-    Route::get('/gestion/english/words', [EnglishWordController::class, 'page'])
-        ->name('english.words.index');
+    Route::get(
+        '/gestion/english/words',
+        [EnglishWordController::class, 'page']
+    )->name('english.words.index');
+
 
     // Significados de inglés
-    Route::get('/gestion/english/meanings', [EnglishMeaningController::class, 'page'])
-        ->name('english.meanings.index');
+    Route::get(
+        '/gestion/english/meanings',
+        [EnglishMeaningController::class, 'page']
+    )->name('english.meanings.index');
+
 
     // Tecnologías
-    Route::get('/gestion/technologies', [TechnologyController::class, 'page'])
-        ->name('technologies.index');
+    Route::get(
+        '/gestion/technologies',
+        [TechnologyController::class, 'page']
+    )->name('technologies.index');
+
 
     // Categorías
-    Route::get('/gestion/categories', [CategoryController::class, 'page'])
-        ->name('categories.index');
+    Route::get(
+        '/gestion/categories',
+        [CategoryController::class, 'page']
+    )->name('categories.index');
+
 
     // Conceptos
-    Route::get('/gestion/concepts', [ConceptController::class, 'page'])
-        ->name('concepts.index');
+    Route::get(
+        '/gestion/concepts',
+        [ConceptController::class, 'page']
+    )->name('concepts.index');
+
 
     // Gestión de planificaciones
-    Route::get('/gestion/planificaciones', [PlanificacionController::class, 'index'])
-        ->name('gestion.planificacion.index');
+    Route::get(
+        '/gestion/planificaciones',
+        [PlanificacionController::class, 'index']
+    )->name('gestion.planificacion.index');
 
-    ////manuales
 
+    // ==========================================================
+    // MANUALES
+    // ==========================================================
 
     Route::get('/manuals', [ManualController::class, 'index']);
+
     Route::get('/manuals/{id}', [ManualController::class, 'show']);
+
     Route::post('/manuals', [ManualController::class, 'store']);
+
     Route::put('/manuals/{id}', [ManualController::class, 'update']);
+
     Route::delete('/manuals/{id}', [ManualController::class, 'destroy']);
 
-    Route::get('/manuals/{id}/sections', [ManualController::class, 'sections']);
-    Route::get('/manuals/{id}/full', [ManualController::class, 'full']);
 
-    Route::get('/gestion/manuals', [ManualController::class, 'page'])
-        ->name('gestion.manuals');
+    Route::get(
+        '/manuals/{id}/sections',
+        [ManualController::class, 'sections']
+    );
+
+    Route::get(
+        '/manuals/{id}/full',
+        [ManualController::class, 'full']
+    );
+
+
+    Route::get(
+        '/gestion/manuals',
+        [ManualController::class, 'page']
+    )->name('gestion.manuals');
 
 
     Route::get(
@@ -239,19 +343,24 @@ Route::middleware('auth')->group(function () {
         [ManualSectionController::class, 'page']
     )->name('gestion.manual-sections');
 
+
     Route::get(
         '/gestion/manuals/{manualId}/sections/{sectionId}/steps',
         [ManualStepController::class, 'page']
     )->name('gestion.manual-steps');
 
+
     Route::get(
         '/manuals',
         [ManualExecutionController::class, 'index']
     )->name('manuals.index');
+
+
     Route::get(
         '/manuals/{manualId}/execute',
         [ManualExecutionController::class, 'page']
     )->name('manuals.execution');
+
 
     Route::post(
         '/manual-executions/{executionId}/steps/{stepId}/notes',
@@ -265,5 +374,9 @@ Route::middleware('auth')->group(function () {
     )->name('manuals.my');
 });
 
-// Rutas de Laravel Breeze
+
+// ==========================================================
+// RUTAS DE LARAVEL BREEZE
+// ==========================================================
+
 require __DIR__ . '/auth.php';

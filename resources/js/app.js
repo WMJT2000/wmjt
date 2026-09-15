@@ -21,6 +21,7 @@ import '../css/manuals-execution.css';
 import '../css/manuals-mio.css';
 import '../css/hellad.css';
 import '../css/planificacion-crear.css';
+import '../css/planificaciones.css';
 // JavaScript
 import './form.js';
 import './technologies.js';

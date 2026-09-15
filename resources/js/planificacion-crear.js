@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', async function () {
 
     const MAX_ACTIVIDADES = 10;
@@ -12,11 +13,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     const saveButton =
         document.getElementById('btnGuardarPlanificacion');
 
-    if (saveButton) {
-        saveButton.textContent = window.planificacionId
-            ? 'Actualizar planificación'
-            : 'Guardar planificación';
-    }
+    const templateButton =
+        document.getElementById('btnGuardarComoPlantilla');
 
     const part1Container =
         document.getElementById('part1_container');
@@ -77,19 +75,131 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
     /* =========================================================
+       MODOS
+
+       1. NUEVA PLANIFICACIÓN
+          planificacionId = null
+          usarPlantilla = false
+
+       2. EDITAR PLANIFICACIÓN
+          planificacionId = ID
+          usarPlantilla = false
+
+       3. USAR PLANTILLA
+          planificacionId = ID
+          usarPlantilla = true
+
+       IMPORTANTE:
+       "Guardar como plantilla" SOLO aparece en el
+       modo 1: nueva planificación desde cero.
+    ========================================================== */
+
+    const tieneId =
+        window.planificacionId !== null &&
+        window.planificacionId !== undefined &&
+        window.planificacionId !== '';
+
+    const usandoPlantilla =
+        tieneId &&
+        Boolean(window.usarPlantilla);
+
+    const editando =
+        tieneId &&
+        !usandoPlantilla;
+
+    const nuevaPlanificacion =
+        !tieneId;
+
+
+    /*
+    =========================================================
+       IMPORTANTE
+
+       Convertimos el botón guardar en BUTTON.
+
+       Así el navegador NO ejecuta automáticamente los
+       "required" antes de que nuestro JavaScript pueda
+       decidir qué validación corresponde.
+
+       Nosotros controlaremos la validación manualmente.
+    =========================================================
+    */
+
+    if (saveButton) {
+        saveButton.type = 'button';
+    }
+
+    if (templateButton) {
+        templateButton.type = 'button';
+    }
+
+
+    /* =========================================================
+       MOSTRAR / OCULTAR BOTÓN "GUARDAR COMO PLANTILLA"
+    ========================================================== */
+
+    if (templateButton) {
+
+        if (nuevaPlanificacion) {
+
+            // NUEVA DESDE CERO
+            templateButton.style.display = '';
+
+        } else {
+
+            // EDITANDO PLANIFICACIÓN
+            // EDITANDO PLANTILLA
+            // USANDO PLANTILLA
+
+            templateButton.style.display = 'none';
+        }
+    }
+
+
+    /* =========================================================
+       TEXTO DEL BOTÓN GUARDAR
+    ========================================================== */
+
+    if (saveButton) {
+
+        if (usandoPlantilla) {
+
+            saveButton.textContent =
+                'Guardar nueva planificación';
+
+        } else if (editando) {
+
+            saveButton.textContent =
+                'Actualizar planificación';
+
+        } else {
+
+            saveButton.textContent =
+                'Guardar planificación';
+        }
+    }
+
+
+    /* =========================================================
        ESTADO
     ========================================================== */
 
     let part1Count = 0;
     let part2Count = 0;
 
-    // Índice de la actividad que se está mostrando
     let part1Actual = 0;
     let part2Actual = 0;
 
-    // Evita doble clic / doble creación accidental
     let agregandoPart1 = false;
     let agregandoPart2 = false;
+
+    /*
+    Esta variable se actualizará cuando carguemos el registro.
+
+    Sirve para saber si estamos editando realmente una plantilla.
+    */
+
+    let editandoPlantillaExistente = false;
 
 
     /* =========================================================
@@ -99,9 +209,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     function obtenerCards(container) {
 
         return Array.from(
-            container.querySelectorAll('.activity-card')
+            container.querySelectorAll(
+                '.activity-card'
+            )
         );
-
     }
 
 
@@ -109,7 +220,10 @@ document.addEventListener('DOMContentLoaded', async function () {
        MOSTRAR UNA SOLA ACTIVIDAD
     ========================================================== */
 
-    function mostrarActividad(container, indice) {
+    function mostrarActividad(
+        container,
+        indice
+    ) {
 
         const cards =
             obtenerCards(container);
@@ -118,7 +232,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             return;
         }
 
-        // Aseguramos que el índice sea válido
         if (indice < 0) {
             indice = 0;
         }
@@ -127,16 +240,16 @@ document.addEventListener('DOMContentLoaded', async function () {
             indice = cards.length - 1;
         }
 
-        cards.forEach(function (card, index) {
+        cards.forEach(
+            function (card, index) {
 
-            card.style.display =
-                index === indice
-                    ? 'block'
-                    : 'none';
+                card.style.display =
+                    index === indice
+                        ? 'block'
+                        : 'none';
+            }
+        );
 
-        });
-
-        // Guardar cuál estamos viendo
         if (container === part1Container) {
             part1Actual = indice;
         }
@@ -154,13 +267,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             container,
             indice
         );
-
     }
 
 
     /* =========================================================
        INDICADOR
-       ACTIVIDAD X DE Y
     ========================================================== */
 
     function actualizarIndicadorActividad(
@@ -181,27 +292,26 @@ document.addEventListener('DOMContentLoaded', async function () {
         const total =
             cards.length;
 
-        cards.forEach(function (card) {
+        cards.forEach(
+            function (card) {
 
-            const indicador =
-                card.querySelector(
-                    '.activity-page-indicator'
-                );
+                const indicador =
+                    card.querySelector(
+                        '.activity-page-indicator'
+                    );
 
-            if (indicador) {
+                if (indicador) {
 
-                indicador.textContent =
-                    `Actividad ${actual} de ${total}`;
-
+                    indicador.textContent =
+                        `Actividad ${actual} de ${total}`;
+                }
             }
-
-        });
-
+        );
     }
 
 
     /* =========================================================
-       NAVEGACIÓN ANTERIOR / SIGUIENTE
+       NAVEGACIÓN
     ========================================================== */
 
     function actualizarBotonesNavegacion(
@@ -237,16 +347,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             anterior.disabled =
                 indice === 0;
-
         }
 
         if (siguiente) {
 
             siguiente.disabled =
                 indice === cards.length - 1;
-
         }
-
     }
 
 
@@ -271,7 +378,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             numero;
 
         card.innerHTML = `
-
             <div class="activity-card-header">
 
                 <div class="activity-card-title">
@@ -308,11 +414,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             </div>
 
-
             <div class="activity-page-indicator">
                 Actividad ${numero} de ${numero}
             </div>
-
 
             <div class="activity-card-body">
 
@@ -330,7 +434,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 </div>
 
-
                 <div class="activity-field">
 
                     <label>
@@ -343,7 +446,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     ></textarea>
 
                 </div>
-
 
                 <div class="activity-field activity-field-full">
 
@@ -358,7 +460,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 </div>
 
-
                 <div class="activity-field">
 
                     <label>
@@ -372,7 +473,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 </div>
 
-
                 <div class="activity-field">
 
                     <label>
@@ -385,7 +485,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     ></textarea>
 
                 </div>
-
 
                 <div class="activity-navigation">
 
@@ -406,14 +505,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 </div>
 
             </div>
-
         `;
 
         container.appendChild(card);
 
 
         /* =====================================================
-           CARGAR DATOS SI ESTAMOS EDITANDO
+           CARGAR DATOS DE ACTIVIDAD
         ====================================================== */
 
         if (datos) {
@@ -445,40 +543,29 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
             if (ambito) {
-
                 ambito.value =
                     datos.ambito ?? '';
-
             }
 
             if (destreza) {
-
                 destreza.value =
                     datos.destreza ?? '';
-
             }
 
             if (estrategias) {
-
                 estrategias.value =
                     datos.estrategias_metologicas ?? '';
-
             }
 
             if (recursos) {
-
                 recursos.value =
                     datos.recursos ?? '';
-
             }
 
             if (indicadores) {
-
                 indicadores.value =
                     datos.indicadores_logro ?? '';
-
             }
-
         }
 
 
@@ -492,7 +579,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 '.activity-card'
             ).length - 1
         );
-
     }
 
 
@@ -543,16 +629,23 @@ document.addEventListener('DOMContentLoaded', async function () {
                 let indiceActual;
 
                 if (container === part1Container) {
-                    indiceActual = part1Actual;
+
+                    indiceActual =
+                        part1Actual;
+
                 } else {
-                    indiceActual = part2Actual;
+
+                    indiceActual =
+                        part2Actual;
                 }
+
 
                 card.remove();
 
                 actualizarNumeracion(
                     container
                 );
+
 
                 const cardsDespues =
                     obtenerCards(container);
@@ -561,8 +654,11 @@ document.addEventListener('DOMContentLoaded', async function () {
                 if (cardsDespues.length === 0) {
 
                     if (container === part1Container) {
+
                         part1Actual = 0;
+
                     } else {
+
                         part2Actual = 0;
                     }
 
@@ -574,7 +670,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     ) {
 
                         indiceActual--;
-
                     }
 
                     if (
@@ -584,18 +679,15 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                         indiceActual =
                             cardsDespues.length - 1;
-
                     }
 
                     mostrarActividad(
                         container,
                         indiceActual
                     );
-
                 }
 
                 actualizarEstado();
-
             }
         );
 
@@ -630,7 +722,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     visible
                         ? 'Expandir'
                         : 'Contraer';
-
             }
         );
 
@@ -649,10 +740,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                 let indiceActual;
 
                 if (container === part1Container) {
-                    indiceActual = part1Actual;
+
+                    indiceActual =
+                        part1Actual;
+
                 } else {
-                    indiceActual = part2Actual;
+
+                    indiceActual =
+                        part2Actual;
                 }
+
 
                 if (indiceActual > 0) {
 
@@ -660,9 +757,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         container,
                         indiceActual - 1
                     );
-
                 }
-
             }
         );
 
@@ -684,10 +779,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                 let indiceActual;
 
                 if (container === part1Container) {
-                    indiceActual = part1Actual;
+
+                    indiceActual =
+                        part1Actual;
+
                 } else {
-                    indiceActual = part2Actual;
+
+                    indiceActual =
+                        part2Actual;
                 }
+
 
                 if (
                     indiceActual <
@@ -698,12 +799,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                         container,
                         indiceActual + 1
                     );
-
                 }
-
             }
         );
-
     }
 
 
@@ -718,92 +816,92 @@ document.addEventListener('DOMContentLoaded', async function () {
                 '.activity-card'
             );
 
-        cards.forEach(function (card, index) {
+        cards.forEach(
+            function (card, index) {
 
-            const numero =
-                index + 1;
+                const numero =
+                    index + 1;
 
-
-            card.dataset.numero =
-                numero;
-
-
-            const number =
-                card.querySelector(
-                    '.activity-number'
-                );
-
-            if (number) {
-
-                number.textContent =
+                card.dataset.numero =
                     numero;
 
-            }
 
-
-            const title =
-                card.querySelector(
-                    '.activity-card-title strong'
-                );
-
-            if (title) {
-
-                title.textContent =
-                    'Actividad ' + numero;
-
-            }
-
-
-            const inputs =
-                card.querySelectorAll(
-                    'input, textarea'
-                );
-
-
-            inputs.forEach(function (input) {
-
-                const name =
-                    input.getAttribute(
-                        'name'
+                const number =
+                    card.querySelector(
+                        '.activity-number'
                     );
 
-                if (!name) {
-                    return;
+                if (number) {
+
+                    number.textContent =
+                        numero;
                 }
 
 
-                const nuevoName =
-                    name.replace(
-                        /\[\d+\]/,
-                        '[' + (numero - 1) + ']'
+                const title =
+                    card.querySelector(
+                        '.activity-card-title strong'
                     );
 
+                if (title) {
 
-                input.setAttribute(
-                    'name',
-                    nuevoName
+                    title.textContent =
+                        'Actividad ' + numero;
+                }
+
+
+                const inputs =
+                    card.querySelectorAll(
+                        'input, textarea'
+                    );
+
+                inputs.forEach(
+                    function (input) {
+
+                        const name =
+                            input.getAttribute(
+                                'name'
+                            );
+
+                        if (!name) {
+                            return;
+                        }
+
+                        const nuevoName =
+                            name.replace(
+                                /\[\d+\]/,
+                                '[' + (numero - 1) + ']'
+                            );
+
+                        input.setAttribute(
+                            'name',
+                            nuevoName
+                        );
+                    }
                 );
+            }
+        );
 
-            });
-
-        });
-
-
-        // Actualizamos los indicadores
-        // después de renumerar
 
         const cardsActuales =
             obtenerCards(container);
+
 
         if (cardsActuales.length > 0) {
 
             let indiceActual;
 
             if (container === part1Container) {
-                indiceActual = part1Actual;
+
+                indiceActual =
+                    part1Actual;
+
             } else {
-                indiceActual = part2Actual;
+
+                indiceActual =
+                    part2Actual;
             }
+
 
             if (
                 indiceActual >=
@@ -812,8 +910,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 indiceActual =
                     cardsActuales.length - 1;
-
             }
+
 
             actualizarIndicadorActividad(
                 container,
@@ -824,9 +922,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 container,
                 indiceActual
             );
-
         }
-
     }
 
 
@@ -846,9 +942,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 agregandoPart1 = true;
 
-                setTimeout(function () {
-                    agregandoPart1 = false;
-                }, 300);
+                setTimeout(
+                    function () {
+                        agregandoPart1 = false;
+                    },
+                    300
+                );
 
 
                 const cantidad =
@@ -867,7 +966,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     );
 
                     return;
-
                 }
 
 
@@ -878,9 +976,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 );
 
 
-                // Mostrar automáticamente
-                // la nueva actividad
-
                 mostrarActividad(
                     part1Container,
                     cantidad
@@ -888,10 +983,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
                 actualizarEstado();
-
             }
         );
-
     }
 
 
@@ -911,9 +1004,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 agregandoPart2 = true;
 
-                setTimeout(function () {
-                    agregandoPart2 = false;
-                }, 300);
+                setTimeout(
+                    function () {
+                        agregandoPart2 = false;
+                    },
+                    300
+                );
 
 
                 const cantidad =
@@ -932,7 +1028,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     );
 
                     return;
-
                 }
 
 
@@ -943,9 +1038,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 );
 
 
-                // Mostrar automáticamente
-                // la nueva actividad
-
                 mostrarActividad(
                     part2Container,
                     cantidad
@@ -953,10 +1045,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
                 actualizarEstado();
-
             }
         );
-
     }
 
 
@@ -970,7 +1060,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             part1Container.querySelectorAll(
                 '.activity-card'
             ).length;
-
 
         part2Count =
             part2Container.querySelectorAll(
@@ -987,9 +1076,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         actualizarProgreso();
 
 
-        // Mantener siempre visible
-        // una actividad válida
-
         if (part1Count > 0) {
 
             if (
@@ -999,14 +1085,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 part1Actual =
                     part1Count - 1;
-
             }
+
 
             mostrarActividad(
                 part1Container,
                 part1Actual
             );
-
         }
 
 
@@ -1019,16 +1104,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 part2Actual =
                     part2Count - 1;
-
             }
+
 
             mostrarActividad(
                 part2Container,
                 part2Actual
             );
-
         }
-
     }
 
 
@@ -1044,7 +1127,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 part1Count +
                 ' / ' +
                 MAX_ACTIVIDADES;
-
         }
 
 
@@ -1054,7 +1136,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 part2Count +
                 ' / ' +
                 MAX_ACTIVIDADES;
-
         }
 
 
@@ -1067,7 +1148,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                         ? ' actividad'
                         : ' actividades'
                 );
-
         }
 
 
@@ -1080,9 +1160,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         ? ' actividad'
                         : ' actividades'
                 );
-
         }
-
     }
 
 
@@ -1098,7 +1176,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 part1Count === 0
                     ? 'flex'
                     : 'none';
-
         }
 
 
@@ -1108,9 +1185,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 part2Count === 0
                     ? 'flex'
                     : 'none';
-
         }
-
     }
 
 
@@ -1126,7 +1201,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 'complete',
                 part1Count > 0
             );
-
         }
 
 
@@ -1136,7 +1210,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 'complete',
                 part2Count > 0
             );
-
         }
 
 
@@ -1150,9 +1223,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 'complete',
                 generalCompleto
             );
-
         }
-
     }
 
 
@@ -1168,21 +1239,18 @@ document.addEventListener('DOMContentLoaded', async function () {
         if (verificarDatosGenerales()) {
 
             progreso += 40;
-
         }
 
 
         if (part1Count > 0) {
 
             progreso += 30;
-
         }
 
 
         if (part2Count > 0) {
 
             progreso += 30;
-
         }
 
 
@@ -1190,7 +1258,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             progressValue.style.width =
                 progreso + '%';
-
         }
 
 
@@ -1198,7 +1265,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             progressPercent.textContent =
                 progreso + '%';
-
         }
 
 
@@ -1206,9 +1272,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             progresoInput.value =
                 progreso;
-
         }
-
     }
 
 
@@ -1244,47 +1308,152 @@ document.addEventListener('DOMContentLoaded', async function () {
         let completos = true;
 
 
-        campos.forEach(function (nombre) {
+        campos.forEach(
+            function (nombre) {
 
-            const campo =
-                form.querySelector(
-                    `[name="${nombre}"]`
-                );
+                const campo =
+                    form.querySelector(
+                        `[name="${nombre}"]`
+                    );
 
 
-            if (
-                !campo ||
-                campo.value.trim() === ''
-            ) {
+                if (
+                    !campo ||
+                    campo.value.trim() === ''
+                ) {
 
-                completos = false;
-
+                    completos = false;
+                }
             }
-
-        });
+        );
 
 
         return completos;
-
     }
 
 
     /* =========================================================
-       GUARDAR PLANIFICACIÓN
+       VALIDAR DATOS NORMALES
+    ========================================================== */
+
+    function validarAntesDeGuardar() {
+
+        const generalCompleto =
+            verificarDatosGenerales();
+
+
+        if (!generalCompleto) {
+
+            alert(
+                'Completa todos los datos generales antes de guardar o generar el Word.'
+            );
+
+
+            const primerCampo =
+                form.querySelector(
+                    'input[required]:invalid, textarea[required]:invalid, select[required]:invalid'
+                );
+
+
+            if (primerCampo) {
+
+                primerCampo.focus();
+            }
+
+
+            return false;
+        }
+
+
+        if (
+            part1Count === 0 &&
+            part2Count === 0
+        ) {
+
+            const continuar =
+                confirm(
+                    'No has agregado ninguna actividad. ¿Deseas continuar?'
+                );
+
+
+            if (!continuar) {
+
+                return false;
+            }
+        }
+
+
+        return true;
+    }
+
+
+    /* =========================================================
+       GUARDAR PLANIFICACIÓN NORMAL
+
+       CASOS:
+
+       NUEVA:
+       POST /planificaciones
+
+       USANDO PLANTILLA:
+       POST /planificaciones
+
+       EDITANDO PLANIFICACIÓN:
+       PUT /planificaciones/{id}
+
+       EDITANDO PLANTILLA:
+       PUT /planificaciones/{id}
+
+       IMPORTANTE:
+       Si es plantilla existente NO hacemos validación
+       obligatoria.
     ========================================================== */
 
     async function guardarPlanificacion() {
 
+        /*
+        ---------------------------------------------------------
+        SI ESTAMOS EDITANDO UNA PLANTILLA:
+
+        NO VALIDAMOS CAMPOS OBLIGATORIOS.
+
+        Esto permite guardar aunque la plantilla tenga
+        campos vacíos.
+        ---------------------------------------------------------
+        */
+
+        if (!editandoPlantillaExistente) {
+
+            const valido =
+                validarAntesDeGuardar();
+
+            if (!valido) {
+                return;
+            }
+        }
+
+
         const formData =
             new FormData(form);
 
-        const editando =
-            Boolean(window.planificacionId);
+
+        /*
+        ---------------------------------------------------------
+        EDITANDO:
+
+        PUT /planificaciones/{id}
+
+        NUEVA / USANDO PLANTILLA:
+
+        POST /planificaciones
+        ---------------------------------------------------------
+        */
 
         const url =
             editando
                 ? `/planificaciones/${window.planificacionId}`
-                : saveButton.formAction;
+                : saveButton.formAction ||
+                  '/planificaciones';
 
 
         if (editando) {
@@ -1293,7 +1462,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 '_method',
                 'PUT'
             );
-
         }
 
 
@@ -1306,10 +1474,27 @@ document.addEventListener('DOMContentLoaded', async function () {
             saveButton.disabled =
                 true;
 
-            saveButton.innerHTML =
-                editando
-                    ? 'Actualizando...'
-                    : 'Guardando...';
+
+            if (usandoPlantilla) {
+
+                saveButton.innerHTML =
+                    'Creando planificación...';
+
+            } else if (editandoPlantillaExistente) {
+
+                saveButton.innerHTML =
+                    'Actualizando plantilla...';
+
+            } else if (editando) {
+
+                saveButton.innerHTML =
+                    'Actualizando...';
+
+            } else {
+
+                saveButton.innerHTML =
+                    'Guardando...';
+            }
 
 
             const response =
@@ -1317,10 +1502,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                     url,
                     {
                         method: 'POST',
+
                         body: formData,
+
                         headers: {
                             'X-Requested-With':
                                 'XMLHttpRequest',
+
                             'Accept':
                                 'application/json'
                         }
@@ -1330,10 +1518,17 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             if (!response.ok) {
 
+                const texto =
+                    await response.text();
+
+                console.error(
+                    'Respuesta del servidor:',
+                    texto
+                );
+
                 throw new Error(
                     'Error al guardar la planificación.'
                 );
-
             }
 
 
@@ -1349,10 +1544,11 @@ document.addEventListener('DOMContentLoaded', async function () {
             } else {
 
                 alert(
+                    data.message ||
                     'No se pudo guardar la planificación.'
                 );
-
             }
+
 
         } catch (error) {
 
@@ -1361,9 +1557,11 @@ document.addEventListener('DOMContentLoaded', async function () {
                 error
             );
 
+
             alert(
                 'Ocurrió un error al guardar la planificación.'
             );
+
 
         } finally {
 
@@ -1372,9 +1570,147 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             saveButton.innerHTML =
                 textoOriginal;
+        }
+    }
 
+
+    /* =========================================================
+       GUARDAR COMO PLANTILLA
+
+       SOLO NUEVA PLANIFICACIÓN DESDE CERO.
+    ========================================================== */
+
+    async function guardarComoPlantilla() {
+
+        if (!templateButton) {
+            return;
         }
 
+
+        if (!nuevaPlanificacion) {
+
+            console.warn(
+                'Guardar como plantilla solo está disponible para nuevas planificaciones.'
+            );
+
+            return;
+        }
+
+
+        const formData =
+            new FormData(form);
+
+
+        /*
+        ---------------------------------------------------------
+        INDICAMOS AL CONTROLLER QUE ES UNA PLANTILLA
+        ---------------------------------------------------------
+        */
+
+        formData.set(
+            'es_plantilla',
+            '1'
+        );
+
+
+        formData.set(
+            'progreso',
+            '0'
+        );
+
+
+        const textoOriginal =
+            templateButton.innerHTML;
+
+
+        try {
+
+            templateButton.disabled =
+                true;
+
+
+            templateButton.innerHTML =
+                'Guardando plantilla...';
+
+
+            const response =
+                await fetch(
+                    '/planificaciones',
+                    {
+                        method: 'POST',
+
+                        body: formData,
+
+                        headers: {
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+
+                            'Accept':
+                                'application/json'
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                const texto =
+                    await response.text();
+
+                console.error(
+                    'Respuesta del servidor:',
+                    texto
+                );
+
+                throw new Error(
+                    'Error al guardar la plantilla.'
+                );
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (!data.success) {
+
+                throw new Error(
+                    data.message ||
+                    'No se pudo guardar la plantilla.'
+                );
+            }
+
+
+            alert(
+                'Plantilla guardada correctamente.'
+            );
+
+
+            window.location.href =
+                '/planificaciones';
+
+
+        } catch (error) {
+
+            console.error(
+                'Error guardando plantilla:',
+                error
+            );
+
+
+            alert(
+                'Ocurrió un error al guardar la plantilla.'
+            );
+
+
+        } finally {
+
+            templateButton.disabled =
+                false;
+
+            templateButton.innerHTML =
+                textoOriginal;
+        }
     }
 
 
@@ -1384,29 +1720,95 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     form.querySelectorAll(
         'input, textarea, select'
-    ).forEach(function (campo) {
+    ).forEach(
+        function (campo) {
 
-        campo.addEventListener(
-            'input',
-            actualizarEstado
-        );
+            campo.addEventListener(
+                'input',
+                actualizarEstado
+            );
 
-
-        campo.addEventListener(
-            'change',
-            actualizarEstado
-        );
-
-    });
+            campo.addEventListener(
+                'change',
+                actualizarEstado
+            );
+        }
+    );
 
 
     /* =========================================================
-       VALIDACIÓN ANTES DE ENVIAR
+       CLICK GUARDAR PLANIFICACIÓN
+    ========================================================== */
+
+    if (saveButton) {
+
+        saveButton.addEventListener(
+            'click',
+            function (event) {
+
+                event.preventDefault();
+
+                guardarPlanificacion();
+            }
+        );
+    }
+
+
+    /* =========================================================
+       CLICK GUARDAR COMO PLANTILLA
+    ========================================================== */
+
+    if (templateButton) {
+
+        templateButton.addEventListener(
+            'click',
+            function (event) {
+
+                event.preventDefault();
+
+                guardarComoPlantilla();
+            }
+        );
+    }
+
+
+    /* =========================================================
+       GENERAR WORD
+
+       IMPORTANTE:
+
+       El botón "Generar Word" sigue siendo submit.
+
+       Como el botón Guardar planificación ahora es
+       type="button", solamente este botón llegará
+       al submit normal del formulario.
     ========================================================== */
 
     form.addEventListener(
         'submit',
         function (event) {
+
+            /*
+            -----------------------------------------------------
+            SI ESTAMOS EDITANDO UNA PLANTILLA
+
+            No bloqueamos por campos obligatorios.
+
+            Pero este submit corresponde principalmente
+            al botón Generar Word.
+            -----------------------------------------------------
+            */
+
+            if (editandoPlantillaExistente) {
+                return;
+            }
+
+
+            /*
+            -----------------------------------------------------
+            VALIDACIÓN NORMAL
+            -----------------------------------------------------
+            */
 
             const generalCompleto =
                 verificarDatosGenerales();
@@ -1418,27 +1820,31 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
                 alert(
-                    'Completa todos los datos generales antes de guardar o generar el Word.'
+                    'Completa todos los datos generales antes de generar el Word.'
                 );
 
 
                 const primerCampo =
                     form.querySelector(
-                        'input:invalid, textarea:invalid, select:invalid'
+                        'input[required]:invalid, textarea[required]:invalid, select[required]:invalid'
                     );
 
 
                 if (primerCampo) {
 
                     primerCampo.focus();
-
                 }
 
 
                 return;
-
             }
 
+
+            /*
+            -----------------------------------------------------
+            VALIDAR ACTIVIDADES
+            -----------------------------------------------------
+            */
 
             if (
                 part1Count === 0 &&
@@ -1456,50 +1862,33 @@ document.addEventListener('DOMContentLoaded', async function () {
                     event.preventDefault();
 
                     return;
-
                 }
-
             }
-
-
-            /* =================================================
-               GUARDAR
-            ================================================== */
-
-            if (
-                event.submitter ===
-                saveButton
-            ) {
-
-                event.preventDefault();
-
-                guardarPlanificacion();
-
-                return;
-
-            }
-
-
-            /* =================================================
-               GENERAR WORD
-
-               Se deja el envío normal.
-            ================================================== */
 
         }
     );
 
 
     /* =========================================================
-       CARGAR PLANIFICACIÓN EN MODO EDICIÓN
+       CARGAR PLANIFICACIÓN / PLANTILLA
     ========================================================== */
 
-    if (window.planificacionId) {
+    if (tieneId) {
 
-        console.log(
-            'Editando planificación:',
-            window.planificacionId
-        );
+        if (usandoPlantilla) {
+
+            console.log(
+                'Usando plantilla:',
+                window.planificacionId
+            );
+
+        } else {
+
+            console.log(
+                'Editando planificación o plantilla:',
+                window.planificacionId
+            );
+        }
 
 
         try {
@@ -1515,7 +1904,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 throw new Error(
                     'No se pudo cargar la planificación.'
                 );
-
             }
 
 
@@ -1529,12 +1917,136 @@ document.addEventListener('DOMContentLoaded', async function () {
                     result.message ||
                     'No se pudo cargar la planificación.'
                 );
-
             }
 
 
             const planificacion =
                 result.data;
+
+
+            /* =================================================
+               DETECTAR SI EL REGISTRO ES PLANTILLA
+            ================================================== */
+
+            const esPlantillaExistente =
+                Boolean(
+                    planificacion.es_plantilla
+                );
+
+
+            /*
+            -----------------------------------------------------
+            GUARDAMOS EL ESTADO GLOBAL
+
+            Esto es lo importante para que posteriormente
+            guardarPlanificacion() sepa que NO debe validar
+            los campos obligatorios.
+            -----------------------------------------------------
+            */
+
+            editandoPlantillaExistente =
+                editando &&
+                esPlantillaExistente;
+
+
+            /*
+            -----------------------------------------------------
+            EDITANDO PLANTILLA
+            -----------------------------------------------------
+            */
+
+            if (editandoPlantillaExistente) {
+
+                if (templateButton) {
+
+                    templateButton.style.display =
+                        'none';
+                }
+
+
+                if (saveButton) {
+
+                    saveButton.textContent =
+                        'Actualizar plantilla';
+
+                    saveButton.type =
+                        'button';
+                }
+
+
+                console.log(
+                    'Modo: EDITANDO PLANTILLA'
+                );
+            }
+
+
+            /*
+            -----------------------------------------------------
+            EDITANDO PLANIFICACIÓN NORMAL
+            -----------------------------------------------------
+            */
+
+            if (
+                editando &&
+                !esPlantillaExistente
+            ) {
+
+                if (templateButton) {
+
+                    templateButton.style.display =
+                        'none';
+                }
+
+
+                if (saveButton) {
+
+                    saveButton.textContent =
+                        'Actualizar planificación';
+
+                    saveButton.type =
+                        'button';
+                }
+
+
+                console.log(
+                    'Modo: EDITANDO PLANIFICACIÓN'
+                );
+            }
+
+
+            /*
+            -----------------------------------------------------
+            USANDO PLANTILLA
+
+            Se crea una NUEVA planificación.
+
+            Aquí sí se mantienen las validaciones.
+            -----------------------------------------------------
+            */
+
+            if (usandoPlantilla) {
+
+                if (templateButton) {
+
+                    templateButton.style.display =
+                        'none';
+                }
+
+
+                if (saveButton) {
+
+                    saveButton.textContent =
+                        'Guardar nueva planificación';
+
+                    saveButton.type =
+                        'button';
+                }
+
+
+                console.log(
+                    'Modo: USANDO PLANTILLA'
+                );
+            }
 
 
             /* =================================================
@@ -1572,7 +2084,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 'tamano_letra_actividades':
                     planificacion.tamano_letra_actividades ?? 8
-
             };
 
 
@@ -1589,15 +2100,13 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                         campo.value =
                             valor ?? '';
-
                     }
-
                 }
             );
 
 
             /* =================================================
-               PROGRESO GUARDADO
+               PROGRESO
             ================================================== */
 
             const progreso =
@@ -1606,27 +2115,27 @@ document.addEventListener('DOMContentLoaded', async function () {
                 );
 
 
-            if (progresoInput) {
+            if (!usandoPlantilla) {
 
-                progresoInput.value =
-                    progreso;
+                if (progresoInput) {
 
-            }
-
-
-            if (progressPercent) {
-
-                progressPercent.textContent =
-                    progreso + '%';
-
-            }
+                    progresoInput.value =
+                        progreso;
+                }
 
 
-            if (progressValue) {
+                if (progressPercent) {
 
-                progressValue.style.width =
-                    progreso + '%';
+                    progressPercent.textContent =
+                        progreso + '%';
+                }
 
+
+                if (progressValue) {
+
+                    progressValue.style.width =
+                        progreso + '%';
+                }
             }
 
 
@@ -1640,6 +2149,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 )
                 .forEach(
                     function (card) {
+
                         card.remove();
                     }
                 );
@@ -1651,6 +2161,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 )
                 .forEach(
                     function (card) {
+
                         card.remove();
                     }
                 );
@@ -1669,7 +2180,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     function (actividad) {
 
                         return actividad.seccion === 'part1';
-
                     }
                 );
 
@@ -1679,7 +2189,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     function (actividad) {
 
                         return actividad.seccion === 'part2';
-
                     }
                 );
 
@@ -1693,8 +2202,11 @@ document.addEventListener('DOMContentLoaded', async function () {
                     function (a, b) {
 
                         return a.orden - b.orden;
-
                     }
+                )
+                .slice(
+                    0,
+                    MAX_ACTIVIDADES
                 )
                 .forEach(
                     function (actividad, index) {
@@ -1705,7 +2217,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                             index + 1,
                             actividad
                         );
-
                     }
                 );
 
@@ -1719,8 +2230,11 @@ document.addEventListener('DOMContentLoaded', async function () {
                     function (a, b) {
 
                         return a.orden - b.orden;
-
                     }
+                )
+                .slice(
+                    0,
+                    MAX_ACTIVIDADES
                 )
                 .forEach(
                     function (actividad, index) {
@@ -1731,7 +2245,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                             index + 1,
                             actividad
                         );
-
                     }
                 );
 
@@ -1750,7 +2263,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     part1Container,
                     0
                 );
-
             }
 
 
@@ -1760,7 +2272,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                     part2Container,
                     0
                 );
-
             }
 
 
@@ -1772,14 +2283,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
             console.log(
-                'Planificación cargada correctamente:',
+                usandoPlantilla
+                    ? 'Plantilla cargada correctamente. Se creará una nueva planificación.'
+                    : editandoPlantillaExistente
+                        ? 'Plantilla cargada correctamente para edición.'
+                        : 'Planificación cargada correctamente.',
                 planificacion
-            );
-
-
-            console.log(
-                'Actividades cargadas:',
-                actividades
             );
 
 
@@ -1792,11 +2301,11 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
             alert(
-                'No se pudo cargar la planificación.'
+                usandoPlantilla
+                    ? 'No se pudo cargar la plantilla.'
+                    : 'No se pudo cargar la planificación.'
             );
-
         }
-
     }
 
 
@@ -1807,3 +2316,4 @@ document.addEventListener('DOMContentLoaded', async function () {
     actualizarEstado();
 
 });
+

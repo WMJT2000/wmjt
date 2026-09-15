@@ -12,7 +12,7 @@
 | - Mostrar loading
 | - Mostrar errores
 | - Mostrar tabla vacía
-| - Generar botones Editar / Secciones / Eliminar
+| - Generar botones Editar / Secciones / Pasos / Plantilla / Eliminar
 | - Emitir eventos
 |
 | NO RESPONSABILIDADES:
@@ -56,6 +56,7 @@ export class TablaGestion {
                 edit: true,
                 sections: false,
                 steps: false,
+                template: false,
                 delete: true
             };
 
@@ -292,6 +293,8 @@ export class TablaGestion {
                 if (
                     this.actions.edit ||
                     this.actions.sections ||
+                    this.actions.steps ||
+                    this.actions.template ||
                     this.actions.delete
                 ) {
 
@@ -303,30 +306,44 @@ export class TablaGestion {
                         'tabla-gestion-actions';
 
 
+                    /*
+                    |--------------------------------------------------------------------------
+                    | PASOS
+                    |--------------------------------------------------------------------------
+                    */
 
-
-                    if (this.actions.steps) {
+                    if (
+                        this.actions.steps
+                    ) {
 
                         const botonPasos =
                             document.createElement('button');
 
-                        botonPasos.type = 'button';
+
+                        botonPasos.type =
+                            'button';
+
 
                         botonPasos.className =
                             'tabla-gestion-btn tabla-gestion-btn-steps';
 
+
                         botonPasos.dataset.action =
                             'steps';
+
 
                         botonPasos.dataset.id =
                             registro.id;
 
+
                         botonPasos.textContent =
                             'Pasos';
+
 
                         celdaAcciones.appendChild(
                             botonPasos
                         );
+
                     }
 
 
@@ -407,6 +424,47 @@ export class TablaGestion {
 
                         celdaAcciones.appendChild(
                             botonSecciones
+                        );
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | CONVERTIR EN PLANTILLA
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        this.actions.template
+                    ) {
+
+                        const botonPlantilla =
+                            document.createElement('button');
+
+
+                        botonPlantilla.type =
+                            'button';
+
+
+                        botonPlantilla.className =
+                            'tabla-gestion-btn tabla-gestion-btn-template';
+
+
+                        botonPlantilla.dataset.action =
+                            'template';
+
+
+                        botonPlantilla.dataset.id =
+                            registro.id;
+
+
+                        botonPlantilla.textContent =
+                            'Convertir en plantilla';
+
+
+                        celdaAcciones.appendChild(
+                            botonPlantilla
                         );
 
                     }
@@ -616,6 +674,7 @@ export class TablaGestion {
             this.actions.edit ||
             this.actions.sections ||
             this.actions.steps ||
+            this.actions.template ||
             this.actions.delete
         ) {
 
@@ -676,26 +735,38 @@ export class TablaGestion {
                 }
 
 
+                /*
+                |--------------------------------------------------------------------------
+                | PASOS
+                |--------------------------------------------------------------------------
+                */
 
                 const botonPasos =
                     event.target.closest(
                         '[data-action="steps"]'
                     );
 
+
                 if (botonPasos) {
 
                     const id =
                         botonPasos.dataset.id;
 
+
                     const registro =
-                        this.obtenerRegistroPorId(id);
+                        this.obtenerRegistroPorId(
+                            id
+                        );
+
 
                     this.emitir(
                         'steps',
                         registro
                     );
 
+
                     return;
+
                 }
 
 
@@ -725,6 +796,41 @@ export class TablaGestion {
 
                     this.emitir(
                         'sections',
+                        registro
+                    );
+
+
+                    return;
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CONVERTIR EN PLANTILLA
+                |--------------------------------------------------------------------------
+                */
+
+                const botonPlantilla =
+                    event.target.closest(
+                        '[data-action="template"]'
+                    );
+
+
+                if (botonPlantilla) {
+
+                    const id =
+                        botonPlantilla.dataset.id;
+
+
+                    const registro =
+                        this.obtenerRegistroPorId(
+                            id
+                        );
+
+
+                    this.emitir(
+                        'template',
                         registro
                     );
 

@@ -24,6 +24,11 @@ class Planificacion extends Model
         'tamano_letra_actividades',
         'estado',
         'progreso',
+        'es_plantilla',
+    ];
+
+    protected $casts = [
+        'es_plantilla' => 'boolean',
     ];
 
     public function user(): BelongsTo

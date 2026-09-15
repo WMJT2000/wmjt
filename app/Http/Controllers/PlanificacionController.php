@@ -18,6 +18,7 @@ class PlanificacionController extends Controller
         return view('gestion.planificaciones');
     }
 
+
     // ==========================================
     // API - LISTAR PLANIFICACIONES
     // ==========================================
@@ -26,12 +27,33 @@ class PlanificacionController extends Controller
     {
         $planificaciones = Auth::user()
             ->planificaciones()
+            ->where('es_plantilla', false)
             ->orderBy('id', 'desc')
             ->get();
 
         return response()->json([
             'success' => true,
             'data' => $planificaciones
+        ]);
+    }
+
+
+    // ==========================================
+    // API - LISTAR PLANTILLAS
+    // ==========================================
+
+    public function apiPlantillas()
+    {
+        $plantillas = Auth::user()
+            ->planificaciones()
+            ->where('es_plantilla', true)
+            ->with('actividades')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $plantillas
         ]);
     }
 
@@ -48,7 +70,6 @@ class PlanificacionController extends Controller
             ->find($id);
 
         if (!$planificacion) {
-
             return response()->json([
                 'success' => false,
                 'message' => 'Planificación no encontrada.'
@@ -62,6 +83,9 @@ class PlanificacionController extends Controller
     }
 
 
+    // ==========================================
+    // MOSTRAR FORMULARIO DE CREACIÓN / EDICIÓN
+    // ==========================================
 
     public function create(Request $request)
     {
@@ -72,48 +96,83 @@ class PlanificacionController extends Controller
 
 
     // ==========================================
-    // GUARDAR PLANIFICACIÓN
+    // GUARDAR NUEVA PLANIFICACIÓN O PLANTILLA
     // ==========================================
 
     public function store(Request $request)
     {
         $planificacion = Planificacion::create([
+
             'user_id' => Auth::id(),
 
             'experiencia_aprendizaje' =>
-            $request->input('1_experiencia_prendizaje'),
+                $request->input(
+                    '1_experiencia_prendizaje'
+                ),
 
             'descripcion_general_experiencia' =>
-            $request->input('2_descripcion_general_experiencia'),
+                $request->input(
+                    '2_descripcion_general_experiencia'
+                ),
 
             'nombre_maestra' =>
-            $request->input('3_nombre_maestra'),
+                $request->input(
+                    '3_nombre_maestra'
+                ),
 
             'tiempo_estimado' =>
-            $request->input('4_tiempo_estimado'),
+                $request->input(
+                    '4_tiempo_estimado'
+                ),
 
             'fecha' =>
-            $request->input('5_fecha'),
+                $request->input(
+                    '5_fecha'
+                ),
 
             'nivel_educativo' =>
-            $request->input('6_nivel_educativo'),
+                $request->input(
+                    '6_nivel_educativo'
+                ),
 
             'objetivo_aprendizaje' =>
-            $request->input('7_objetivo_aprendizaje'),
+                $request->input(
+                    '7_objetivo_aprendizaje'
+                ),
 
             'elemento_integrador' =>
-            $request->input('8_elemento_integrador'),
+                $request->input(
+                    '8_elemento_integrador'
+                ),
 
             'nocion_dia' =>
-            $request->input('9_nocion_dia'),
+                $request->input(
+                    '9_nocion_dia'
+                ),
 
             'tamano_letra_actividades' =>
-            $request->input('tamano_letra_actividades', 8),
+                $request->input(
+                    'tamano_letra_actividades',
+                    8
+                ),
 
-            'estado' => 'borrador',
+            'estado' =>
+                'borrador',
 
             'progreso' =>
-            $request->input('progreso', 0),
+                $request->input(
+                    'progreso',
+                    0
+                ),
+
+            // ==========================================
+            // IMPORTANTE
+            // 0 = planificación normal
+            // 1 = plantilla
+            // ==========================================
+
+            'es_plantilla' =>
+                $request->boolean('es_plantilla'),
         ]);
 
 
@@ -121,31 +180,38 @@ class PlanificacionController extends Controller
         // ACTIVIDADES PARTE 1
         // ==========================================
 
-        $part1 = $request->input('part1', []);
+        $part1 = $request->input(
+            'part1',
+            []
+        );
 
         foreach ($part1 as $index => $actividad) {
 
             Actividad::create([
-                'planificacion_id' => $planificacion->id,
 
-                'seccion' => 'part1',
+                'planificacion_id' =>
+                    $planificacion->id,
 
-                'orden' => $index + 1,
+                'seccion' =>
+                    'part1',
+
+                'orden' =>
+                    $index + 1,
 
                 'ambito' =>
-                $actividad['ambito'] ?? null,
+                    $actividad['ambito'] ?? null,
 
                 'destreza' =>
-                $actividad['destreza'] ?? null,
+                    $actividad['destreza'] ?? null,
 
                 'estrategias_metologicas' =>
-                $actividad['estrategias_metologicas'] ?? null,
+                    $actividad['estrategias_metologicas'] ?? null,
 
                 'recursos' =>
-                $actividad['recursos'] ?? null,
+                    $actividad['recursos'] ?? null,
 
                 'indicadores_logro' =>
-                $actividad['indicadores_logro'] ?? null,
+                    $actividad['indicadores_logro'] ?? null,
             ]);
         }
 
@@ -154,31 +220,38 @@ class PlanificacionController extends Controller
         // ACTIVIDADES PARTE 2
         // ==========================================
 
-        $part2 = $request->input('part2', []);
+        $part2 = $request->input(
+            'part2',
+            []
+        );
 
         foreach ($part2 as $index => $actividad) {
 
             Actividad::create([
-                'planificacion_id' => $planificacion->id,
 
-                'seccion' => 'part2',
+                'planificacion_id' =>
+                    $planificacion->id,
 
-                'orden' => $index + 1,
+                'seccion' =>
+                    'part2',
+
+                'orden' =>
+                    $index + 1,
 
                 'ambito' =>
-                $actividad['ambito'] ?? null,
+                    $actividad['ambito'] ?? null,
 
                 'destreza' =>
-                $actividad['destreza'] ?? null,
+                    $actividad['destreza'] ?? null,
 
                 'estrategias_metologicas' =>
-                $actividad['estrategias_metologicas'] ?? null,
+                    $actividad['estrategias_metologicas'] ?? null,
 
                 'recursos' =>
-                $actividad['recursos'] ?? null,
+                    $actividad['recursos'] ?? null,
 
                 'indicadores_logro' =>
-                $actividad['indicadores_logro'] ?? null,
+                    $actividad['indicadores_logro'] ?? null,
             ]);
         }
 
@@ -191,22 +264,35 @@ class PlanificacionController extends Controller
 
             return response()->json([
                 'success' => true,
+
                 'message' =>
-                'Planificación guardada correctamente.',
+                    $planificacion->es_plantilla
+                        ? 'Plantilla guardada correctamente.'
+                        : 'Planificación guardada correctamente.',
+
                 'planificacion_id' =>
-                $planificacion->id,
+                    $planificacion->id,
+
+                'es_plantilla' =>
+                    $planificacion->es_plantilla,
             ]);
         }
+
 
         return redirect()
             ->back()
             ->with(
                 'success',
-                'Planificación guardada correctamente.'
+                $planificacion->es_plantilla
+                    ? 'Plantilla guardada correctamente.'
+                    : 'Planificación guardada correctamente.'
             );
     }
 
 
+    // ==========================================
+    // ACTUALIZAR PLANIFICACIÓN
+    // ==========================================
 
     public function update(Request $request, $id)
     {
@@ -215,68 +301,216 @@ class PlanificacionController extends Controller
             ->find($id);
 
         if (!$planificacion) {
+
             return response()->json([
                 'success' => false,
-                'message' => 'Planificación no encontrada.'
+                'message' =>
+                    'Planificación no encontrada.'
             ], 404);
         }
 
+
         $planificacion->update([
-            'experiencia_aprendizaje' => $request->input('1_experiencia_prendizaje'),
-            'descripcion_general_experiencia' => $request->input('2_descripcion_general_experiencia'),
-            'nombre_maestra' => $request->input('3_nombre_maestra'),
-            'tiempo_estimado' => $request->input('4_tiempo_estimado'),
-            'fecha' => $request->input('5_fecha'),
-            'nivel_educativo' => $request->input('6_nivel_educativo'),
-            'objetivo_aprendizaje' => $request->input('7_objetivo_aprendizaje'),
-            'elemento_integrador' => $request->input('8_elemento_integrador'),
-            'nocion_dia' => $request->input('9_nocion_dia'),
-            'tamano_letra_actividades' => $request->input('tamano_letra_actividades', 8),
-            'progreso' => $request->input('progreso', 0),
+
+            'experiencia_aprendizaje' =>
+                $request->input(
+                    '1_experiencia_prendizaje'
+                ),
+
+            'descripcion_general_experiencia' =>
+                $request->input(
+                    '2_descripcion_general_experiencia'
+                ),
+
+            'nombre_maestra' =>
+                $request->input(
+                    '3_nombre_maestra'
+                ),
+
+            'tiempo_estimado' =>
+                $request->input(
+                    '4_tiempo_estimado'
+                ),
+
+            'fecha' =>
+                $request->input(
+                    '5_fecha'
+                ),
+
+            'nivel_educativo' =>
+                $request->input(
+                    '6_nivel_educativo'
+                ),
+
+            'objetivo_aprendizaje' =>
+                $request->input(
+                    '7_objetivo_aprendizaje'
+                ),
+
+            'elemento_integrador' =>
+                $request->input(
+                    '8_elemento_integrador'
+                ),
+
+            'nocion_dia' =>
+                $request->input(
+                    '9_nocion_dia'
+                ),
+
+            'tamano_letra_actividades' =>
+                $request->input(
+                    'tamano_letra_actividades',
+                    8
+                ),
+
+            'progreso' =>
+                $request->input(
+                    'progreso',
+                    0
+                ),
         ]);
 
-        $planificacion->actividades()->delete();
 
-        $part1 = $request->input('part1', []);
+        // ==========================================
+        // ELIMINAR ACTIVIDADES ANTERIORES
+        // ==========================================
+
+        $planificacion
+            ->actividades()
+            ->delete();
+
+
+        // ==========================================
+        // ACTIVIDADES PARTE 1
+        // ==========================================
+
+        $part1 = $request->input(
+            'part1',
+            []
+        );
 
         foreach ($part1 as $index => $actividad) {
+
             Actividad::create([
-                'planificacion_id' => $planificacion->id,
-                'seccion' => 'part1',
-                'orden' => $index + 1,
-                'ambito' => $actividad['ambito'] ?? null,
-                'destreza' => $actividad['destreza'] ?? null,
-                'estrategias_metologicas' => $actividad['estrategias_metologicas'] ?? null,
-                'recursos' => $actividad['recursos'] ?? null,
-                'indicadores_logro' => $actividad['indicadores_logro'] ?? null,
+
+                'planificacion_id' =>
+                    $planificacion->id,
+
+                'seccion' =>
+                    'part1',
+
+                'orden' =>
+                    $index + 1,
+
+                'ambito' =>
+                    $actividad['ambito'] ?? null,
+
+                'destreza' =>
+                    $actividad['destreza'] ?? null,
+
+                'estrategias_metologicas' =>
+                    $actividad['estrategias_metologicas'] ?? null,
+
+                'recursos' =>
+                    $actividad['recursos'] ?? null,
+
+                'indicadores_logro' =>
+                    $actividad['indicadores_logro'] ?? null,
             ]);
         }
 
-        $part2 = $request->input('part2', []);
+
+        // ==========================================
+        // ACTIVIDADES PARTE 2
+        // ==========================================
+
+        $part2 = $request->input(
+            'part2',
+            []
+        );
 
         foreach ($part2 as $index => $actividad) {
+
             Actividad::create([
-                'planificacion_id' => $planificacion->id,
-                'seccion' => 'part2',
-                'orden' => $index + 1,
-                'ambito' => $actividad['ambito'] ?? null,
-                'destreza' => $actividad['destreza'] ?? null,
-                'estrategias_metologicas' => $actividad['estrategias_metologicas'] ?? null,
-                'recursos' => $actividad['recursos'] ?? null,
-                'indicadores_logro' => $actividad['indicadores_logro'] ?? null,
+
+                'planificacion_id' =>
+                    $planificacion->id,
+
+                'seccion' =>
+                    'part2',
+
+                'orden' =>
+                    $index + 1,
+
+                'ambito' =>
+                    $actividad['ambito'] ?? null,
+
+                'destreza' =>
+                    $actividad['destreza'] ?? null,
+
+                'estrategias_metologicas' =>
+                    $actividad['estrategias_metologicas'] ?? null,
+
+                'recursos' =>
+                    $actividad['recursos'] ?? null,
+
+                'indicadores_logro' =>
+                    $actividad['indicadores_logro'] ?? null,
             ]);
         }
+
+
+        // ==========================================
+        // RESPUESTA
+        // ==========================================
 
         return response()->json([
             'success' => true,
-            'message' => 'Planificación actualizada correctamente.',
-            'planificacion_id' => $planificacion->id,
+
+            'message' =>
+                'Planificación actualizada correctamente.',
+
+            'planificacion_id' =>
+                $planificacion->id,
         ]);
     }
 
 
     // ==========================================
-    // ELIMINAR PLANIFICACIÓN
+    // CONVERTIR PLANIFICACIÓN EN PLANTILLA
+    // ==========================================
+
+    public function convertirEnPlantilla($id)
+    {
+        $planificacion = Auth::user()
+            ->planificaciones()
+            ->find($id);
+
+        if (!$planificacion) {
+
+            return response()->json([
+                'success' => false,
+                'message' =>
+                    'Planificación no encontrada.'
+            ], 404);
+        }
+
+
+        $planificacion->update([
+            'es_plantilla' => true
+        ]);
+
+
+        return response()->json([
+            'success' => true,
+            'message' =>
+                'Planificación convertida en plantilla correctamente.'
+        ]);
+    }
+
+
+    // ==========================================
+    // ELIMINAR PLANIFICACIÓN / PLANTILLA
     // ==========================================
 
     public function destroy($id)
@@ -286,17 +520,22 @@ class PlanificacionController extends Controller
             ->find($id);
 
         if (!$planificacion) {
+
             return response()->json([
                 'success' => false,
-                'message' => 'Planificación no encontrada.'
+                'message' =>
+                    'Planificación no encontrada.'
             ], 404);
         }
 
+
         $planificacion->delete();
+
 
         return response()->json([
             'success' => true,
-            'message' => 'Planificación eliminada correctamente.'
+            'message' =>
+                'Planificación eliminada correctamente.'
         ]);
     }
 }
