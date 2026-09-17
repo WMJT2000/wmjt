@@ -21,7 +21,7 @@ if (study) {
 
     const pronunciationButton =
         pronunciationGuide?.querySelector(
-            '.btn-pronunciation'
+            '.btn-study-pronunciation'
         );
 
     const meanings =
@@ -32,6 +32,11 @@ if (study) {
 
     const exampleText =
         document.getElementById('study-example-text');
+
+    const examplePronunciationButton =
+        example?.querySelector(
+            '.btn-study-example-pronunciation'
+        );
 
     const exampleTranslation =
         document.getElementById(
@@ -54,6 +59,12 @@ if (study) {
         );
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | RENDERIZAR PALABRA
+    |--------------------------------------------------------------------------
+    */
+
     function renderWord() {
 
         const word =
@@ -70,8 +81,12 @@ if (study) {
         |--------------------------------------------------------------------------
         */
 
-        progress.textContent =
-            `${currentIndex + 1} / ${study.words.length}`;
+        if (progress) {
+
+            progress.textContent =
+                `${currentIndex + 1} / ${study.words.length}`;
+
+        }
 
 
         /*
@@ -80,8 +95,12 @@ if (study) {
         |--------------------------------------------------------------------------
         */
 
-        currentWordElement.textContent =
-            word.word;
+        if (currentWordElement) {
+
+            currentWordElement.textContent =
+                word.word || '';
+
+        }
 
 
         /*
@@ -90,25 +109,48 @@ if (study) {
         |--------------------------------------------------------------------------
         */
 
-        if (word.pronunciation_guide) {
+        if (pronunciationGuide) {
 
-            pronunciationGuide.style.display =
-                'flex';
+            if (word.pronunciation_guide) {
 
-            pronunciationText.textContent =
-                word.pronunciation_guide;
+                pronunciationGuide.style.display =
+                    'flex';
 
-        } else {
+                if (pronunciationText) {
 
-            pronunciationGuide.style.display =
-                'none';
+                    pronunciationText.textContent =
+                        word.pronunciation_guide;
+
+                }
+
+            } else {
+
+                pronunciationGuide.style.display =
+                    'none';
+
+                if (pronunciationText) {
+
+                    pronunciationText.textContent =
+                        '';
+
+                }
+
+            }
+
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTUALIZAR TEXTO DEL BOTÓN DE PRONUNCIACIÓN
+        |--------------------------------------------------------------------------
+        */
 
         if (pronunciationButton) {
 
             pronunciationButton.dataset.word =
-                word.word;
+                word.word || '';
+
         }
 
 
@@ -118,23 +160,28 @@ if (study) {
         |--------------------------------------------------------------------------
         */
 
-        meanings.innerHTML = '';
+        if (meanings) {
 
+            meanings.innerHTML = '';
 
-        if (word.meanings) {
+            if (word.meanings && Array.isArray(word.meanings)) {
 
-            word.meanings.forEach(
-                meaning => {
+                word.meanings.forEach(
+                    meaning => {
 
-                    const p =
-                        document.createElement('p');
+                        const p =
+                            document.createElement('p');
 
-                    p.textContent =
-                        meaning.meaning;
+                        p.textContent =
+                            meaning.meaning || '';
 
-                    meanings.appendChild(p);
-                }
-            );
+                        meanings.appendChild(p);
+
+                    }
+                );
+
+            }
+
         }
 
 
@@ -144,45 +191,93 @@ if (study) {
         |--------------------------------------------------------------------------
         */
 
-        if (word.example) {
+        if (example) {
 
-            example.style.display =
-                'flex';
+            if (word.example) {
 
-            exampleText.textContent =
-                word.example;
+                example.style.display =
+                    'flex';
+
+                if (exampleText) {
+
+                    exampleText.textContent =
+                        word.example;
+
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | ACTUALIZAR TEXTO DEL BOTÓN DEL EJEMPLO
+                |--------------------------------------------------------------------------
+                */
+
+                if (examplePronunciationButton) {
+
+                    examplePronunciationButton.dataset.example =
+                        word.example;
+
+                }
 
 
-            if (word.example_translation) {
+                /*
+                |--------------------------------------------------------------------------
+                | TRADUCCIÓN DEL EJEMPLO
+                |--------------------------------------------------------------------------
+                */
 
-                exampleTranslation.style.display =
-                    'block';
+                if (exampleTranslation) {
 
-                exampleTranslation.textContent =
-                    word.example_translation;
+                    if (word.example_translation) {
+
+                        exampleTranslation.style.display =
+                            'block';
+
+                        exampleTranslation.textContent =
+                            word.example_translation;
+
+                    } else {
+
+                        exampleTranslation.style.display =
+                            'none';
+
+                        exampleTranslation.textContent =
+                            '';
+
+                    }
+
+                }
 
             } else {
 
-                exampleTranslation.style.display =
+                example.style.display =
                     'none';
 
-                exampleTranslation.textContent =
-                    '';
+                if (exampleText) {
+
+                    exampleText.textContent =
+                        '';
+
+                }
+
+                if (examplePronunciationButton) {
+
+                    examplePronunciationButton.dataset.example =
+                        '';
+
+                }
+
+                if (exampleTranslation) {
+
+                    exampleTranslation.style.display =
+                        'none';
+
+                    exampleTranslation.textContent =
+                        '';
+
+                }
+
             }
 
-        } else {
-
-            example.style.display =
-                'none';
-
-            exampleText.textContent =
-                '';
-
-            exampleTranslation.style.display =
-                'none';
-
-            exampleTranslation.textContent =
-                '';
         }
 
 
@@ -198,6 +293,7 @@ if (study) {
                 currentIndex > 0
                     ? 'inline-block'
                     : 'none';
+
         }
 
 
@@ -210,10 +306,10 @@ if (study) {
         if (nextButton) {
 
             nextButton.style.display =
-                currentIndex <
-                    study.words.length - 1
+                currentIndex < study.words.length - 1
                     ? 'inline-block'
                     : 'none';
+
         }
 
 
@@ -226,10 +322,10 @@ if (study) {
         if (completed) {
 
             completed.style.display =
-                currentIndex ===
-                    study.words.length - 1
+                currentIndex === study.words.length - 1
                     ? 'inline-block'
                     : 'none';
+
         }
 
 
@@ -241,12 +337,13 @@ if (study) {
 
         study.currentIndex =
             currentIndex;
+
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | ANTERIOR
+    | BOTÓN ANTERIOR
     |--------------------------------------------------------------------------
     */
 
@@ -261,13 +358,14 @@ if (study) {
             currentIndex--;
 
             renderWord();
+
         }
     );
 
 
     /*
     |--------------------------------------------------------------------------
-    | SIGUIENTE
+    | BOTÓN SIGUIENTE
     |--------------------------------------------------------------------------
     */
 
@@ -285,6 +383,7 @@ if (study) {
             currentIndex++;
 
             renderWord();
+
         }
     );
 
@@ -296,4 +395,5 @@ if (study) {
     */
 
     renderWord();
+
 }

@@ -352,8 +352,8 @@
    BOTÓN DE AUDIO
    ========================================================= */
 
-.btn-pronunciation,
-.btn-example-pronunciation {
+.btn-study-pronunciation,
+.btn-study-example-pronunciation {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -386,8 +386,8 @@
    HOVER AUDIO
    ========================================================= */
 
-.btn-pronunciation:hover,
-.btn-example-pronunciation:hover {
+.btn-study-pronunciation:hover,
+.btn-study-example-pronunciation:hover {
     transform: translateY(-1px);
 
     background: #f3f4f6;
@@ -403,8 +403,8 @@
    ACTIVE AUDIO
    ========================================================= */
 
-.btn-pronunciation:active,
-.btn-example-pronunciation:active {
+.btn-study-pronunciation:active,
+.btn-study-example-pronunciation:active {
     transform: scale(0.96);
 }
 
@@ -413,8 +413,8 @@
    AUDIO DESHABILITADO
    ========================================================= */
 
-.btn-pronunciation:disabled,
-.btn-example-pronunciation:disabled {
+.btn-study-pronunciation:disabled,
+.btn-study-example-pronunciation:disabled {
     opacity: 0.6;
 
     cursor: wait;
@@ -829,8 +829,8 @@
        BOTONES AUDIO
        ===================================================== */
 
-    .btn-pronunciation,
-    .btn-example-pronunciation {
+    .btn-study-pronunciation,
+    .btn-study-example-pronunciation {
         width: 38px;
         height: 38px;
     }

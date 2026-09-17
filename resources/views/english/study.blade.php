@@ -117,7 +117,7 @@
 
                     <button
                         type="button"
-                        class="btn-pronunciation"
+                        class="btn-study-pronunciation"
                         data-word="{{ $currentWord->word }}"
                         title="Escuchar pronunciación en inglés"
                     >
@@ -168,7 +168,7 @@
 
                         <button
                             type="button"
-                            class="btn-example-pronunciation"
+                            class="btn-study-example-pronunciation"
                             data-example="{{ $currentWord->example }}"
                             title="Escuchar oración en inglés"
                         >

@@ -43,4 +43,5 @@ import './manual-mio.js';
 import './manual-execution.js';
 import './planificaciones.js';
 import './planificacion-crear.js';
+import './english-pronunciation.js';
 
