@@ -1,5 +1,5 @@
 import './bootstrap';
-////este es el cambio que se unira desde rama test 3 a main
+////este es el cambio que se unira desde rama test 3 a main, conflicto que hay 
 // CSS
 import '../css/app.css';
 import '../css/form.css';
