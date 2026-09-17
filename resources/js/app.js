@@ -14,3 +14,8 @@ import './technologies.js';
 import './concepts.js';
 import './categories.js';
 import './tabla-gestion.js';
+
+
+
+
+/////con el cambio que se sube /////
