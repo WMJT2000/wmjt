@@ -52,7 +52,7 @@ public function home()
             'categories' => function ($query) {
                 $query
                     ->withCount('concepts')
-                    ->orderBy('name');
+                    ->orderBy('id', 'asc');
             }
         ])
         ->withCount('categories')
