@@ -61,6 +61,41 @@ if (study) {
 
     /*
     |--------------------------------------------------------------------------
+    | REPRODUCIR AUTOMÁTICAMENTE LA PALABRA
+    |--------------------------------------------------------------------------
+    */
+
+    function reproducirPalabraAutomaticamente() {
+
+        if (!pronunciationButton) {
+            return;
+        }
+
+        const palabra =
+            pronunciationButton.dataset.word;
+
+        if (!palabra) {
+            return;
+        }
+
+        /*
+        |--------------------------------------------------------------
+        | Pequeña espera para asegurarnos de que el contenido
+        | ya fue actualizado en pantalla.
+        |--------------------------------------------------------------
+        */
+
+        setTimeout(() => {
+
+            pronunciationButton.click();
+
+        }, 250);
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | RENDERIZAR PALABRA
     |--------------------------------------------------------------------------
     */
@@ -142,7 +177,7 @@ if (study) {
 
         /*
         |--------------------------------------------------------------------------
-        | ACTUALIZAR TEXTO DEL BOTÓN DE PRONUNCIACIÓN
+        | ACTUALIZAR PALABRA DEL BOTÓN DE PRONUNCIACIÓN
         |--------------------------------------------------------------------------
         */
 
@@ -164,7 +199,10 @@ if (study) {
 
             meanings.innerHTML = '';
 
-            if (word.meanings && Array.isArray(word.meanings)) {
+            if (
+                word.meanings &&
+                Array.isArray(word.meanings)
+            ) {
 
                 word.meanings.forEach(
                     meaning => {
@@ -205,9 +243,10 @@ if (study) {
 
                 }
 
+
                 /*
                 |--------------------------------------------------------------------------
-                | ACTUALIZAR TEXTO DEL BOTÓN DEL EJEMPLO
+                | ACTUALIZAR BOTÓN DEL EJEMPLO
                 |--------------------------------------------------------------------------
                 */
 
@@ -337,6 +376,21 @@ if (study) {
 
         study.currentIndex =
             currentIndex;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | 🔊 REPRODUCCIÓN AUTOMÁTICA
+        |--------------------------------------------------------------------------
+        |
+        | Cada vez que aparece una palabra nueva:
+        | - Se muestra normalmente.
+        | - Se actualiza su pronunciación.
+        | - Se reproduce automáticamente una sola vez.
+        |
+        */
+
+        reproducirPalabraAutomaticamente();
 
     }
 

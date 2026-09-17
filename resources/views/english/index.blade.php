@@ -30,11 +30,15 @@
 
             <div class="english-header-actions">
 
-                <a href="{{ route('english.statistics') }}" class="english-statistics-button">
-                    📊 Mis estadísticas
-                </a>
+    <a href="{{ route('dashboard') }}" class="english-dashboard-button">
+        🏠 Dashboard
+    </a>
 
-            </div>
+    <a href="{{ route('english.statistics') }}" class="english-statistics-button">
+        📊 Mis estadísticas
+    </a>
+
+</div>
 
         </div>
 

@@ -21,6 +21,17 @@
 
 </div>
 
+<div>
+
+            <a
+                href="{{ route('english.index') }}"
+                class="english-mastery-back-button"
+            >
+                ← Volver a Inglés
+            </a>
+
+        </div>
+
 
 {{-- ======================================================================
      ESTADÍSTICAS GENERALES
