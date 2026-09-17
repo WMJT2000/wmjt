@@ -1,151 +1,154 @@
-
 import { TablaGestion } from './tabla-gestion.js';
-
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const formContainer =
-        document.getElementById('manualStepFormContainer');
+    const formContainer = document.getElementById('manualStepFormContainer');
+    const btnNuevoPaso = document.getElementById('btnNuevoPaso');
+    const form = document.getElementById('manualStepForm');
+    const tablaContainer = document.getElementById('manualStepsTable');
 
-    const btnNuevoPaso =
-        document.getElementById('btnNuevoPaso');
-
-    const form =
-        document.getElementById('manualStepForm');
-
-    const tablaContainer =
-        document.getElementById('manualStepsTable');
-
-    if (!form || !tablaContainer) {
+    if (!formContainer || !btnNuevoPaso || !form || !tablaContainer) {
+        console.error('No se encontraron los elementos de pasos.');
         return;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | ID de la sección
-    |--------------------------------------------------------------------------
-    */
-
-    const sectionId =
-        form.querySelector('[name="section_id"]')?.value;
+    const sectionId = form.querySelector('[name="section_id"]')?.value;
 
     if (!sectionId) {
-        console.error(
-            'No se encontró el section_id del formulario.'
-        );
-
+        console.error('No se encontró el section_id del formulario.');
         return;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Tabla
-    |--------------------------------------------------------------------------
-    */
+    const API_URL = '/api/manual-steps';
 
-    const tabla =
-        new TablaGestion({
-            container: tablaContainer,
-            data: [],
-            columns: [
-                {
-                    key: 'id',
-                    label: 'ID'
-                },
-                {
-                    key: 'title',
-                    label: 'Título'
-                },
-                {
-                    key: 'position',
-                    label: 'Posición'
-                }
-            ],
-            actions: {
-                edit: true,
-                delete: true
+    const tabla = new TablaGestion({
+        container: tablaContainer,
+
+        columns: [
+            {
+                key: 'id',
+                label: 'ID'
+            },
+            {
+                key: 'title',
+                label: 'Título'
+            },
+            {
+                key: 'position',
+                label: 'Posición'
             }
-        });
+        ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Mostrar formulario
-    |--------------------------------------------------------------------------
-    */
+        actions: {
+            edit: true,
+            delete: true
+        },
 
-    if (btnNuevoPaso) {
+        emptyMessage: 'No hay pasos.',
+        loadingMessage: 'Cargando pasos.',
+        errorMessage: 'Error cargando pasos.'
+    });
 
-        btnNuevoPaso.addEventListener(
-            'click',
-            () => {
 
-                formContainer.style.display = 'block';
+    // =========================================================
+    // NUEVO PASO
+    // =========================================================
 
-                form.reset();
+    btnNuevoPaso.addEventListener('click', () => {
 
-                const sectionInput =
-                    form.querySelector(
-                        '[name="section_id"]'
-                    );
+        const formularioEstaCerrado =
+            formContainer.style.display === 'none' ||
+            formContainer.style.display === '';
 
-                if (sectionInput) {
-                    sectionInput.value = sectionId;
-                }
+        if (formularioEstaCerrado) {
 
-                const positionInput =
-                    form.querySelector(
-                        '[name="position"]'
-                    );
+            formContainer.style.display = 'block';
 
-                if (positionInput) {
-                    positionInput.value = 1;
-                }
+            form.reset();
 
-                form.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+            const sectionInput =
+                form.querySelector('[name="section_id"]');
 
+            if (sectionInput) {
+                sectionInput.value = sectionId;
             }
-        );
 
-    }
+            const positionInput =
+                form.querySelector('[name="position"]');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cargar pasos
-    |--------------------------------------------------------------------------
-    */
+            if (positionInput) {
+                positionInput.value = 1;
+            }
+
+            // Configurar formulario para CREAR
+            form.setAttribute('action', API_URL);
+            form.setAttribute('method', 'POST');
+
+            const titulo =
+                formContainer.querySelector('h2');
+
+            if (titulo) {
+                titulo.textContent = 'Nuevo paso';
+            }
+
+            const boton =
+                form.querySelector('.form-button');
+
+            if (boton) {
+                boton.textContent = 'Guardar';
+            }
+
+            btnNuevoPaso.textContent = '− Cerrar formulario';
+
+            form.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+
+        } else {
+
+            formContainer.style.display = 'none';
+
+            btnNuevoPaso.textContent = '+ Nuevo paso';
+        }
+    });
+
+
+    // =========================================================
+    // CARGAR PASOS
+    // =========================================================
 
     async function cargarPasos() {
 
+        tabla.mostrarCargando();
+
         try {
 
-            const response =
-                await fetch(
-                    `/api/manual-steps/section/${sectionId}`,
-                    {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
+            const response = await fetch(
+                `${API_URL}/section/${sectionId}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
                     }
-                );
+                }
+            );
 
-            const result =
-                await response.json();
+            const result = await response.json();
 
             if (!response.ok) {
-
                 throw new Error(
                     result.message ||
-                    'No se pudieron cargar los pasos.'
+                    `HTTP ${response.status}`
                 );
-
             }
 
-            tabla.establecerDatos(
-                result.data || []
-            );
+            const pasos =
+                Array.isArray(result)
+                    ? result
+                    : result.data ?? [];
+
+            tabla.establecerDatos(pasos);
 
         } catch (error) {
 
@@ -154,79 +157,111 @@ document.addEventListener('DOMContentLoaded', () => {
                 error
             );
 
+            tabla.mostrarError(
+                `Error cargando pasos: ${error.message}`
+            );
         }
-
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Crear / editar
-    |--------------------------------------------------------------------------
-    */
 
-    form.addEventListener(
-        'form:success',
-        async event => {
-
-            const result =
-                event.detail;
-
-            console.log(
-                'Paso guardado:',
-                result
-            );
-
-            formContainer.style.display = 'none';
-
-            await cargarPasos();
-
-        }
-    );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Editar
-    |--------------------------------------------------------------------------
-    */
+    // =========================================================
+    // EDITAR PASO
+    // =========================================================
 
     tablaContainer.addEventListener(
         'tabla-gestion:edit',
-        event => {
+        async (event) => {
 
-            const paso =
-                event.detail;
+            const paso = event.detail;
 
             if (!paso) {
                 return;
             }
 
-            formContainer.style.display = 'block';
+            await editarPaso(paso.id);
+        }
+    );
 
-            /*
-            | Cargar datos en el formulario
-            */
 
-            Object.keys(paso).forEach(
-                key => {
+    async function editarPaso(id) {
 
-                    const input =
-                        form.querySelector(
-                            `[name="${key}"]`
-                        );
+        try {
 
-                    if (input) {
-
-                        input.value =
-                            paso[key] ?? '';
-
+            const response = await fetch(
+                `${API_URL}/${id}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
                     }
-
                 }
             );
 
-            /*
-            | Asegurar section_id
-            */
+            const result = await response.json();
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.message ||
+                    'No se pudo obtener el paso.'
+                );
+            }
+
+            const paso =
+                result.data ?? result;
+
+
+            // Mostrar formulario
+            formContainer.style.display = 'block';
+
+            btnNuevoPaso.textContent =
+                '− Cerrar formulario';
+
+
+            // IMPORTANTE:
+            // Cambiar el formulario de CREAR a ACTUALIZAR
+
+            form.setAttribute(
+                'action',
+                `${API_URL}/${id}`
+            );
+
+            form.setAttribute(
+                'method',
+                'PUT'
+            );
+
+
+            // =================================================
+            // RELLENAR CAMPOS
+            // =================================================
+
+            const campos = [
+                'title',
+                'description',
+                'instructions',
+                'command',
+                'code',
+                'expected_result',
+                'notes',
+                'position'
+            ];
+
+            campos.forEach(nombre => {
+
+                const input =
+                    form.querySelector(
+                        `[name="${nombre}"]`
+                    );
+
+                if (input) {
+                    input.value =
+                        paso[nombre] ?? '';
+                }
+            });
+
+
+            // Mantener section_id
 
             const sectionInput =
                 form.querySelector(
@@ -234,153 +269,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
 
             if (sectionInput) {
-                sectionInput.value = sectionId;
+
+                sectionInput.value =
+                    paso.section_id ?? sectionId;
             }
 
-            /*
-            | Cambiar configuración para UPDATE
-            */
 
-            form.dataset.editingId =
-                paso.id;
+            // =================================================
+            // CAMBIAR TÍTULO DEL FORMULARIO
+            // =================================================
+
+            const titulo =
+                formContainer.querySelector('h2');
+
+            if (titulo) {
+                titulo.textContent = 'Editar paso';
+            }
+
+
+            // =================================================
+            // CAMBIAR BOTÓN
+            // =================================================
+
+            const boton =
+                form.querySelector('.form-button');
+
+            if (boton) {
+                boton.textContent = 'Actualizar';
+            }
+
 
             form.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
 
+        } catch (error) {
+
+            console.error(
+                'Error obteniendo paso:',
+                error
+            );
+
+            alert(error.message);
         }
-    );
+    }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Antes de enviar el formulario
-    |--------------------------------------------------------------------------
-    |
-    | Si estamos editando:
-    |
-    | PUT /api/manual-steps/{id}
-    |
-    | Si estamos creando:
-    |
-    | POST /api/manual-steps
-    |
-    */
 
-    form.addEventListener(
-        'submit',
-        async event => {
-
-            const editingId =
-                form.dataset.editingId;
-
-            if (!editingId) {
-                return;
-            }
-
-            event.preventDefault();
-
-            const formData =
-                new FormData(form);
-
-            const data =
-                Object.fromEntries(
-                    formData.entries()
-                );
-
-            try {
-
-                const response =
-                    await fetch(
-                        `/api/manual-steps/${editingId}`,
-                        {
-                            method: 'PUT',
-
-                            headers: {
-                                'Content-Type':
-                                    'application/json',
-
-                                'Accept':
-                                    'application/json'
-                            },
-
-                            body:
-                                JSON.stringify(data)
-                        }
-                    );
-
-                const result =
-                    await response.json();
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        result.message ||
-                        'Error actualizando el paso.'
-                    );
-
-                }
-
-                /*
-                | Limpiar modo edición
-                */
-
-                delete form.dataset.editingId;
-
-                form.reset();
-
-                const sectionInput =
-                    form.querySelector(
-                        '[name="section_id"]'
-                    );
-
-                if (sectionInput) {
-                    sectionInput.value =
-                        sectionId;
-                }
-
-                formContainer.style.display =
-                    'none';
-
-                await cargarPasos();
-
-            } catch (error) {
-
-                console.error(
-                    'Error actualizando paso:',
-                    error
-                );
-
-                alert(
-                    error.message
-                );
-
-            }
-
-        }
-    );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Eliminar
-    |--------------------------------------------------------------------------
-    */
+    // =========================================================
+    // ELIMINAR PASO
+    // =========================================================
 
     tablaContainer.addEventListener(
         'tabla-gestion:delete',
-        async event => {
+        async (event) => {
 
-            const paso =
-                event.detail;
+            const paso = event.detail;
 
             if (!paso) {
                 return;
             }
 
-            const confirmar =
-                confirm(
-                    `¿Deseas eliminar el paso "${paso.title}"?`
-                );
+            const confirmar = confirm(
+                `¿Seguro que deseas eliminar el paso "${paso.title}"?`
+            );
 
             if (!confirmar) {
                 return;
@@ -388,18 +340,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
 
-                const response =
-                    await fetch(
-                        `/api/manual-steps/${paso.id}`,
-                        {
-                            method: 'DELETE',
-
-                            headers: {
-                                'Accept':
-                                    'application/json'
-                            }
+                const response = await fetch(
+                    `${API_URL}/${paso.id}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json'
                         }
-                    );
+                    }
+                );
 
                 const result =
                     await response.json();
@@ -410,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         result.message ||
                         'No se pudo eliminar el paso.'
                     );
-
                 }
 
                 await cargarPasos();
@@ -422,20 +370,90 @@ document.addEventListener('DOMContentLoaded', () => {
                     error
                 );
 
-                alert(
-                    error.message
-                );
-
+                alert(error.message);
             }
-
         }
     );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Carga inicial
-    |--------------------------------------------------------------------------
-    */
+
+    // =========================================================
+    // FORMULARIO GUARDADO CORRECTAMENTE
+    // =========================================================
+
+    form.addEventListener(
+        'form:success',
+        async (event) => {
+
+            console.log(
+                'Paso guardado:',
+                event.detail
+            );
+
+
+            // Recargar tabla
+            await cargarPasos();
+
+
+            // Limpiar formulario
+            form.reset();
+
+
+            // Restaurar section_id
+
+            const sectionInput =
+                form.querySelector(
+                    '[name="section_id"]'
+                );
+
+            if (sectionInput) {
+                sectionInput.value = sectionId;
+            }
+
+
+            // =================================================
+            // VOLVER A MODO CREAR
+            // =================================================
+
+            form.setAttribute(
+                'action',
+                API_URL
+            );
+
+            form.setAttribute(
+                'method',
+                'POST'
+            );
+
+
+            const titulo =
+                formContainer.querySelector('h2');
+
+            if (titulo) {
+                titulo.textContent = 'Nuevo paso';
+            }
+
+
+            const boton =
+                form.querySelector('.form-button');
+
+            if (boton) {
+                boton.textContent = 'Guardar';
+            }
+
+
+            // Ocultar formulario
+
+            formContainer.style.display = 'none';
+
+            btnNuevoPaso.textContent =
+                '+ Nuevo paso';
+        }
+    );
+
+
+    // =========================================================
+    // INICIALIZAR
+    // =========================================================
 
     cargarPasos();
 
