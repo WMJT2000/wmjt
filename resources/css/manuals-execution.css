@@ -1,31 +1,65 @@
+
 /* =========================================================
    EJECUCIÓN DE MANUALES
-========================================================= */
+   RESPONSIVE UX OPTIMIZADO
+   ========================================================= */
+
+
+/* =========================================================
+   VARIABLES
+   ========================================================= */
+
+:root {
+    --manual-blue: #2563eb;
+    --manual-blue-dark: #1d4ed8;
+    --manual-blue-soft: #eff6ff;
+    --manual-blue-border: #dbeafe;
+
+    --manual-text: #111827;
+    --manual-text-soft: #4b5563;
+    --manual-muted: #64748b;
+
+    --manual-border: #e2e8f0;
+    --manual-bg: #ffffff;
+    --manual-page-bg: #f8fafc;
+
+    --manual-green: #16a34a;
+    --manual-green-soft: #f0fdf4;
+
+    --manual-orange: #d97706;
+    --manual-orange-soft: #fffbeb;
+
+    --manual-radius: 10px;
+
+    --manual-shadow:
+        0 3px 12px rgba(15, 23, 42, 0.05);
+}
 
 
 /* =========================================================
    CONTENEDOR PRINCIPAL
-========================================================= */
+   ========================================================= */
 
 .gestion-container {
     width: 100%;
-    max-width: 1400px;
+    max-width: 1500px;
     margin: 0 auto;
-    padding: 30px;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 
 /* =========================================================
    HEADER
-========================================================= */
+   ========================================================= */
 
 .gestion-header {
     width: 100%;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 25px;
-    margin-bottom: 25px;
+    gap: 20px;
+    margin-bottom: 18px;
 }
 
 .gestion-header > div {
@@ -34,18 +68,18 @@
 
 .gestion-header h1 {
     margin: 0;
-    color: #111827;
-    font-size: 28px;
-    line-height: 1.25;
+    color: var(--manual-text);
+    font-size: 25px;
+    line-height: 1.2;
     font-weight: 700;
     overflow-wrap: anywhere;
 }
 
 .gestion-header p {
-    margin: 8px 0 0;
-    color: #6b7280;
-    font-size: 14px;
-    line-height: 1.5;
+    margin: 5px 0 0;
+    color: var(--manual-muted);
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .gestion-header .btn-primary {
@@ -54,22 +88,25 @@
 
 
 /* =========================================================
-   BOTONES
-========================================================= */
+   BOTONES GENERALES
+   ========================================================= */
 
 .gestion-container .btn-primary,
 .gestion-container .btn-secondary {
-    min-height: 42px;
-    padding: 10px 16px;
-    border-radius: 8px;
+    min-height: 38px;
+    padding: 8px 14px;
+    border-radius: 7px;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     text-align: center;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     line-height: 1.2;
+
     cursor: pointer;
 
     transition:
@@ -77,29 +114,31 @@
         border-color 0.2s ease,
         color 0.2s ease,
         box-shadow 0.2s ease,
-        transform 0.2s ease;
+        transform 0.15s ease;
+
+    box-sizing: border-box;
 }
 
 
 /* =========================================================
    BOTÓN PRINCIPAL
-========================================================= */
+   ========================================================= */
 
 .gestion-container .btn-primary {
     border: none;
-    background: #2563eb;
+    background: var(--manual-blue);
     color: #ffffff;
     text-decoration: none;
 
     box-shadow:
-        0 2px 5px rgba(37, 99, 235, 0.18);
+        0 2px 5px rgba(37, 99, 235, 0.16);
 }
 
 .gestion-container .btn-primary:hover {
-    background: #1d4ed8;
+    background: var(--manual-blue-dark);
 
     box-shadow:
-        0 4px 10px rgba(37, 99, 235, 0.25);
+        0 4px 10px rgba(37, 99, 235, 0.22);
 
     transform: translateY(-1px);
 }
@@ -112,7 +151,7 @@
 
 /* =========================================================
    BOTÓN SECUNDARIO
-========================================================= */
+   ========================================================= */
 
 .gestion-container .btn-secondary {
     border: 1px solid #d1d5db;
@@ -121,9 +160,9 @@
 }
 
 .gestion-container .btn-secondary:hover {
-    background: #eff6ff;
+    background: var(--manual-blue-soft);
     border-color: #93c5fd;
-    color: #1d4ed8;
+    color: var(--manual-blue-dark);
 }
 
 .gestion-container .btn-secondary:disabled {
@@ -136,67 +175,61 @@
 
 /* =========================================================
    INFORMACIÓN DEL MANUAL
-========================================================= */
+   ========================================================= */
 
 .gestion-info {
     width: 100%;
-    margin-bottom: 20px;
-    padding: 20px;
+    margin-bottom: 16px;
+    padding: 15px 18px;
 
     background: #ffffff;
-
-    border: 1px solid #dbeafe;
-    border-left: 4px solid #3b82f6;
-    border-radius: 12px;
+    border: 1px solid var(--manual-blue-border);
+    border-left: 3px solid #3b82f6;
+    border-radius: var(--manual-radius);
 
     box-shadow:
-        0 2px 8px rgba(37, 99, 235, 0.04);
+        0 2px 7px rgba(37, 99, 235, 0.035);
 
     box-sizing: border-box;
 }
 
 .gestion-info p {
     margin: 0;
-
-    color: #4b5563;
-
-    font-size: 14px;
-    line-height: 1.65;
-
+    color: var(--manual-text-soft);
+    font-size: 13px;
+    line-height: 1.5;
     overflow-wrap: anywhere;
 }
 
 .gestion-info p + h3 {
-    margin-top: 20px;
+    margin-top: 14px;
 }
 
 .gestion-info h3 {
-    margin: 0 0 8px;
+    margin: 0 0 5px;
 
     color: #1e3a8a;
-
-    font-size: 16px;
-    line-height: 1.4;
+    font-size: 14px;
+    line-height: 1.35;
     font-weight: 700;
 }
 
 
 /* =========================================================
    PROGRESO
-========================================================= */
+   ========================================================= */
 
 .manual-progress-card {
     width: 100%;
-    margin-bottom: 25px;
-    padding: 18px 20px;
+    margin-bottom: 18px;
+    padding: 13px 17px;
 
     background: #ffffff;
-
-    border: 1px solid #dbeafe;
-    border-radius: 12px;
+    border: 1px solid var(--manual-blue-border);
+    border-radius: var(--manual-radius);
 
     box-shadow:
-        0 3px 12px rgba(37, 99, 235, 0.05);
+        0 2px 9px rgba(37, 99, 235, 0.04);
 
     box-sizing: border-box;
 }
@@ -208,32 +241,29 @@
     align-items: center;
     justify-content: space-between;
 
-    gap: 15px;
-    margin-bottom: 10px;
+    gap: 10px;
+    margin-bottom: 7px;
 }
 
 .manual-progress-header strong {
     color: #1e3a8a;
-
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
 }
 
 .manual-progress-header span {
-    color: #2563eb;
-
-    font-size: 13px;
+    color: var(--manual-blue);
+    font-size: 12px;
     font-weight: 700;
 }
 
 .manual-progress-bar {
     width: 100%;
-    height: 10px;
+    height: 7px;
 
     overflow: hidden;
 
-    background: #dbeafe;
-
+    background: var(--manual-blue-border);
     border-radius: 999px;
 }
 
@@ -250,14 +280,13 @@
 
     border-radius: inherit;
 
-    transition:
-        width 0.3s ease;
+    transition: width 0.3s ease;
 }
 
 
 /* =========================================================
    CONTENEDOR DE EJECUCIÓN
-========================================================= */
+   ========================================================= */
 
 #manualExecutionContainer {
     width: 100%;
@@ -266,7 +295,7 @@
 
 /* =========================================================
    LAYOUT PRINCIPAL
-========================================================= */
+   ========================================================= */
 
 .manual-execution-layout {
     width: 100%;
@@ -274,10 +303,10 @@
     display: grid;
 
     grid-template-columns:
-        290px
+        235px
         minmax(0, 1fr);
 
-    gap: 22px;
+    gap: 16px;
 
     align-items: start;
 }
@@ -285,11 +314,11 @@
 
 /* =========================================================
    PANEL DE NAVEGACIÓN
-========================================================= */
+   ========================================================= */
 
 .manual-steps-navigation {
     position: sticky;
-    top: 20px;
+    top: 14px;
 
     width: 100%;
 
@@ -298,13 +327,13 @@
 
     background: #ffffff;
 
-    border: 1px solid #dbeafe;
-    border-radius: 12px;
+    border: 1px solid var(--manual-blue-border);
+    border-radius: var(--manual-radius);
 
     overflow: hidden;
 
     box-shadow:
-        0 4px 16px rgba(37, 99, 235, 0.06);
+        0 3px 12px rgba(37, 99, 235, 0.05);
 
     box-sizing: border-box;
 }
@@ -312,7 +341,7 @@
 
 /* =========================================================
    HEADER DE NAVEGACIÓN
-========================================================= */
+   ========================================================= */
 
 .manual-steps-navigation-header {
     width: 100%;
@@ -321,11 +350,11 @@
     align-items: center;
     justify-content: space-between;
 
-    gap: 12px;
+    gap: 8px;
 
-    padding: 16px;
+    padding: 12px 13px;
 
-    border-bottom: 1px solid #dbeafe;
+    border-bottom: 1px solid var(--manual-blue-border);
 
     background:
         linear-gradient(
@@ -340,88 +369,83 @@
 .manual-steps-navigation-header > div {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+
+    gap: 2px;
 
     min-width: 0;
 }
 
 .manual-steps-navigation-header strong {
     color: #1e3a8a;
-
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
 }
 
 .manual-steps-navigation-header > div > span {
     color: #64748b;
-
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 500;
 }
 
 .manual-steps-navigation-header > #stepCounter {
     flex-shrink: 0;
 
-    color: #2563eb;
+    color: var(--manual-blue);
 
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
 
-    padding: 5px 9px;
+    padding: 4px 7px;
 
-    background: #dbeafe;
-
+    background: var(--manual-blue-border);
     border-radius: 999px;
 }
 
 
 /* =========================================================
    SELECTOR DE PASOS
-========================================================= */
+   ========================================================= */
 
 .manual-step-selector-container {
     width: 100%;
-
-    padding: 16px;
-
+    padding: 12px 13px;
     box-sizing: border-box;
 }
 
 .manual-step-selector-container label {
     display: block;
 
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 
     color: #374151;
 
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
 }
 
 
 /* =========================================================
    SELECT
-========================================================= */
+   ========================================================= */
 
 .manual-step-selector {
     width: 100%;
+    min-height: 38px;
 
-    min-height: 42px;
-
-    padding: 9px 36px 9px 12px;
+    padding: 7px 30px 7px 10px;
 
     border: 1px solid #cbd5e1;
-    border-radius: 8px;
+    border-radius: 7px;
 
     background-color: #ffffff;
     color: #374151;
 
     font-family: inherit;
-    font-size: 12px;
+
+    font-size: 11px;
     font-weight: 500;
 
     cursor: pointer;
-
     outline: none;
 
     box-sizing: border-box;
@@ -441,13 +465,13 @@
     border-color: #3b82f6;
 
     box-shadow:
-        0 0 0 3px rgba(59, 130, 246, 0.12);
+        0 0 0 3px rgba(59, 130, 246, 0.10);
 }
 
 
 /* =========================================================
    INFORMACIÓN DE NAVEGACIÓN
-========================================================= */
+   ========================================================= */
 
 .manual-navigation-info {
     width: 100%;
@@ -456,11 +480,11 @@
     align-items: center;
     justify-content: space-between;
 
-    gap: 10px;
+    gap: 8px;
 
     margin-top: auto;
 
-    padding: 14px 16px;
+    padding: 10px 13px;
 
     border-top: 1px solid #e5e7eb;
 
@@ -471,22 +495,20 @@
 
 .manual-navigation-info span {
     color: #64748b;
-
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 500;
 }
 
 .manual-navigation-info strong {
     color: #1e3a8a;
-
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
 }
 
 
 /* =========================================================
    CONTENEDOR DEL PASO ACTUAL
-========================================================= */
+   ========================================================= */
 
 .manual-current-step-container {
     width: 100%;
@@ -495,10 +517,8 @@
 
 
 /* =========================================================
-   PASOS
-   IMPORTANTE:
-   Solo el paso .active se muestra
-========================================================= */
+   PASO
+   ========================================================= */
 
 .manual-execution-step {
     display: none;
@@ -506,17 +526,17 @@
     width: 100%;
     min-width: 0;
 
-    padding: 26px;
+    padding: 20px;
 
     background: #ffffff;
 
-    border: 1px solid #dbeafe;
-    border-top: 4px solid #3b82f6;
+    border: 1px solid var(--manual-blue-border);
+    border-top: 3px solid #3b82f6;
 
-    border-radius: 12px;
+    border-radius: var(--manual-radius);
 
     box-shadow:
-        0 5px 20px rgba(37, 99, 235, 0.06);
+        0 4px 15px rgba(37, 99, 235, 0.045);
 
     box-sizing: border-box;
 }
@@ -528,7 +548,7 @@
 
 /* =========================================================
    HEADER DEL PASO
-========================================================= */
+   ========================================================= */
 
 .manual-current-step-header {
     width: 100%;
@@ -537,11 +557,11 @@
     align-items: flex-start;
     justify-content: space-between;
 
-    gap: 20px;
+    gap: 14px;
 
-    padding-bottom: 20px;
+    padding-bottom: 14px;
 
-    border-bottom: 1px solid #dbeafe;
+    border-bottom: 1px solid var(--manual-blue-border);
 }
 
 .manual-current-step-header > div:first-child {
@@ -551,27 +571,26 @@
 .manual-current-step-label {
     display: block;
 
-    margin-bottom: 7px;
+    margin-bottom: 4px;
 
-    color: #2563eb;
+    color: var(--manual-blue);
 
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
 
-    line-height: 1.4;
+    line-height: 1.3;
 
     text-transform: uppercase;
-
     letter-spacing: 0.04em;
 }
 
 .manual-current-step-header h2 {
     margin: 0;
 
-    color: #111827;
+    color: var(--manual-text);
 
-    font-size: 25px;
-    line-height: 1.3;
+    font-size: 21px;
+    line-height: 1.25;
 
     font-weight: 700;
 
@@ -581,41 +600,41 @@
 .manual-current-step-section {
     flex-shrink: 0;
 
-    padding: 7px 10px;
+    padding: 5px 8px;
 
-    background: #eff6ff;
-
+    background: var(--manual-blue-soft);
     border: 1px solid #bfdbfe;
-    border-radius: 7px;
+
+    border-radius: 6px;
 
     color: #1d4ed8;
 
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 600;
 
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 
 /* =========================================================
    DESCRIPCIÓN DEL PASO
-========================================================= */
+   ========================================================= */
 
 .manual-step-description {
     width: 100%;
 
-    margin-top: 20px;
-    padding: 14px 16px;
+    margin-top: 14px;
+    padding: 10px 13px;
 
     background: #f8fbff;
 
     border-left: 3px solid #60a5fa;
-    border-radius: 7px;
+    border-radius: 6px;
 
-    color: #4b5563;
+    color: var(--manual-text-soft);
 
-    font-size: 14px;
-    line-height: 1.7;
+    font-size: 12px;
+    line-height: 1.55;
 
     overflow-wrap: anywhere;
 
@@ -629,18 +648,18 @@
 
 /* =========================================================
    BLOQUES DEL PASO
-========================================================= */
+   ========================================================= */
 
 .manual-step-block {
     width: 100%;
 
-    margin-top: 20px;
-    padding: 16px;
+    margin-top: 14px;
+    padding: 12px;
 
     background: #f8fafc;
 
-    border: 1px solid #e2e8f0;
-    border-radius: 9px;
+    border: 1px solid var(--manual-border);
+    border-radius: 8px;
 
     overflow: hidden;
 
@@ -650,22 +669,23 @@
 .manual-step-block strong {
     display: block;
 
-    margin-bottom: 9px;
+    margin-bottom: 6px;
 
     color: #374151;
 
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: 10px;
+    line-height: 1.35;
+
     font-weight: 700;
 }
 
 .manual-step-block p {
     margin: 0;
 
-    color: #4b5563;
+    color: var(--manual-text-soft);
 
-    font-size: 13px;
-    line-height: 1.65;
+    font-size: 11px;
+    line-height: 1.55;
 
     overflow-wrap: anywhere;
 }
@@ -673,15 +693,15 @@
 
 /* =========================================================
    TÍTULOS DE BLOQUES
-========================================================= */
+   ========================================================= */
 
 .manual-step-block-title {
     display: flex;
     align-items: center;
 
-    gap: 8px;
+    gap: 7px;
 
-    margin-bottom: 10px;
+    margin-bottom: 7px;
 }
 
 .manual-step-block-title strong {
@@ -694,31 +714,30 @@
     align-items: center;
     justify-content: center;
 
-    width: 25px;
-    height: 25px;
+    width: 22px;
+    height: 22px;
 
     flex-shrink: 0;
 
-    background: #dbeafe;
+    background: var(--manual-blue-border);
+    color: var(--manual-blue);
 
-    color: #2563eb;
+    border-radius: 5px;
 
-    border-radius: 6px;
-
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
 }
 
 
 /* =========================================================
    CÓDIGO / COMANDOS
-========================================================= */
+   ========================================================= */
 
 .manual-step-block pre {
     width: 100%;
 
     margin: 0;
-    padding: 14px;
+    padding: 10px;
 
     background:
         linear-gradient(
@@ -728,18 +747,17 @@
         );
 
     border: 1px solid #374151;
-    border-radius: 7px;
+    border-radius: 6px;
 
     overflow-x: auto;
 
     -webkit-overflow-scrolling: touch;
 
     white-space: pre;
-
     tab-size: 4;
 
     box-shadow:
-        0 4px 12px rgba(17, 24, 39, 0.12);
+        0 3px 9px rgba(17, 24, 39, 0.10);
 
     box-sizing: border-box;
 }
@@ -753,27 +771,25 @@
         "Courier New",
         monospace;
 
-    font-size: 12px;
-    line-height: 1.6;
+    font-size: 10px;
+    line-height: 1.5;
 }
 
 
 /* =========================================================
    RESULTADO ESPERADO
-========================================================= */
+   ========================================================= */
 
 .manual-step-block.manual-expected-block {
-    background: #f0fdf4;
-
+    background: var(--manual-green-soft);
     border-color: #bbf7d0;
-
-    border-left: 4px solid #22c55e;
+    border-left: 3px solid #22c55e;
 }
 
 .manual-step-block.manual-expected-block
 .manual-step-block-icon {
     background: #dcfce7;
-    color: #16a34a;
+    color: var(--manual-green);
 }
 
 .manual-step-block.manual-expected-block strong {
@@ -783,20 +799,18 @@
 
 /* =========================================================
    NOTAS DEL MANUAL
-========================================================= */
+   ========================================================= */
 
 .manual-step-block.manual-notes-block {
-    background: #fffbeb;
-
+    background: var(--manual-orange-soft);
     border-color: #fde68a;
-
-    border-left: 4px solid #f59e0b;
+    border-left: 3px solid #f59e0b;
 }
 
 .manual-step-block.manual-notes-block
 .manual-step-block-icon {
     background: #fef3c7;
-    color: #d97706;
+    color: var(--manual-orange);
 }
 
 .manual-step-block.manual-notes-block strong {
@@ -806,18 +820,18 @@
 
 /* =========================================================
    NOTAS DEL USUARIO
-========================================================= */
+   ========================================================= */
 
 .manual-user-notes-block {
-    margin-top: 18px;
-    padding: 16px;
+    margin-top: 14px;
+    padding: 12px;
 
     background: #f8fbff;
 
     border: 1px solid #bfdbfe;
-    border-left: 4px solid #3b82f6;
+    border-left: 3px solid #3b82f6;
 
-    border-radius: 8px;
+    border-radius: 7px;
 
     box-sizing: border-box;
 }
@@ -826,9 +840,9 @@
     display: flex;
     align-items: center;
 
-    gap: 9px;
+    gap: 7px;
 
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 
     color: #1e3a8a;
 }
@@ -839,41 +853,38 @@
     align-items: center;
     justify-content: center;
 
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
 
-    border-radius: 6px;
+    border-radius: 5px;
 
-    background: #dbeafe;
+    background: var(--manual-blue-border);
+    color: var(--manual-blue);
 
-    color: #2563eb;
-
-    font-size: 15px;
+    font-size: 13px;
 }
 
 .manual-step-user-notes {
     display: block;
 
     width: 100%;
-
-    min-height: 110px;
+    min-height: 80px;
 
     margin: 0;
-    padding: 12px 13px;
+    padding: 9px 10px;
 
     resize: vertical;
 
     border: 1px solid #cbd5e1;
-    border-radius: 7px;
+    border-radius: 6px;
 
     background: #ffffff;
-
     color: #374151;
 
     font-family: inherit;
 
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.5;
 
     outline: none;
 
@@ -899,21 +910,21 @@
     background: #ffffff;
 
     box-shadow:
-        0 0 0 3px rgba(59, 130, 246, 0.12);
+        0 0 0 3px rgba(59, 130, 246, 0.10);
 }
 
 
 /* =========================================================
    ACCIONES DE NOTA
-========================================================= */
+   ========================================================= */
 
 .manual-step-notes-actions {
     display: flex;
     align-items: center;
 
-    gap: 10px;
+    gap: 8px;
 
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .btn-save-step-note {
@@ -922,20 +933,19 @@
     align-items: center;
     justify-content: center;
 
-    min-height: 36px;
+    min-height: 32px;
 
-    padding: 8px 14px;
+    padding: 6px 11px;
 
     border: none;
-    border-radius: 7px;
+    border-radius: 6px;
 
-    background: #2563eb;
-
+    background: var(--manual-blue);
     color: #ffffff;
 
     font-family: inherit;
 
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
 
     cursor: pointer;
@@ -947,10 +957,10 @@
 }
 
 .btn-save-step-note:hover {
-    background: #1d4ed8;
+    background: var(--manual-blue-dark);
 
     box-shadow:
-        0 2px 6px rgba(37, 99, 235, 0.2);
+        0 2px 6px rgba(37, 99, 235, 0.18);
 }
 
 .btn-save-step-note:active {
@@ -959,49 +969,45 @@
 
 .btn-save-step-note:disabled {
     opacity: 0.6;
-
     cursor: not-allowed;
-
     box-shadow: none;
 }
 
 .manual-step-note-status {
     display: inline-flex;
-
     align-items: center;
 
-    min-height: 20px;
+    min-height: 18px;
 
-    color: #16a34a;
+    color: var(--manual-green);
 
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
 }
 
 
 /* =========================================================
    ACCIÓN COMPLETAR
-========================================================= */
+   ========================================================= */
 
 .manual-step-actions {
     width: 100%;
 
     display: flex;
-
     align-items: center;
     justify-content: flex-start;
 
-    margin-top: 24px;
+    margin-top: 17px;
 }
 
 .manual-step-actions .btn-complete-step {
-    min-width: 180px;
+    min-width: 155px;
 }
 
 
 /* =========================================================
    ESTADO COMPLETADO
-========================================================= */
+   ========================================================= */
 
 .manual-execution-step.completed {
     border-color: #bbf7d0;
@@ -1010,12 +1016,11 @@
 
 .manual-execution-step.completed
 .btn-complete-step {
-    background: #16a34a;
-
+    background: var(--manual-green);
     color: #ffffff;
 
     box-shadow:
-        0 3px 8px rgba(22, 163, 74, 0.18);
+        0 3px 8px rgba(22, 163, 74, 0.15);
 }
 
 .manual-execution-step.completed
@@ -1023,13 +1028,13 @@
     background: #15803d;
 
     box-shadow:
-        0 5px 12px rgba(22, 163, 74, 0.25);
+        0 5px 12px rgba(22, 163, 74, 0.22);
 }
 
 
 /* =========================================================
    PAGINACIÓN
-========================================================= */
+   ========================================================= */
 
 .manual-step-navigation-buttons {
     width: 100%;
@@ -1043,32 +1048,30 @@
 
     align-items: center;
 
-    gap: 15px;
+    gap: 10px;
 
-    margin-top: 30px;
-    padding-top: 20px;
+    margin-top: 20px;
+    padding-top: 14px;
 
-    border-top: 1px solid #dbeafe;
+    border-top: 1px solid var(--manual-blue-border);
 }
 
-.manual-step-navigation-buttons
-.btn-previous-step {
+.manual-step-navigation-buttons .btn-previous-step {
     justify-self: start;
 }
 
-.manual-step-navigation-buttons
-.btn-next-step {
+.manual-step-navigation-buttons .btn-next-step {
     justify-self: end;
 }
 
 .manual-step-navigation-buttons .btn-secondary {
-    min-width: 120px;
+    min-width: 105px;
 }
 
 
 /* =========================================================
    CONTADOR DE PAGINACIÓN
-========================================================= */
+   ========================================================= */
 
 .manual-pagination-counter {
     display: flex;
@@ -1076,13 +1079,13 @@
     align-items: center;
     justify-content: center;
 
-    gap: 6px;
+    gap: 5px;
 
-    min-width: 110px;
+    min-width: 90px;
 
     color: #64748b;
 
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500;
 
     white-space: nowrap;
@@ -1094,60 +1097,58 @@
     align-items: center;
     justify-content: center;
 
-    min-width: 30px;
-    height: 30px;
+    min-width: 26px;
+    height: 26px;
 
-    padding: 0 7px;
+    padding: 0 6px;
 
-    background: #dbeafe;
-
+    background: var(--manual-blue-border);
     color: #1d4ed8;
 
     border-radius: 50%;
 
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
 }
 
 
 /* =========================================================
    ESTADO VACÍO
-========================================================= */
+   ========================================================= */
 
 #manualExecutionContainer > .gestion-info {
     margin-bottom: 0;
 }
 
 #manualExecutionContainer > .gestion-info h2 {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
 
     color: #111827;
 
-    font-size: 18px;
-    line-height: 1.4;
+    font-size: 17px;
+    line-height: 1.35;
 }
 
 
 /* =========================================================
    RESUMEN MANUAL COMPLETADO
-========================================================= */
+   ========================================================= */
 
 .manual-completed-summary {
     display: flex;
-
     align-items: center;
 
-    gap: 22px;
+    gap: 18px;
 
-    margin-bottom: 24px;
-    padding: 24px;
+    margin-bottom: 18px;
+    padding: 18px;
 
-    background: #f0fdf4;
+    background: var(--manual-green-soft);
 
     border: 1px solid #bbf7d0;
-    border-left: 4px solid #22c55e;
+    border-left: 3px solid #22c55e;
 
-    border-radius: 10px;
+    border-radius: 9px;
 
     box-sizing: border-box;
 }
@@ -1158,45 +1159,43 @@
     align-items: center;
     justify-content: center;
 
-    width: 58px;
-    height: 58px;
+    width: 48px;
+    height: 48px;
 
     flex-shrink: 0;
 
     background: #dcfce7;
 
-    border-radius: 12px;
+    border-radius: 10px;
 
-    font-size: 28px;
+    font-size: 23px;
 }
 
 .manual-completed-content {
     flex: 1;
-
     min-width: 0;
 }
 
 .manual-completed-label {
     display: block;
 
-    margin-bottom: 5px;
+    margin-bottom: 3px;
 
-    color: #16a34a;
+    color: var(--manual-green);
 
-    font-size: 11px;
+    font-size: 9px;
     font-weight: 700;
 
     text-transform: uppercase;
-
     letter-spacing: 0.05em;
 }
 
 .manual-completed-content h2 {
-    margin: 0 0 7px;
+    margin: 0 0 5px;
 
     color: #166534;
 
-    font-size: 22px;
+    font-size: 19px;
 }
 
 .manual-completed-content p {
@@ -1204,674 +1203,161 @@
 
     color: #475569;
 
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.5;
 }
 
 .manual-completed-stats {
     display: flex;
 
-    gap: 28px;
+    gap: 22px;
 
-    margin-top: 18px;
+    margin-top: 12px;
 }
 
 .manual-completed-stat {
     display: flex;
     flex-direction: column;
 
-    gap: 3px;
+    gap: 2px;
 }
 
 .manual-completed-stat strong {
     color: #166534;
-
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .manual-completed-stat span {
     color: #64748b;
-
-    font-size: 11px;
+    font-size: 9px;
 }
 
 .manual-completed-actions {
     display: flex;
-
     align-items: center;
 
-    gap: 10px;
+    gap: 8px;
 
-    margin-top: 20px;
+    margin-top: 14px;
 }
 
 
 /* =========================================================
-   LARGE DESKTOP
-   > 1400px
-========================================================= */
+   =========================================================
+   PC GRANDE
+   >= 1440px
+   =========================================================
+   ========================================================= */
 
-@media (min-width: 1401px) {
+@media (min-width: 1440px) {
 
     .gestion-container {
-        max-width: 1500px;
-        padding: 35px 40px;
+        padding: 28px 36px;
     }
 
     .gestion-header {
-        margin-bottom: 28px;
+        margin-bottom: 20px;
     }
 
     .gestion-header h1 {
-        font-size: 30px;
-    }
-
-    .gestion-info {
-        padding: 23px;
-    }
-
-    .manual-progress-card {
-        padding: 20px 23px;
+        font-size: 27px;
     }
 
     .manual-execution-layout {
         grid-template-columns:
-            310px
+            250px
             minmax(0, 1fr);
 
-        gap: 25px;
+        gap: 18px;
     }
 
     .manual-execution-step {
-        padding: 30px;
-    }
-
-    .manual-current-step-header h2 {
-        font-size: 28px;
-    }
-}
-
-
-/* =========================================================
-   LAPTOP
-   1200px - 1400px
-========================================================= */
-
-@media (max-width: 1400px) {
-
-    .gestion-container {
-        padding: 25px;
-    }
-
-    .manual-execution-layout {
-        grid-template-columns:
-            270px
-            minmax(0, 1fr);
-
-        gap: 20px;
-    }
-
-    .manual-execution-step {
-        padding: 23px;
-    }
-}
-
-
-/* =========================================================
-   TABLET HORIZONTAL
-   901px - 1199px
-========================================================= */
-
-@media (max-width: 1199px) {
-
-    .gestion-container {
         padding: 22px;
     }
 
-    .gestion-header h1 {
-        font-size: 25px;
-    }
-
-    .gestion-header p {
-        font-size: 13px;
-    }
-
-    .manual-execution-layout {
-        grid-template-columns:
-            240px
-            minmax(0, 1fr);
-
-        gap: 16px;
-    }
-
-    .manual-steps-navigation-header {
-        padding: 14px;
-    }
-
-    .manual-step-selector-container {
-        padding: 14px;
-    }
-
-    .manual-navigation-info {
-        padding: 12px 14px;
-    }
-
-    .manual-execution-step {
-        padding: 20px;
-    }
-
     .manual-current-step-header h2 {
-        font-size: 22px;
-    }
-
-    .manual-step-description {
-        font-size: 13px;
-    }
-
-    .manual-step-block p {
-        font-size: 12px;
-    }
-
-    .manual-step-block code {
-        font-size: 11px;
+        font-size: 23px;
     }
 }
 
 
 /* =========================================================
-   TABLET
-   768px - 900px
-========================================================= */
+   LAPTOP NORMAL
+   1200px - 1439px
 
-@media (max-width: 900px) {
+   Aquí priorizamos especialmente:
+   - menos scroll
+   - sidebar compacto
+   - contenido aprovechado
+   ========================================================= */
+
+@media (max-width: 1439px) and (min-width: 1200px) {
 
     .gestion-container {
-        padding: 20px;
+        padding: 20px 24px;
     }
 
     .gestion-header {
-        gap: 18px;
+        margin-bottom: 15px;
     }
 
     .gestion-header h1 {
         font-size: 23px;
     }
 
-    .gestion-header .btn-primary {
-        min-height: 40px;
-        padding: 9px 13px;
+    .gestion-header p {
         font-size: 12px;
     }
 
     .gestion-info {
-        padding: 17px;
+        margin-bottom: 13px;
+        padding: 13px 16px;
     }
 
     .manual-progress-card {
-        padding: 16px 17px;
+        margin-bottom: 14px;
+        padding: 11px 15px;
     }
 
     .manual-execution-layout {
         grid-template-columns:
-            215px
+            210px
             minmax(0, 1fr);
 
         gap: 14px;
     }
 
+    .manual-steps-navigation {
+        top: 10px;
+    }
+
     .manual-steps-navigation-header {
-        padding: 13px;
+        padding: 10px 11px;
     }
 
     .manual-step-selector-container {
-        padding: 13px;
-    }
-
-    .manual-step-selector {
-        min-height: 40px;
-        font-size: 11px;
+        padding: 10px 11px;
     }
 
     .manual-navigation-info {
-        padding: 11px 13px;
+        padding: 8px 11px;
     }
 
     .manual-execution-step {
-        padding: 18px;
+        padding: 17px;
     }
 
     .manual-current-step-header {
-        gap: 12px;
+        padding-bottom: 11px;
     }
 
     .manual-current-step-header h2 {
         font-size: 20px;
     }
 
-    .manual-current-step-section {
-        font-size: 10px;
-    }
-
     .manual-step-description {
-        font-size: 12px;
-    }
-
-    .manual-step-block {
-        padding: 13px;
-    }
-
-    .manual-step-block p {
-        font-size: 11px;
-    }
-
-    .manual-step-block code {
-        font-size: 10px;
-    }
-}
-
-
-/* =========================================================
-   TABLET VERTICAL
-   600px - 767px
-========================================================= */
-
-@media (max-width: 767px) {
-
-    .gestion-container {
-        padding: 15px;
-    }
-
-    .gestion-header {
-        flex-direction: column;
-
-        align-items: stretch;
-
-        gap: 14px;
-    }
-
-    .gestion-header h1 {
-        font-size: 21px;
-    }
-
-    .gestion-header p {
-        margin-top: 6px;
-        font-size: 12px;
-    }
-
-    .gestion-header .btn-primary {
-        width: 100%;
-    }
-
-    .gestion-info {
-        padding: 15px;
-        border-radius: 10px;
-    }
-
-    .gestion-info p {
-        font-size: 12px;
-        line-height: 1.55;
-    }
-
-    .manual-progress-card {
-        padding: 14px 15px;
-        border-radius: 10px;
-    }
-
-    .manual-progress-header strong,
-    .manual-progress-header span {
-        font-size: 12px;
-    }
-
-    .manual-progress-bar {
-        height: 8px;
-    }
-
-
-    /* =====================================================
-       LAYOUT MÓVIL
-    ====================================================== */
-
-    .manual-execution-layout {
-        display: flex;
-        flex-direction: column;
-
-        gap: 14px;
-    }
-
-
-    /* =====================================================
-       NAVEGACIÓN MÓVIL
-    ====================================================== */
-
-    .manual-steps-navigation {
-        position: static;
-
-        max-height: none;
-
-        border-radius: 10px;
-    }
-
-    .manual-steps-navigation-header {
-        padding: 13px 14px;
-    }
-
-    .manual-step-selector-container {
-        padding: 13px 14px;
-    }
-
-    .manual-step-selector {
-        width: 100%;
-
-        min-height: 42px;
-
-        font-size: 12px;
-    }
-
-    .manual-navigation-info {
-        padding: 11px 14px;
-    }
-
-
-    /* =====================================================
-       PASO
-    ====================================================== */
-
-    .manual-execution-step {
-        padding: 16px;
-
-        border-radius: 10px;
-    }
-
-    .manual-current-step-header {
-        flex-direction: column;
-
-        gap: 10px;
-
-        padding-bottom: 16px;
-    }
-
-    .manual-current-step-header h2 {
-        font-size: 19px;
-    }
-
-    .manual-current-step-section {
-        align-self: flex-start;
-    }
-
-    .manual-step-description {
-        margin-top: 16px;
-
-        font-size: 12px;
-    }
-
-    .manual-step-block {
-        margin-top: 14px;
-        padding: 12px;
-    }
-
-    .manual-step-block strong {
-        margin-bottom: 7px;
-        font-size: 10px;
-    }
-
-    .manual-step-block p {
-        font-size: 11px;
-    }
-
-    .manual-step-block pre {
-        padding: 11px;
-    }
-
-    .manual-step-block code {
-        font-size: 10px;
-        line-height: 1.5;
-    }
-
-
-    /* =====================================================
-       NOTAS
-    ====================================================== */
-
-    .manual-user-notes-block {
-        margin-top: 15px;
-        padding: 13px;
-    }
-
-    .manual-step-user-notes {
-        min-height: 120px;
-        font-size: 13px;
-    }
-
-    .manual-step-notes-actions {
-        flex-wrap: wrap;
-    }
-
-    .btn-save-step-note {
-        width: 100%;
-    }
-
-
-    /* =====================================================
-       BOTÓN COMPLETAR
-    ====================================================== */
-
-    .manual-step-actions {
-        margin-top: 18px;
-    }
-
-    .manual-step-actions .btn-complete-step {
-        width: 100%;
-
-        min-height: 40px;
-
-        font-size: 12px;
-    }
-
-
-    /* =====================================================
-       PAGINACIÓN
-    ====================================================== */
-
-    .manual-step-navigation-buttons {
-        grid-template-columns:
-            1fr
-            auto
-            1fr;
-
-        gap: 8px;
-
-        margin-top: 20px;
-        padding-top: 16px;
-    }
-
-    .manual-step-navigation-buttons .btn-secondary {
-        min-width: 0;
-
-        min-height: 40px;
-
-        padding: 8px 10px;
-
-        font-size: 12px;
-    }
-
-    .manual-pagination-counter {
-        min-width: 80px;
-
-        gap: 4px;
-
-        font-size: 10px;
-    }
-
-    .manual-pagination-counter strong {
-        min-width: 26px;
-        height: 26px;
-
-        font-size: 10px;
-    }
-
-
-    /* =====================================================
-       RESUMEN COMPLETADO
-    ====================================================== */
-
-    .manual-completed-summary {
-        align-items: flex-start;
-
-        flex-direction: column;
-
-        gap: 15px;
-    }
-
-    .manual-completed-stats {
-        gap: 20px;
-    }
-
-    .manual-completed-actions {
-        flex-direction: column;
-
-        align-items: stretch;
-    }
-
-    .manual-completed-actions a,
-    .manual-completed-actions button {
-        width: 100%;
-
-        box-sizing: border-box;
-
-        text-align: center;
-    }
-}
-
-
-/* =========================================================
-   PHONE
-   <= 599px
-========================================================= */
-
-@media (max-width: 599px) {
-
-    .gestion-container {
-        padding: 18px 14px;
-    }
-
-    .gestion-header {
-        margin-bottom: 18px;
-    }
-
-    .gestion-header h1 {
-        font-size: 19px;
-    }
-
-    .gestion-header p {
-        font-size: 11px;
-    }
-
-    .gestion-info {
-        margin-bottom: 14px;
-        padding: 14px;
-    }
-
-    .gestion-info h3 {
-        font-size: 14px;
-    }
-
-    .gestion-info p {
-        font-size: 11px;
-    }
-
-    .manual-progress-card {
-        margin-bottom: 16px;
-        padding: 13px 14px;
-    }
-
-    .manual-progress-header {
-        margin-bottom: 8px;
-    }
-
-    .manual-progress-header strong,
-    .manual-progress-header span {
-        font-size: 11px;
-    }
-
-
-    /* =====================================================
-       NAVEGACIÓN
-    ====================================================== */
-
-    .manual-steps-navigation-header {
-        padding: 11px 12px;
-    }
-
-    .manual-steps-navigation-header strong {
-        font-size: 12px;
-    }
-
-    .manual-steps-navigation-header > div > span {
-        font-size: 9px;
-    }
-
-    .manual-steps-navigation-header > #stepCounter {
-        font-size: 10px;
-
-        padding: 4px 7px;
-    }
-
-    .manual-step-selector-container {
-        padding: 11px 12px;
-    }
-
-    .manual-step-selector-container label {
-        font-size: 10px;
-    }
-
-    .manual-step-selector {
-        min-height: 40px;
-
-        padding: 8px 10px;
-
-        font-size: 10px;
-    }
-
-    .manual-navigation-info {
-        padding: 10px 12px;
-    }
-
-    .manual-navigation-info span {
-        font-size: 9px;
-    }
-
-    .manual-navigation-info strong {
-        font-size: 11px;
-    }
-
-
-    /* =====================================================
-       PASO
-    ====================================================== */
-
-    .manual-execution-step {
-        padding: 13px;
-    }
-
-    .manual-current-step-label {
-        margin-bottom: 5px;
-
-        font-size: 10px;
-    }
-
-    .manual-current-step-header h2 {
-        font-size: 17px;
-    }
-
-    .manual-current-step-section {
-        padding: 5px 8px;
-
-        font-size: 9px;
-    }
-
-    .manual-step-description {
-        font-size: 10px;
-        line-height: 1.55;
+        margin-top: 11px;
+        padding: 9px 11px;
     }
 
     .manual-step-block {
@@ -1879,13 +1365,348 @@
         padding: 10px;
     }
 
-    .manual-step-block strong {
+    .manual-user-notes-block {
+        margin-top: 11px;
+        padding: 10px;
+    }
+
+    .manual-step-navigation-buttons {
+        margin-top: 16px;
+        padding-top: 11px;
+    }
+}
+
+
+/* =========================================================
+   LAPTOP PEQUEÑA
+   1024px - 1199px
+
+   Este es uno de los puntos más importantes.
+   ========================================================= */
+
+@media (max-width: 1199px) and (min-width: 901px) {
+
+    .gestion-container {
+        padding: 18px 20px;
+    }
+
+    .gestion-header {
+        gap: 14px;
+        margin-bottom: 13px;
+    }
+
+    .gestion-header h1 {
+        font-size: 21px;
+    }
+
+    .gestion-header p {
+        margin-top: 4px;
+        font-size: 11px;
+    }
+
+    .gestion-container .btn-primary,
+    .gestion-container .btn-secondary {
+        min-height: 36px;
+        padding: 7px 11px;
+        font-size: 11px;
+    }
+
+    .gestion-info {
+        margin-bottom: 12px;
+        padding: 12px 14px;
+    }
+
+    .gestion-info p {
+        font-size: 11px;
+        line-height: 1.45;
+    }
+
+    .manual-progress-card {
+        margin-bottom: 13px;
+        padding: 10px 13px;
+    }
+
+    .manual-execution-layout {
+        grid-template-columns:
+            190px
+            minmax(0, 1fr);
+
+        gap: 12px;
+    }
+
+    .manual-steps-navigation-header {
+        padding: 9px 10px;
+    }
+
+    .manual-step-selector-container {
+        padding: 9px 10px;
+    }
+
+    .manual-navigation-info {
+        padding: 8px 10px;
+    }
+
+    .manual-execution-step {
+        padding: 15px;
+    }
+
+    .manual-current-step-header {
+        gap: 10px;
+        padding-bottom: 10px;
+    }
+
+    .manual-current-step-label {
         font-size: 9px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 18px;
+    }
+
+    .manual-step-description {
+        margin-top: 10px;
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+
+    .manual-step-block {
+        margin-top: 10px;
+        padding: 9px;
     }
 
     .manual-step-block p {
         font-size: 10px;
-        line-height: 1.5;
+    }
+
+    .manual-step-block code {
+        font-size: 9px;
+    }
+
+    .manual-user-notes-block {
+        margin-top: 10px;
+        padding: 9px;
+    }
+
+    .manual-step-user-notes {
+        min-height: 70px;
+    }
+
+    .manual-step-actions {
+        margin-top: 13px;
+    }
+
+    .manual-step-navigation-buttons {
+        margin-top: 14px;
+        padding-top: 10px;
+    }
+
+    .manual-step-navigation-buttons .btn-secondary {
+        min-width: 90px;
+    }
+}
+
+
+/* =========================================================
+   TABLET HORIZONTAL
+   768px - 900px
+   ========================================================= */
+
+@media (max-width: 900px) and (min-width: 768px) {
+
+    .gestion-container {
+        padding: 17px;
+    }
+
+    .gestion-header {
+        gap: 12px;
+        margin-bottom: 13px;
+    }
+
+    .gestion-header h1 {
+        font-size: 20px;
+    }
+
+    .gestion-header p {
+        font-size: 11px;
+    }
+
+    .manual-execution-layout {
+        grid-template-columns:
+            180px
+            minmax(0, 1fr);
+
+        gap: 11px;
+    }
+
+    .manual-steps-navigation {
+        top: 10px;
+    }
+
+    .manual-steps-navigation-header {
+        padding: 9px;
+    }
+
+    .manual-step-selector-container {
+        padding: 9px;
+    }
+
+    .manual-step-selector {
+        min-height: 36px;
+        font-size: 10px;
+    }
+
+    .manual-navigation-info {
+        padding: 8px 9px;
+    }
+
+    .manual-execution-step {
+        padding: 14px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 17px;
+    }
+
+    .manual-current-step-section {
+        padding: 4px 7px;
+    }
+
+    .manual-step-description {
+        font-size: 11px;
+    }
+
+    .manual-step-block {
+        padding: 9px;
+    }
+
+    .manual-step-block p {
+        font-size: 10px;
+    }
+
+    .manual-step-block code {
+        font-size: 9px;
+    }
+}
+
+
+/* =========================================================
+   TABLET VERTICAL
+   600px - 767px
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+    .gestion-container {
+        padding: 14px;
+    }
+
+    .gestion-header {
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 10px;
+        margin-bottom: 13px;
+    }
+
+    .gestion-header h1 {
+        font-size: 20px;
+    }
+
+    .gestion-header p {
+        margin-top: 4px;
+        font-size: 11px;
+    }
+
+    .gestion-header .btn-primary {
+        width: 100%;
+    }
+
+    .gestion-info {
+        padding: 13px;
+        margin-bottom: 12px;
+    }
+
+    .gestion-info p {
+        font-size: 11px;
+    }
+
+    .manual-progress-card {
+        margin-bottom: 13px;
+        padding: 11px 13px;
+    }
+
+    /* -----------------------------------------
+       Layout móvil
+       ----------------------------------------- */
+
+    .manual-execution-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+    }
+
+    /* -----------------------------------------
+       Navegación
+       ----------------------------------------- */
+
+    .manual-steps-navigation {
+        position: static;
+        border-radius: 9px;
+    }
+
+    .manual-steps-navigation-header {
+        padding: 10px 12px;
+    }
+
+    .manual-step-selector-container {
+        padding: 10px 12px;
+    }
+
+    .manual-step-selector {
+        min-height: 40px;
+        font-size: 11px;
+    }
+
+    .manual-navigation-info {
+        padding: 9px 12px;
+    }
+
+    /* -----------------------------------------
+       Paso
+       ----------------------------------------- */
+
+    .manual-execution-step {
+        padding: 14px;
+        border-radius: 9px;
+    }
+
+    .manual-current-step-header {
+        flex-direction: column;
+        gap: 8px;
+        padding-bottom: 12px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 18px;
+    }
+
+    .manual-current-step-section {
+        align-self: flex-start;
+    }
+
+    .manual-step-description {
+        margin-top: 11px;
+        padding: 9px 11px;
+        font-size: 11px;
+    }
+
+    .manual-step-block {
+        margin-top: 11px;
+        padding: 10px;
+    }
+
+    .manual-step-block p {
+        font-size: 10px;
     }
 
     .manual-step-block pre {
@@ -1896,283 +1717,133 @@
         font-size: 9px;
     }
 
-
-    /* =====================================================
-       NOTAS
-    ====================================================== */
+    /* -----------------------------------------
+       Notas
+       ----------------------------------------- */
 
     .manual-user-notes-block {
-        margin-top: 12px;
+        margin-top: 11px;
         padding: 10px;
     }
 
     .manual-step-user-notes {
-        min-height: 110px;
+        min-height: 90px;
         font-size: 11px;
     }
 
     .manual-step-notes-actions {
-        gap: 7px;
+        flex-wrap: wrap;
     }
 
     .btn-save-step-note {
-        min-height: 34px;
-        padding: 7px 10px;
-
-        font-size: 10px;
+        width: 100%;
     }
 
-    .manual-step-note-status {
-        font-size: 9px;
-    }
-
-
-    /* =====================================================
-       BOTÓN COMPLETAR
-    ====================================================== */
+    /* -----------------------------------------
+       Completar
+       ----------------------------------------- */
 
     .manual-step-actions {
         margin-top: 14px;
     }
 
     .manual-step-actions .btn-complete-step {
-        min-height: 38px;
-
-        padding: 8px 10px;
-
-        font-size: 10px;
+        width: 100%;
+        min-height: 40px;
     }
 
-
-    /* =====================================================
-       PAGINACIÓN
-    ====================================================== */
+    /* -----------------------------------------
+       Paginación
+       ----------------------------------------- */
 
     .manual-step-navigation-buttons {
         gap: 6px;
-
         margin-top: 16px;
-
-        padding-top: 13px;
+        padding-top: 12px;
     }
 
     .manual-step-navigation-buttons .btn-secondary {
-        min-height: 37px;
-
-        padding: 7px 8px;
-
-        font-size: 10px;
+        min-width: 0;
+        min-height: 38px;
+        padding: 7px 9px;
     }
 
     .manual-pagination-counter {
-        min-width: 68px;
-
-        font-size: 9px;
+        min-width: 70px;
     }
 
-    .manual-pagination-counter strong {
-        min-width: 24px;
-        height: 24px;
-
-        font-size: 9px;
-    }
-
-
-    /* =====================================================
-       RESUMEN COMPLETADO
-    ====================================================== */
+    /* -----------------------------------------
+       Resumen
+       ----------------------------------------- */
 
     .manual-completed-summary {
-        margin-bottom: 16px;
-
-        padding: 16px;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
     }
 
-    .manual-completed-icon {
-        width: 48px;
-        height: 48px;
-
-        font-size: 22px;
+    .manual-completed-stats {
+        gap: 18px;
     }
 
-    .manual-completed-label {
-        font-size: 9px;
+    .manual-completed-actions {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    .manual-completed-content h2 {
-        font-size: 18px;
-    }
-
-    .manual-completed-content p {
-        font-size: 11px;
-    }
-
-    .manual-completed-stat strong {
-        font-size: 16px;
-    }
-
-    .manual-completed-stat span {
-        font-size: 9px;
+    .manual-completed-actions a,
+    .manual-completed-actions button {
+        width: 100%;
     }
 }
 
 
 /* =========================================================
-   SMALL PHONE
-   <= 400px
-========================================================= */
+   TELÉFONO
+   <= 599px
+   ========================================================= */
 
-@media (max-width: 400px) {
+@media (max-width: 599px) {
 
     .gestion-container {
-        padding: 15px 10px;
-    }
-
-    .gestion-header h1 {
-        font-size: 18px;
-    }
-
-    .gestion-header p {
-        font-size: 10px;
-    }
-
-    .gestion-header .btn-primary {
-        min-height: 38px;
-
-        padding: 8px 10px;
-
-        font-size: 10px;
-    }
-
-    .gestion-info {
         padding: 12px;
     }
 
-    .manual-progress-card {
-        padding: 11px 12px;
-    }
-
-
-    /* =====================================================
-       NAVEGACIÓN
-    ====================================================== */
-
-    .manual-steps-navigation-header {
-        padding: 10px;
-    }
-
-    .manual-step-selector-container {
-        padding: 10px;
-    }
-
-    .manual-step-selector {
-        min-height: 38px;
-
-        font-size: 9px;
-    }
-
-    .manual-navigation-info {
-        padding: 9px 10px;
-    }
-
-
-    /* =====================================================
-       PASO
-    ====================================================== */
-
-    .manual-execution-step {
-        padding: 11px;
-    }
-
-    .manual-current-step-header h2 {
-        font-size: 15px;
-    }
-
-    .manual-current-step-label {
-        font-size: 9px;
-    }
-
-    .manual-step-description {
-        font-size: 9px;
-    }
-
-    .manual-step-block {
-        padding: 8px;
-    }
-
-    .manual-step-block strong {
-        font-size: 8px;
-    }
-
-    .manual-step-block p {
-        font-size: 9px;
-    }
-
-    .manual-step-block code {
-        font-size: 8px;
-    }
-
-
-    /* =====================================================
-       PAGINACIÓN
-    ====================================================== */
-
-    .manual-step-navigation-buttons {
-        gap: 5px;
-    }
-
-    .manual-step-navigation-buttons .btn-secondary {
-        min-height: 35px;
-
-        padding: 7px;
-
-        font-size: 9px;
-    }
-
-    .manual-pagination-counter {
-        min-width: 60px;
-
-        font-size: 8px;
-    }
-
-    .manual-pagination-counter strong {
-        min-width: 22px;
-        height: 22px;
-
-        font-size: 8px;
-    }
-}
-
-
-/* =========================================================
-   VERY SMALL PHONE
-   <= 350px
-========================================================= */
-
-@media (max-width: 350px) {
-
-    .gestion-container {
-        padding: 12px 8px;
-    }
-
     .gestion-header {
-        gap: 10px;
+        margin-bottom: 11px;
     }
 
     .gestion-header h1 {
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .gestion-header p {
-        font-size: 9px;
+        font-size: 10px;
+    }
+
+    .gestion-container .btn-primary,
+    .gestion-container .btn-secondary {
+        min-height: 38px;
+        font-size: 11px;
     }
 
     .gestion-info {
-        padding: 10px;
+        padding: 11px;
+        margin-bottom: 11px;
+    }
+
+    .gestion-info h3 {
+        font-size: 13px;
+    }
+
+    .gestion-info p {
+        font-size: 10px;
     }
 
     .manual-progress-card {
-        padding: 10px;
+        margin-bottom: 11px;
+        padding: 10px 11px;
     }
 
     .manual-progress-header strong,
@@ -2184,17 +1855,16 @@
         height: 7px;
     }
 
-
-    /* =====================================================
-       NAVEGACIÓN
-    ====================================================== */
+    /* -----------------------------------------
+       Navegación
+       ----------------------------------------- */
 
     .manual-steps-navigation-header {
-        padding: 9px;
+        padding: 9px 10px;
     }
 
     .manual-steps-navigation-header strong {
-        font-size: 10px;
+        font-size: 11px;
     }
 
     .manual-steps-navigation-header > div > span {
@@ -2202,29 +1872,26 @@
     }
 
     .manual-steps-navigation-header > #stepCounter {
-        font-size: 8px;
-
+        font-size: 9px;
         padding: 3px 6px;
     }
 
     .manual-step-selector-container {
-        padding: 9px;
+        padding: 9px 10px;
     }
 
     .manual-step-selector-container label {
-        font-size: 8px;
+        font-size: 9px;
     }
 
     .manual-step-selector {
-        min-height: 36px;
-
-        padding: 7px 8px;
-
-        font-size: 8px;
+        min-height: 38px;
+        padding: 7px 9px;
+        font-size: 10px;
     }
 
     .manual-navigation-info {
-        padding: 8px 9px;
+        padding: 8px 10px;
     }
 
     .manual-navigation-info span {
@@ -2232,13 +1899,311 @@
     }
 
     .manual-navigation-info strong {
+        font-size: 10px;
+    }
+
+    /* -----------------------------------------
+       Paso
+       ----------------------------------------- */
+
+    .manual-execution-step {
+        padding: 12px;
+    }
+
+    .manual-current-step-label {
         font-size: 9px;
     }
 
+    .manual-current-step-header h2 {
+        font-size: 16px;
+    }
 
-    /* =====================================================
-       PASO
-    ====================================================== */
+    .manual-current-step-section {
+        padding: 4px 7px;
+        font-size: 8px;
+    }
+
+    .manual-step-description {
+        font-size: 10px;
+        line-height: 1.5;
+    }
+
+    .manual-step-block {
+        margin-top: 10px;
+        padding: 9px;
+    }
+
+    .manual-step-block strong {
+        font-size: 9px;
+    }
+
+    .manual-step-block p {
+        font-size: 9px;
+    }
+
+    .manual-step-block pre {
+        padding: 8px;
+    }
+
+    .manual-step-block code {
+        font-size: 8px;
+    }
+
+    /* -----------------------------------------
+       Notas
+       ----------------------------------------- */
+
+    .manual-user-notes-block {
+        margin-top: 10px;
+        padding: 9px;
+    }
+
+    .manual-step-user-notes {
+        min-height: 85px;
+        font-size: 10px;
+    }
+
+    .btn-save-step-note {
+        min-height: 34px;
+        font-size: 10px;
+    }
+
+    .manual-step-note-status {
+        font-size: 9px;
+    }
+
+    /* -----------------------------------------
+       Paginación
+       ----------------------------------------- */
+
+    .manual-step-navigation-buttons {
+        gap: 5px;
+        margin-top: 14px;
+        padding-top: 11px;
+    }
+
+    .manual-step-navigation-buttons .btn-secondary {
+        min-height: 36px;
+        padding: 6px 7px;
+        font-size: 9px;
+    }
+
+    .manual-pagination-counter {
+        min-width: 62px;
+        font-size: 8px;
+    }
+
+    .manual-pagination-counter strong {
+        min-width: 23px;
+        height: 23px;
+        font-size: 8px;
+    }
+
+    /* -----------------------------------------
+       Resumen
+       ----------------------------------------- */
+
+    .manual-completed-summary {
+        margin-bottom: 13px;
+        padding: 13px;
+    }
+
+    .manual-completed-icon {
+        width: 43px;
+        height: 43px;
+        font-size: 20px;
+    }
+
+    .manual-completed-content h2 {
+        font-size: 17px;
+    }
+
+    .manual-completed-content p {
+        font-size: 10px;
+    }
+
+    .manual-completed-stat strong {
+        font-size: 15px;
+    }
+
+    .manual-completed-stat span {
+        font-size: 8px;
+    }
+}
+
+
+/* =========================================================
+   TELÉFONO PEQUEÑO
+   <= 400px
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+    .gestion-container {
+        padding: 10px;
+    }
+
+    .gestion-header h1 {
+        font-size: 17px;
+    }
+
+    .gestion-header p {
+        font-size: 9px;
+    }
+
+    .gestion-info {
+        padding: 10px;
+    }
+
+    .manual-progress-card {
+        padding: 9px 10px;
+    }
+
+    .manual-steps-navigation-header {
+        padding: 8px 9px;
+    }
+
+    .manual-step-selector-container {
+        padding: 8px 9px;
+    }
+
+    .manual-step-selector {
+        min-height: 37px;
+        font-size: 9px;
+    }
+
+    .manual-navigation-info {
+        padding: 7px 9px;
+    }
+
+    .manual-execution-step {
+        padding: 10px;
+    }
+
+    .manual-current-step-header h2 {
+        font-size: 15px;
+    }
+
+    .manual-step-description {
+        font-size: 9px;
+    }
+
+    .manual-step-block {
+        padding: 8px;
+    }
+
+    .manual-step-block strong {
+        font-size: 8px;
+    }
+
+    .manual-step-block p {
+        font-size: 9px;
+    }
+
+    .manual-step-block code {
+        font-size: 8px;
+    }
+
+    .manual-step-navigation-buttons .btn-secondary {
+        min-height: 35px;
+        font-size: 8px;
+    }
+
+    .manual-pagination-counter {
+        min-width: 56px;
+        font-size: 7px;
+    }
+
+    .manual-pagination-counter strong {
+        min-width: 22px;
+        height: 22px;
+        font-size: 7px;
+    }
+}
+
+
+/* =========================================================
+   TELÉFONO MUY PEQUEÑO
+   <= 350px
+
+   IMPORTANTE:
+   No reducimos demasiado la legibilidad.
+   Priorizamos espacio sin convertir el texto
+   en algo prácticamente ilegible.
+   ========================================================= */
+
+@media (max-width: 350px) {
+
+    .gestion-container {
+        padding: 9px 8px;
+    }
+
+    .gestion-header {
+        gap: 8px;
+    }
+
+    .gestion-header h1 {
+        font-size: 16px;
+    }
+
+    .gestion-header p {
+        font-size: 9px;
+    }
+
+    .gestion-info {
+        padding: 9px;
+    }
+
+    .manual-progress-card {
+        padding: 8px 9px;
+    }
+
+    .manual-progress-header strong,
+    .manual-progress-header span {
+        font-size: 9px;
+    }
+
+    .manual-progress-bar {
+        height: 6px;
+    }
+
+    .manual-steps-navigation-header {
+        padding: 8px;
+    }
+
+    .manual-steps-navigation-header strong {
+        font-size: 10px;
+    }
+
+    .manual-steps-navigation-header > div > span {
+        font-size: 7px;
+    }
+
+    .manual-step-selector-container {
+        padding: 8px;
+    }
+
+    .manual-step-selector-container label {
+        font-size: 8px;
+    }
+
+    .manual-step-selector {
+        min-height: 35px;
+        padding: 6px 7px;
+        font-size: 8px;
+    }
+
+    .manual-navigation-info {
+        padding: 7px 8px;
+    }
+
+    .manual-navigation-info span {
+        font-size: 7px;
+    }
+
+    .manual-navigation-info strong {
+        font-size: 8px;
+    }
 
     .manual-execution-step {
         padding: 9px;
@@ -2253,7 +2218,7 @@
     }
 
     .manual-step-block {
-        margin-top: 9px;
+        margin-top: 8px;
         padding: 7px;
     }
 
@@ -2266,86 +2231,59 @@
     }
 
     .manual-step-block pre {
-        padding: 7px;
+        padding: 6px;
     }
 
     .manual-step-block code {
         font-size: 7px;
     }
 
-
-    /* =====================================================
-       NOTAS
-    ====================================================== */
-
     .manual-user-notes-block {
-        padding: 8px;
+        padding: 7px;
     }
 
     .manual-step-user-notes {
-        min-height: 95px;
-
-        padding: 8px;
-
+        min-height: 80px;
+        padding: 7px;
         font-size: 9px;
     }
 
     .btn-save-step-note {
-        min-height: 32px;
-
+        min-height: 31px;
         font-size: 8px;
     }
 
-
-    /* =====================================================
-       COMPLETAR
-    ====================================================== */
-
     .manual-step-actions {
-        margin-top: 10px;
+        margin-top: 9px;
     }
 
     .manual-step-actions .btn-complete-step {
         min-height: 34px;
-
-        padding: 7px;
-
+        padding: 6px;
         font-size: 8px;
-
-        border-radius: 7px;
     }
-
-
-    /* =====================================================
-       PAGINACIÓN
-    ====================================================== */
 
     .manual-step-navigation-buttons {
         gap: 4px;
-
-        margin-top: 13px;
-
-        padding-top: 10px;
+        margin-top: 11px;
+        padding-top: 9px;
     }
 
     .manual-step-navigation-buttons .btn-secondary {
-        min-height: 33px;
-
-        padding: 6px;
-
+        min-height: 32px;
+        padding: 5px;
         font-size: 8px;
     }
 
     .manual-pagination-counter {
-        min-width: 54px;
-
+        min-width: 50px;
         font-size: 7px;
     }
 
     .manual-pagination-counter strong {
         min-width: 20px;
         height: 20px;
-
         font-size: 7px;
     }
 }
+
