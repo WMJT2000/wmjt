@@ -1534,22 +1534,48 @@
         |--------------------------------------------------------------------------
         */
 
-        function reproducirPalabra(palabra) {
+       function reproducirPalabra(palabra) {
 
-            if (typeof pronunciarEnIngles === 'function') {
-                pronunciarEnIngles(palabra, 'ingles');
-            }
-        }
+    if (!palabra) {
+        return;
+    }
 
-        function reproducirFeedback(texto) {
-            if (!practiceSoundsEnabled) {
-                return;
-            }
+    if (
+        typeof window.reproducirPronunciacion ===
+        'function'
+    ) {
 
-            if (typeof pronunciarEnIngles === 'function') {
-                pronunciarEnIngles(texto, 'feedback');
-            }
-        }
+        window.reproducirPronunciacion(
+            palabra
+        );
+
+    }
+
+}
+
+
+function reproducirFeedback(texto) {
+
+    if (!practiceSoundsEnabled) {
+        return;
+    }
+
+    if (!texto) {
+        return;
+    }
+
+    if (
+        typeof window.reproducirPronunciacion ===
+        'function'
+    ) {
+
+        window.reproducirPronunciacion(
+            texto
+        );
+
+    }
+
+}
 
         /*
         |--------------------------------------------------------------------------
