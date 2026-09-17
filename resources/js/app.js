@@ -1,5 +1,5 @@
 import './bootstrap';
-////conflicto que hay 
+////este como tal sera el conflicto que  que hay ahora en main esta esto 
 // CSS
 import '../css/app.css';
 import '../css/form.css';
