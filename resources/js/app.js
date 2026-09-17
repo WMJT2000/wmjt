@@ -1,5 +1,5 @@
 import './bootstrap';
-////conflicto que hay 
+////conflicto que hay conflicto 1  de cambios casa
 // CSS
 import '../css/app.css';
 import '../css/form.css';
