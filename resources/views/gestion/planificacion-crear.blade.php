@@ -5,619 +5,597 @@
 @section('content')
 
 <script>
-window.planificacionId = @json($planificacionId);
-window.usarPlantilla = @json(request()->query('plantilla') == 1);
+    window.planificacionId = @json($planificacionId);
+    window.usarPlantilla = @json(request()->query('plantilla') == 1);
 </script>
 
 <div class="planning-page">
 
 
-{{-- =====================================================
+    {{-- =====================================================
      ENCABEZADO
 ====================================================== --}}
 
-<div class="planning-header">
+    <div class="planning-header">
 
-    <div>
+        <div>
 
-        <h1>
-            Generar planificación
-        </h1>
+            <h1>
+                Generar planificación
+            </h1>
 
-        <p>
-            Complete la información para crear su planificación.
-        </p>
+            <p>
+                Complete la información para crear su planificación.
+            </p>
+
+        </div>
 
     </div>
 
-</div>
+
+    <div class="planning-layout">
 
 
-<div class="planning-layout">
-
-
-    {{-- =================================================
+        {{-- =================================================
          SIDEBAR
     ================================================== --}}
 
-    <aside class="planning-sidebar">
+        <aside class="planning-sidebar">
 
-        {{-- PROGRESO --}}
+            {{-- PROGRESO --}}
 
-        <div class="progress-container">
+            <div class="progress-container">
 
-            <div class="progress-header">
+                <div class="progress-header">
 
-                <span>
-                    Progreso
-                </span>
+                    <span>
+                        Progreso
+                    </span>
 
-                <span id="progressPercent">
-                    0%
-                </span>
+                    <span id="progressPercent">
+                        0%
+                    </span>
+
+                </div>
+
+                <div class="progress-bar">
+
+                    <div
+                        class="progress-fill"
+                        id="progressValue"
+                        style="width: 0%;"></div>
+
+                </div>
 
             </div>
 
-            <div class="progress-bar">
+
+            {{-- SECCIONES --}}
+
+            <div class="sidebar-sections">
+
+                {{-- INFORMACIÓN GENERAL --}}
 
                 <div
-                    class="progress-fill"
-                    id="progressValue"
-                    style="width: 0%;"
-                ></div>
+                    class="sidebar-section"
+                    id="sidebarGeneral">
 
-            </div>
+                    <span class="sidebar-section-number">
+                        1
+                    </span>
 
-        </div>
+                    <div>
+
+                        <strong>
+                            Información general
+                        </strong>
+
+                    </div>
+
+                </div>
 
 
-        {{-- SECCIONES --}}
+                {{-- ACTIVIDADES INICIALES --}}
 
-        <div class="sidebar-sections">
+                <div
+                    class="sidebar-section"
+                    id="sidebarPart1">
 
-            {{-- INFORMACIÓN GENERAL --}}
+                    <span class="sidebar-section-number">
+                        2
+                    </span>
 
-            <div
-                class="sidebar-section"
-                id="sidebarGeneral"
-            >
+                    <div>
 
-                <span class="sidebar-section-number">
-                    1
-                </span>
+                        <strong>
+                            Actividades iniciales
+                        </strong>
 
-                <div>
+                        <small id="sidebarPart1Text">
+                            0 actividades
+                        </small>
 
-                    <strong>
-                        Información general
-                    </strong>
+                    </div>
+
+                </div>
+
+
+                {{-- ACTIVIDADES FINALES --}}
+
+                <div
+                    class="sidebar-section"
+                    id="sidebarPart2">
+
+                    <span class="sidebar-section-number">
+                        3
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Actividades finales
+                        </strong>
+
+                        <small id="sidebarPart2Text">
+                            0 actividades
+                        </small>
+
+                    </div>
 
                 </div>
 
             </div>
 
-
-            {{-- ACTIVIDADES INICIALES --}}
-
-            <div
-                class="sidebar-section"
-                id="sidebarPart1"
-            >
-
-                <span class="sidebar-section-number">
-                    2
-                </span>
-
-                <div>
-
-                    <strong>
-                        Actividades iniciales
-                    </strong>
-
-                    <small id="sidebarPart1Text">
-                        0 actividades
-                    </small>
-
-                </div>
-
-            </div>
+        </aside>
 
 
-            {{-- ACTIVIDADES FINALES --}}
-
-            <div
-                class="sidebar-section"
-                id="sidebarPart2"
-            >
-
-                <span class="sidebar-section-number">
-                    3
-                </span>
-
-                <div>
-
-                    <strong>
-                        Actividades finales
-                    </strong>
-
-                    <small id="sidebarPart2Text">
-                        0 actividades
-                    </small>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </aside>
-
-
-    {{-- =================================================
+        {{-- =================================================
          CONTENIDO PRINCIPAL
     ================================================== --}}
 
-    <main class="planning-content">
+        <main class="planning-content">
 
-        <form
-            action="{{ route('word.generar') }}"
-            method="POST"
-            id="planningForm"
-        >
+            <form
+                action="{{ route('word.generar') }}"
+                method="POST"
+                id="planningForm">
 
-            @csrf
+                @csrf
 
-            <input
-                type="hidden"
-                name="progreso"
-                id="progresoInput"
-                value="0"
-            >
+                <input
+                    type="hidden"
+                    name="progreso"
+                    id="progresoInput"
+                    value="0">
 
 
-            {{-- =================================================
+                {{-- =================================================
                  INFORMACIÓN GENERAL
             ================================================== --}}
 
-            <section class="planning-section">
+                <section class="planning-section">
 
-                <div class="section-header">
+                    <div class="section-header">
 
-                    <div>
+                        <div>
 
-                        <h2>
-                            Información general
-                        </h2>
+                            <h2>
+                                Información general
+                            </h2>
 
-                        <p>
-                            Complete los datos generales de la planificación.
-                        </p>
+                            <p>
+                                Complete los datos generales de la planificación.
+                            </p>
 
-                    </div>
-
-                </div>
-
-
-                <div class="planning-grid">
-
-
-                    {{-- EXPERIENCIA --}}
-
-                    <div class="planning-field">
-
-                        <label>
-                            Experiencia de aprendizaje
-                        </label>
-
-                        <input
-                            type="text"
-                            name="1_experiencia_prendizaje"
-                            class="planning-input"
-                            required
-                        >
+                        </div>
 
                     </div>
 
 
-                    {{-- DESCRIPCIÓN --}}
+                    <div class="planning-grid">
 
-                    <div class="planning-field planning-field-full">
 
-                        <label>
-                            Descripción general de la experiencia
-                        </label>
+                        {{-- EXPERIENCIA --}}
 
-                        <textarea
-                            name="2_descripcion_general_experiencia"
-                            class="planning-input"
-                            required
-                        ></textarea>
+                        <div class="planning-field">
+
+                            <label>
+                                Experiencia de aprendizaje
+                            </label>
+
+                            <input
+                                type="text"
+                                name="1_experiencia_prendizaje"
+                                class="planning-input"
+                                required>
+
+                        </div>
+
+
+                        {{-- DESCRIPCIÓN --}}
+
+                        <div class="planning-field planning-field-full">
+
+                            <label>
+                                Descripción general de la experiencia
+                            </label>
+
+                            <textarea
+                                name="2_descripcion_general_experiencia"
+                                class="planning-input"
+                                required></textarea>
+
+                        </div>
+
+
+                        {{-- MAESTRA --}}
+
+                        <div class="planning-field">
+
+                            <label>
+                                Nombre de la maestra
+                            </label>
+
+                            <input
+                                type="text"
+                                name="3_nombre_maestra"
+                                class="planning-input"
+                                required>
+
+                        </div>
+
+
+                        {{-- TIEMPO --}}
+
+                        <div class="planning-field">
+
+                            <label>
+                                Tiempo estimado
+                            </label>
+
+                            <input
+                                type="text"
+                                name="4_tiempo_estimado"
+                                class="planning-input"
+                                required>
+
+                        </div>
+
+
+                        {{-- FECHA --}}
+
+                        <div class="planning-field">
+
+                            <label>
+                                Fecha
+                            </label>
+
+                            <input
+                                type="date"
+                                name="5_fecha"
+                                class="planning-input"
+                                required>
+
+                        </div>
+
+
+                        {{-- NIVEL --}}
+
+                        <div class="planning-field">
+
+                            <label>
+                                Nivel educativo
+                            </label>
+
+                            <input
+                                type="text"
+                                name="6_nivel_educativo"
+                                class="planning-input"
+                                required>
+
+                        </div>
+
+
+                        {{-- OBJETIVO --}}
+
+                        <div class="planning-field planning-field-full">
+
+                            <label>
+                                Objetivo de aprendizaje
+                            </label>
+
+                            <textarea
+                                name="7_objetivo_aprendizaje"
+                                class="planning-input"
+                                required></textarea>
+
+                        </div>
+
+
+                        {{-- ELEMENTO INTEGRADOR --}}
+
+                        <div class="planning-field planning-field-full">
+
+                            <label>
+                                Elemento integrador
+                            </label>
+
+                            <textarea
+                                name="8_elemento_integrador"
+                                class="planning-input"
+                                required></textarea>
+
+                        </div>
+
+
+                        {{-- NOCIÓN DEL DÍA --}}
+
+                        <div class="planning-field">
+
+                            <label>
+                                Noción del día
+                            </label>
+
+                            <input
+                                type="text"
+                                name="9_nocion_dia"
+                                class="planning-input"
+                                required>
+
+                        </div>
+
+
+                        {{-- TAMAÑO DE LETRA --}}
+
+                        <div class="planning-field">
+
+                            <label>
+                                Tamaño de letra de actividades
+                            </label>
+
+                            <select
+                                id="tamano_letra_actividades"
+                                name="tamano_letra_actividades"
+                                class="planning-input">
+                                <option value="6" selected>
+                                    6 pt
+                                </option>
+                                <option value="7" selected>
+                                    7 pt
+                                </option>
+                                <option value="8" selected>
+                                    8 pt
+                                </option>
+
+                                <option value="9">
+                                    9 pt
+                                </option>
+
+                                <option value="10">
+                                    10 pt
+                                </option>
+
+                                <option value="11">
+                                    11 pt
+                                </option>
+
+                                <option value="12">
+                                    12 pt
+                                </option>
+
+                            </select>
+
+                        </div>
 
                     </div>
 
-
-                    {{-- MAESTRA --}}
-
-                    <div class="planning-field">
-
-                        <label>
-                            Nombre de la maestra
-                        </label>
-
-                        <input
-                            type="text"
-                            name="3_nombre_maestra"
-                            class="planning-input"
-                            required
-                        >
-
-                    </div>
+                </section>
 
 
-                    {{-- TIEMPO --}}
-
-                    <div class="planning-field">
-
-                        <label>
-                            Tiempo estimado
-                        </label>
-
-                        <input
-                            type="text"
-                            name="4_tiempo_estimado"
-                            class="planning-input"
-                            required
-                        >
-
-                    </div>
-
-
-                    {{-- FECHA --}}
-
-                    <div class="planning-field">
-
-                        <label>
-                            Fecha
-                        </label>
-
-                        <input
-                            type="date"
-                            name="5_fecha"
-                            class="planning-input"
-                            required
-                        >
-
-                    </div>
-
-
-                    {{-- NIVEL --}}
-
-                    <div class="planning-field">
-
-                        <label>
-                            Nivel educativo
-                        </label>
-
-                        <input
-                            type="text"
-                            name="6_nivel_educativo"
-                            class="planning-input"
-                            required
-                        >
-
-                    </div>
-
-
-                    {{-- OBJETIVO --}}
-
-                    <div class="planning-field planning-field-full">
-
-                        <label>
-                            Objetivo de aprendizaje
-                        </label>
-
-                        <textarea
-                            name="7_objetivo_aprendizaje"
-                            class="planning-input"
-                            required
-                        ></textarea>
-
-                    </div>
-
-
-                    {{-- ELEMENTO INTEGRADOR --}}
-
-                    <div class="planning-field planning-field-full">
-
-                        <label>
-                            Elemento integrador
-                        </label>
-
-                        <textarea
-                            name="8_elemento_integrador"
-                            class="planning-input"
-                            required
-                        ></textarea>
-
-                    </div>
-
-
-                    {{-- NOCIÓN DEL DÍA --}}
-
-                    <div class="planning-field">
-
-                        <label>
-                            Noción del día
-                        </label>
-
-                        <input
-                            type="text"
-                            name="9_nocion_dia"
-                            class="planning-input"
-                            required
-                        >
-
-                    </div>
-
-
-                    {{-- TAMAÑO DE LETRA --}}
-
-                    <div class="planning-field">
-
-                        <label>
-                            Tamaño de letra de actividades
-                        </label>
-
-                        <select
-                            id="tamano_letra_actividades"
-                            name="tamano_letra_actividades"
-                            class="planning-input"
-                        >
-
-                            <option value="8" selected>
-                                8 pt
-                            </option>
-
-                            <option value="9">
-                                9 pt
-                            </option>
-
-                            <option value="10">
-                                10 pt
-                            </option>
-
-                            <option value="11">
-                                11 pt
-                            </option>
-
-                            <option value="12">
-                                12 pt
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            {{-- =================================================
+                {{-- =================================================
                  ACTIVIDADES INICIALES
             ================================================== --}}
 
-            <section class="planning-section">
+                <section class="planning-section">
 
-                <div class="section-header">
+                    <div class="section-header">
 
-                    <div>
+                        <div>
 
-                        <div style="
+                            <div style="
                             display:flex;
                             align-items:center;
                             gap:12px;
                             flex-wrap:wrap;
                         ">
 
-                            <h2>
-                                Actividades iniciales
-                            </h2>
+                                <h2>
+                                    Actividades iniciales
+                                </h2>
 
-                            <span
-                                id="part1Counter"
-                                class="activity-counter"
-                            >
-                                0 / 10
-                            </span>
+                                <span
+                                    id="part1Counter"
+                                    class="activity-counter">
+                                    0 / 10
+                                </span>
+
+                            </div>
+
+                            <p>
+                                Agregue las actividades correspondientes.
+                            </p>
 
                         </div>
 
-                        <p>
-                            Agregue las actividades correspondientes.
-                        </p>
+
+                        <button
+                            type="button"
+                            id="addPart1"
+                            class="btn-add-activity">
+                            + Agregar actividad
+                        </button>
 
                     </div>
 
-
-                    <button
-                        type="button"
-                        id="addPart1"
-                        class="btn-add-activity"
-                    >
-                        + Agregar actividad
-                    </button>
-
-                </div>
-
-
-                <div
-                    id="part1_container"
-                    class="activities-container"
-                >
 
                     <div
-                        id="part1Empty"
-                        class="empty-activities"
-                    >
+                        id="part1_container"
+                        class="activities-container">
 
-                        <div>
+                        <div
+                            id="part1Empty"
+                            class="empty-activities">
 
-                            <strong>
-                                No hay actividades agregadas
-                            </strong>
+                            <div>
 
-                            <span>
-                                Presione «Agregar actividad» para comenzar.
-                            </span>
+                                <strong>
+                                    No hay actividades agregadas
+                                </strong>
+
+                                <span>
+                                    Presione «Agregar actividad» para comenzar.
+                                </span>
+
+                            </div>
 
                         </div>
 
                     </div>
 
-                </div>
-
-            </section>
+                </section>
 
 
-            {{-- =================================================
+                {{-- =================================================
                  ACTIVIDADES FINALES
             ================================================== --}}
 
-            <section class="planning-section">
+                <section class="planning-section">
 
-                <div class="section-header">
+                    <div class="section-header">
 
-                    <div>
+                        <div>
 
-                        <div style="
+                            <div style="
                             display:flex;
                             align-items:center;
                             gap:12px;
                             flex-wrap:wrap;
                         ">
 
-                            <h2>
-                                Actividades finales
-                            </h2>
+                                <h2>
+                                    Actividades finales
+                                </h2>
 
-                            <span
-                                id="part2Counter"
-                                class="activity-counter"
-                            >
-                                0 / 10
-                            </span>
+                                <span
+                                    id="part2Counter"
+                                    class="activity-counter">
+                                    0 / 10
+                                </span>
+
+                            </div>
+
+                            <p>
+                                Agregue las actividades correspondientes.
+                            </p>
 
                         </div>
 
-                        <p>
-                            Agregue las actividades correspondientes.
-                        </p>
+
+                        <button
+                            type="button"
+                            id="addPart2"
+                            class="btn-add-activity">
+                            + Agregar actividad
+                        </button>
 
                     </div>
 
-
-                    <button
-                        type="button"
-                        id="addPart2"
-                        class="btn-add-activity"
-                    >
-                        + Agregar actividad
-                    </button>
-
-                </div>
-
-
-                <div
-                    id="part2_container"
-                    class="activities-container"
-                >
 
                     <div
-                        id="part2Empty"
-                        class="empty-activities"
-                    >
+                        id="part2_container"
+                        class="activities-container">
 
-                        <div>
+                        <div
+                            id="part2Empty"
+                            class="empty-activities">
 
-                            <strong>
-                                No hay actividades agregadas
-                            </strong>
+                            <div>
 
-                            <span>
-                                Presione «Agregar actividad» para comenzar.
-                            </span>
+                                <strong>
+                                    No hay actividades agregadas
+                                </strong>
+
+                                <span>
+                                    Presione «Agregar actividad» para comenzar.
+                                </span>
+
+                            </div>
 
                         </div>
 
                     </div>
 
-                </div>
-
-            </section>
+                </section>
 
 
-            {{-- =================================================
+                {{-- =================================================
                  BOTONES FINALES
             ================================================== --}}
 
-            <div class="planning-actions">
+                <div class="planning-actions">
 
 
-                {{-- =================================================
+                    {{-- =================================================
                      GUARDAR COMO PLANTILLA
                 ================================================== --}}
 
-                <button
-                    type="submit"
-                    id="btnGuardarComoPlantilla"
-                    formaction="{{ route('planificaciones.store') }}"
-                    class="btn-save"
-                >
-                    Guardar como plantilla
-                </button>
+                    <button
+                        type="submit"
+                        id="btnGuardarComoPlantilla"
+                        formaction="{{ route('planificaciones.store') }}"
+                        class="btn-save">
+                        Guardar como plantilla
+                    </button>
 
 
-                {{-- =================================================
+                    {{-- =================================================
                      GUARDAR / ACTUALIZAR
                 ================================================== --}}
 
-                <button
-                    type="submit"
-                    id="btnGuardarPlanificacion"
-                    formaction="{{ route('planificaciones.store') }}"
-                    class="btn-save"
-                >
-                    Guardar planificación
-                </button>
+                    <button
+                        type="submit"
+                        id="btnGuardarPlanificacion"
+                        formaction="{{ route('planificaciones.store') }}"
+                        class="btn-save">
+                        Guardar planificación
+                    </button>
 
 
-                {{-- =================================================
+                    {{-- =================================================
                      GENERAR WORD
                 ================================================== --}}
 
-                <button
-                    type="submit"
-                    class="btn-generate"
-                >
+                    <button
+                        type="submit"
+                        class="btn-generate">
 
-                    <span>
-                        ↓
-                    </span>
+                        <span>
+                            ↓
+                        </span>
 
-                    Generar Word
+                        Generar Word
 
-                </button>
-
-
-            </div>
+                    </button>
 
 
-        </form>
+                </div>
 
-    </main>
 
-</div>
+            </form>
+
+        </main>
+
+    </div>
 
 
 </div>

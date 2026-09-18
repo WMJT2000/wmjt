@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         window.planificacionId !== undefined &&
         window.planificacionId !== '';
 
-    const usandoPlantilla =
+    let usandoPlantilla =
         tieneId &&
         Boolean(window.usarPlantilla);
 
@@ -200,6 +200,203 @@ document.addEventListener('DOMContentLoaded', async function () {
     */
 
     let editandoPlantillaExistente = false;
+
+
+    // =========================================================
+    // AUTOGUARDADO
+    // =========================================================
+
+    let autoGuardando = false;
+    let autoGuardadoPendiente = false;
+    let planificacionCreadaPorAutoguardado = false;
+
+    let cambiosPendientes = false;
+
+    function marcarCambiosPendientes() {
+        cambiosPendientes = true;
+    }
+
+    // =========================================================
+    // GUARDAR AUTOMÁTICAMENTE
+    // NO VALIDA CAMPOS
+    // NO REDIRECCIONA
+    // =========================================================
+
+    async function autoguardarPlanificacion() {
+
+       
+
+        // Evitar dos autoguardados simultáneos
+        if (autoGuardando) {
+            autoGuardadoPendiente = true;
+            return;
+        }
+
+        // Si no hay cambios, no hacemos nada
+        if (!cambiosPendientes) {
+            return;
+        }
+
+        autoGuardando = true;
+        autoGuardadoPendiente = false;
+
+        const formData =
+            new FormData(form);
+
+        let url = '/planificaciones';
+
+        /*
+        =========================================================
+        NUEVA PLANIFICACIÓN
+        O USANDO PLANTILLA
+    
+        Siempre hacemos POST para crear una nueva.
+        =========================================================
+        */
+
+        if (
+            !window.planificacionId ||
+            usandoPlantilla
+        ) {
+
+            // Nunca convertir el autoguardado en plantilla
+            formData.set(
+                'es_plantilla',
+                '0'
+            );
+
+            url = '/planificaciones';
+        }
+
+        /*
+        =========================================================
+        EDITANDO PLANIFICACIÓN EXISTENTE
+    
+        Hacemos PUT usando el ID actual.
+        =========================================================
+        */
+
+        else {
+
+            url =
+                `/planificaciones/${window.planificacionId}`;
+
+            formData.append(
+                '_method',
+                'PUT'
+            );
+        }
+
+        try {
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+                            'Accept':
+                                'application/json'
+                        }
+                    }
+                );
+
+            if (!response.ok) {
+
+                const texto =
+                    await response.text();
+
+                console.error(
+                    'Respuesta del servidor:',
+                    texto
+                );
+
+                throw new Error(
+                    'Error al autoguardar.'
+                );
+            }
+
+            const data =
+                await response.json();
+
+           
+
+            if (!data.success) {
+
+                throw new Error(
+                    data.message ||
+                    'No se pudo autoguardar.'
+                );
+            }
+
+            /*
+            =====================================================
+            SI SE CREÓ UNA NUEVA PLANIFICACIÓN
+            GUARDAMOS EL ID
+            =====================================================
+            */
+
+            if (
+                !window.planificacionId ||
+                usandoPlantilla
+            ) {
+
+                window.planificacionId =
+                    data.planificacion_id;
+
+                planificacionCreadaPorAutoguardado =
+                    true;
+
+                // MUY IMPORTANTE
+                // Desde ahora ya no estamos usando
+                // la plantilla original.
+                usandoPlantilla = false;
+
+              
+            }
+
+            /*
+            =====================================================
+            EL GUARDADO TERMINÓ CORRECTAMENTE
+            =====================================================
+            */
+
+            cambiosPendientes = false;
+
+          
+
+        } catch (error) {
+
+            console.error(
+                'Error en autoguardado:',
+                error
+            );
+
+        } finally {
+
+            autoGuardando = false;
+
+            /*
+            Si mientras guardábamos hubo otro cambio,
+            volvemos a guardar.
+            */
+
+            if (autoGuardadoPendiente) {
+
+                autoGuardadoPendiente = false;
+
+                setTimeout(
+                    function () {
+                        autoguardarPlanificacion();
+                    },
+                    500
+                );
+            }
+        }
+    }
 
 
     /* =========================================================
@@ -688,6 +885,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
 
                 actualizarEstado();
+                marcarCambiosPendientes();
             }
         );
 
@@ -983,6 +1181,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
                 actualizarEstado();
+                marcarCambiosPendientes();
             }
         );
     }
@@ -1045,6 +1244,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
                 actualizarEstado();
+                marcarCambiosPendientes();
             }
         );
     }
@@ -1453,7 +1653,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             editando
                 ? `/planificaciones/${window.planificacionId}`
                 : saveButton.formAction ||
-                  '/planificaciones';
+                '/planificaciones';
 
 
         if (editando) {
@@ -1717,23 +1917,51 @@ document.addEventListener('DOMContentLoaded', async function () {
     /* =========================================================
        ACTUALIZAR AL ESCRIBIR
     ========================================================== */
+  form.addEventListener(
+    'input',
+    function (event) {
 
-    form.querySelectorAll(
-        'input, textarea, select'
-    ).forEach(
-        function (campo) {
+       
 
-            campo.addEventListener(
-                'input',
-                actualizarEstado
-            );
+        const campo = event.target;
 
-            campo.addEventListener(
-                'change',
-                actualizarEstado
-            );
+        if (
+            campo.matches(
+                'input, textarea, select'
+            )
+        ) {
+
+           
+
+            actualizarEstado();
+
+            marcarCambiosPendientes();
         }
-    );
+    }
+);
+
+  form.addEventListener(
+    'change',
+    function (event) {
+
+       
+
+        const campo = event.target;
+
+        if (
+            campo.matches(
+                'input, textarea, select'
+            )
+        ) {
+
+         
+
+            actualizarEstado();
+
+            marcarCambiosPendientes();
+        }
+    }
+);
 
 
     /* =========================================================
@@ -1877,17 +2105,11 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         if (usandoPlantilla) {
 
-            console.log(
-                'Usando plantilla:',
-                window.planificacionId
-            );
+           
 
         } else {
 
-            console.log(
-                'Editando planificación o plantilla:',
-                window.planificacionId
-            );
+           
         }
 
 
@@ -1974,9 +2196,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
 
 
-                console.log(
-                    'Modo: EDITANDO PLANTILLA'
-                );
+             
             }
 
 
@@ -2008,9 +2228,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
 
 
-                console.log(
-                    'Modo: EDITANDO PLANIFICACIÓN'
-                );
+              
             }
 
 
@@ -2043,9 +2261,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
 
 
-                console.log(
-                    'Modo: USANDO PLANTILLA'
-                );
+               
             }
 
 
@@ -2282,14 +2498,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             actualizarEstado();
 
 
-            console.log(
-                usandoPlantilla
-                    ? 'Plantilla cargada correctamente. Se creará una nueva planificación.'
-                    : editandoPlantillaExistente
-                        ? 'Plantilla cargada correctamente para edición.'
-                        : 'Planificación cargada correctamente.',
-                planificacion
-            );
 
 
         } catch (error) {
@@ -2315,5 +2523,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     actualizarEstado();
 
-});
+    // =========================================================
+    // AUTOGUARDADO CADA 30 SEGUNDOS
+    // =========================================================
 
+    setInterval(
+        function () {
+
+            autoguardarPlanificacion();
+
+        },
+        15000
+    );
+});

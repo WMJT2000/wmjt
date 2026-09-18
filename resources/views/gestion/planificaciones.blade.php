@@ -23,6 +23,8 @@
             Administrar planificaciones
         </p>
 
+        <a href="{{ route('gestion.index') }}" class="btn-primary" > ← Salir </a>
+
     </div>
 
 

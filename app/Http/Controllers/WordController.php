@@ -15,10 +15,10 @@ use DOMElement;
 class WordController extends Controller
 {
     private const WORD_NS =
-        'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
     private const XML_NS =
-        'http://www.w3.org/XML/1998/namespace';
+    'http://www.w3.org/XML/1998/namespace';
 
     public function crear()
     {
@@ -90,7 +90,7 @@ class WordController extends Controller
             */
 
             'tamano_letra_actividades' =>
-                'nullable|integer|min:8|max:20',
+            'nullable|integer|min:6|max:20',
 
             /*
             |--------------------------------------------------------------------------
@@ -99,40 +99,40 @@ class WordController extends Controller
             */
 
             'part1' =>
-                'nullable|array|max:10',
+            'nullable|array|max:10',
 
             'part2' =>
-                'nullable|array|max:10',
+            'nullable|array|max:10',
 
             'part1.*.ambito' =>
-                'nullable|string',
+            'nullable|string',
 
             'part1.*.destreza' =>
-                'nullable|string',
+            'nullable|string',
 
             'part1.*.estrategias_metologicas' =>
-                'nullable|string',
+            'nullable|string',
 
             'part1.*.recursos' =>
-                'nullable|string',
+            'nullable|string',
 
             'part1.*.indicadores_logro' =>
-                'nullable|string',
+            'nullable|string',
 
             'part2.*.ambito' =>
-                'nullable|string',
+            'nullable|string',
 
             'part2.*.destreza' =>
-                'nullable|string',
+            'nullable|string',
 
             'part2.*.estrategias_metologicas' =>
-                'nullable|string',
+            'nullable|string',
 
             'part2.*.recursos' =>
-                'nullable|string',
+            'nullable|string',
 
             'part2.*.indicadores_logro' =>
-                'nullable|string',
+            'nullable|string',
         ]);
 
         $part1 = $request->input(
@@ -434,11 +434,15 @@ class WordController extends Controller
                 )
             );
 
+            $fecha = $request->input('5_fecha');
+
+            $fechaFormateada = \Carbon\Carbon::parse($fecha)
+                ->locale('es')
+                ->translatedFormat('l d \d\e F \d\e Y');
+
             $template->setValue(
                 '5_fecha',
-                $request->input(
-                    '5_fecha'
-                )
+                ucfirst($fechaFormateada)
             );
 
             $template->setValue(
@@ -506,13 +510,19 @@ class WordController extends Controller
             |--------------------------------------------------------------------------
             */
 
+            $nombreDescarga =
+                'planificacion_' .
+                date('Y-m-d_H-i-s') .
+                '_' .
+                uniqid() .
+                '.docx';
+
             return response()
                 ->download(
                     $archivo,
-                    'planificacion_generada.docx'
+                    $nombreDescarga
                 )
                 ->deleteFileAfterSend(true);
-
         } finally {
 
             if (isset($template)) {
@@ -549,1153 +559,1151 @@ class WordController extends Controller
 
             $numberingXml =
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
-'<w:numbering xmlns:w="' .
+                '<w:numbering xmlns:w="' .
                 self::WORD_NS .
                 '"></w:numbering>';
-}
+        }
 
-$dom = new DOMDocument();
+        $dom = new DOMDocument();
 
-$dom->preserveWhiteSpace = true;
-$dom->formatOutput = false;
+        $dom->preserveWhiteSpace = true;
+        $dom->formatOutput = false;
 
-libxml_use_internal_errors(true);
+        libxml_use_internal_errors(true);
 
-$dom->loadXML(
-$numberingXml
-);
+        $dom->loadXML(
+            $numberingXml
+        );
 
-libxml_clear_errors();
+        libxml_clear_errors();
 
-$xpath = new DOMXPath($dom);
+        $xpath = new DOMXPath($dom);
 
-$xpath->registerNamespace(
-'w',
-self::WORD_NS
-);
+        $xpath->registerNamespace(
+            'w',
+            self::WORD_NS
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | IDS EXISTENTES
 |--------------------------------------------------------------------------
 */
 
-$maxAbstractNumId = 0;
-$maxNumId = 0;
+        $maxAbstractNumId = 0;
+        $maxNumId = 0;
 
-$abstractNums = $xpath->query(
-'//w:abstractNum'
-);
+        $abstractNums = $xpath->query(
+            '//w:abstractNum'
+        );
 
-foreach ($abstractNums as $abstractNum) {
+        foreach ($abstractNums as $abstractNum) {
 
-$id = $abstractNum->getAttributeNS(
-self::WORD_NS,
-'abstractNumId'
-);
+            $id = $abstractNum->getAttributeNS(
+                self::WORD_NS,
+                'abstractNumId'
+            );
 
-if (is_numeric($id)) {
+            if (is_numeric($id)) {
 
-$maxAbstractNumId = max(
-$maxAbstractNumId,
-(int) $id
-);
-}
-}
+                $maxAbstractNumId = max(
+                    $maxAbstractNumId,
+                    (int) $id
+                );
+            }
+        }
 
-$nums = $xpath->query(
-'//w:num'
-);
+        $nums = $xpath->query(
+            '//w:num'
+        );
 
-foreach ($nums as $num) {
+        foreach ($nums as $num) {
 
-$id = $num->getAttributeNS(
-self::WORD_NS,
-'numId'
-);
+            $id = $num->getAttributeNS(
+                self::WORD_NS,
+                'numId'
+            );
 
-if (is_numeric($id)) {
+            if (is_numeric($id)) {
 
-$maxNumId = max(
-$maxNumId,
-(int) $id
-);
-}
-}
+                $maxNumId = max(
+                    $maxNumId,
+                    (int) $id
+                );
+            }
+        }
 
-$abstractNumId =
-$maxAbstractNumId + 1;
+        $abstractNumId =
+            $maxAbstractNumId + 1;
 
-$numId =
-$maxNumId + 1;
+        $numId =
+            $maxNumId + 1;
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | ABSTRACT NUM
 |--------------------------------------------------------------------------
 */
 
-$abstractNum =
-$dom->createElementNS(
-self::WORD_NS,
-'w:abstractNum'
-);
+        $abstractNum =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:abstractNum'
+            );
 
-$abstractNum->setAttributeNS(
-self::WORD_NS,
-'w:abstractNumId',
-(string) $abstractNumId
-);
+        $abstractNum->setAttributeNS(
+            self::WORD_NS,
+            'w:abstractNumId',
+            (string) $abstractNumId
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | NSID
 |--------------------------------------------------------------------------
 */
 
-$nsid =
-$dom->createElementNS(
-self::WORD_NS,
-'w:nsid'
-);
+        $nsid =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:nsid'
+            );
 
-$nsid->setAttributeNS(
-self::WORD_NS,
-'w:val',
-strtoupper(
-substr(
-md5(
-uniqid('', true)
-),
-0,
-8
-)
-)
-);
+        $nsid->setAttributeNS(
+            self::WORD_NS,
+            'w:val',
+            strtoupper(
+                substr(
+                    md5(
+                        uniqid('', true)
+                    ),
+                    0,
+                    8
+                )
+            )
+        );
 
-$abstractNum->appendChild(
-$nsid
-);
+        $abstractNum->appendChild(
+            $nsid
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | MULTILEVEL TYPE
 |--------------------------------------------------------------------------
 */
 
-$multiLevelType =
-$dom->createElementNS(
-self::WORD_NS,
-'w:multiLevelType'
-);
+        $multiLevelType =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:multiLevelType'
+            );
 
-$multiLevelType->setAttributeNS(
-self::WORD_NS,
-'w:val',
-'hybridMultilevel'
-);
+        $multiLevelType->setAttributeNS(
+            self::WORD_NS,
+            'w:val',
+            'hybridMultilevel'
+        );
 
-$abstractNum->appendChild(
-$multiLevelType
-);
+        $abstractNum->appendChild(
+            $multiLevelType
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | NIVEL 0
 |--------------------------------------------------------------------------
 */
 
-$lvl =
-$dom->createElementNS(
-self::WORD_NS,
-'w:lvl'
-);
+        $lvl =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:lvl'
+            );
 
-$lvl->setAttributeNS(
-self::WORD_NS,
-'w:ilvl',
-'0'
-);
+        $lvl->setAttributeNS(
+            self::WORD_NS,
+            'w:ilvl',
+            '0'
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | START
 |--------------------------------------------------------------------------
 */
 
-$start =
-$dom->createElementNS(
-self::WORD_NS,
-'w:start'
-);
+        $start =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:start'
+            );
 
-$start->setAttributeNS(
-self::WORD_NS,
-'w:val',
-'1'
-);
+        $start->setAttributeNS(
+            self::WORD_NS,
+            'w:val',
+            '1'
+        );
 
-$lvl->appendChild(
-$start
-);
+        $lvl->appendChild(
+            $start
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | NUM FORMAT BULLET
 |--------------------------------------------------------------------------
 */
 
-$numFmt =
-$dom->createElementNS(
-self::WORD_NS,
-'w:numFmt'
-);
+        $numFmt =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:numFmt'
+            );
 
-$numFmt->setAttributeNS(
-self::WORD_NS,
-'w:val',
-'bullet'
-);
+        $numFmt->setAttributeNS(
+            self::WORD_NS,
+            'w:val',
+            'bullet'
+        );
 
-$lvl->appendChild(
-$numFmt
-);
+        $lvl->appendChild(
+            $numFmt
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | VIÑETA
 |--------------------------------------------------------------------------
 */
 
-$lvlText =
-$dom->createElementNS(
-self::WORD_NS,
-'w:lvlText'
-);
+        $lvlText =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:lvlText'
+            );
 
-$lvlText->setAttributeNS(
-self::WORD_NS,
-'w:val',
-'•'
-);
+        $lvlText->setAttributeNS(
+            self::WORD_NS,
+            'w:val',
+            '•'
+        );
 
-$lvl->appendChild(
-$lvlText
-);
+        $lvl->appendChild(
+            $lvlText
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | JUSTIFICACIÓN
 |--------------------------------------------------------------------------
 */
 
-$lvlJc =
-$dom->createElementNS(
-self::WORD_NS,
-'w:lvlJc'
-);
+        $lvlJc =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:lvlJc'
+            );
 
-$lvlJc->setAttributeNS(
-self::WORD_NS,
-'w:val',
-'left'
-);
+        $lvlJc->setAttributeNS(
+            self::WORD_NS,
+            'w:val',
+            'left'
+        );
 
-$lvl->appendChild(
-$lvlJc
-);
+        $lvl->appendChild(
+            $lvlJc
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | PROPIEDADES DE LA VIÑETA
 |--------------------------------------------------------------------------
 */
 
-$rPr =
-$dom->createElementNS(
-self::WORD_NS,
-'w:rPr'
-);
+        $rPr =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:rPr'
+            );
 
-$rFonts =
-$dom->createElementNS(
-self::WORD_NS,
-'w:rFonts'
-);
+        $rFonts =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:rFonts'
+            );
 
-$rFonts->setAttributeNS(
-self::WORD_NS,
-'w:ascii',
-'Arial'
-);
+        $rFonts->setAttributeNS(
+            self::WORD_NS,
+            'w:ascii',
+            'Arial'
+        );
 
-$rFonts->setAttributeNS(
-self::WORD_NS,
-'w:hAnsi',
-'Arial'
-);
+        $rFonts->setAttributeNS(
+            self::WORD_NS,
+            'w:hAnsi',
+            'Arial'
+        );
 
-$rFonts->setAttributeNS(
-self::WORD_NS,
-'w:hint',
-'default'
-);
+        $rFonts->setAttributeNS(
+            self::WORD_NS,
+            'w:hint',
+            'default'
+        );
 
-$rPr->appendChild(
-$rFonts
-);
+        $rPr->appendChild(
+            $rFonts
+        );
 
-$lvl->appendChild(
-$rPr
-);
+        $lvl->appendChild(
+            $rPr
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | AGREGAR NIVEL
 |--------------------------------------------------------------------------
 */
 
-$abstractNum->appendChild(
-$lvl
-);
+        $abstractNum->appendChild(
+            $lvl
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | AGREGAR ABSTRACT NUM
 |--------------------------------------------------------------------------
 */
 
-$numbering =
-$dom->documentElement;
+        $numbering =
+            $dom->documentElement;
 
-$numbering->appendChild(
-$abstractNum
-);
+        $numbering->appendChild(
+            $abstractNum
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | NUM
 |--------------------------------------------------------------------------
 */
 
-$num =
-$dom->createElementNS(
-self::WORD_NS,
-'w:num'
-);
+        $num =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:num'
+            );
 
-$num->setAttributeNS(
-self::WORD_NS,
-'w:numId',
-(string) $numId
-);
+        $num->setAttributeNS(
+            self::WORD_NS,
+            'w:numId',
+            (string) $numId
+        );
 
-$abstractNumIdNode =
-$dom->createElementNS(
-self::WORD_NS,
-'w:abstractNumId'
-);
+        $abstractNumIdNode =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:abstractNumId'
+            );
 
-$abstractNumIdNode->setAttributeNS(
-self::WORD_NS,
-'w:val',
-(string) $abstractNumId
-);
+        $abstractNumIdNode->setAttributeNS(
+            self::WORD_NS,
+            'w:val',
+            (string) $abstractNumId
+        );
 
-$num->appendChild(
-$abstractNumIdNode
-);
+        $num->appendChild(
+            $abstractNumIdNode
+        );
 
-$numbering->appendChild(
-$num
-);
+        $numbering->appendChild(
+            $num
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | GUARDAR
 |--------------------------------------------------------------------------
 */
 
-$zip->addFromString(
-'word/numbering.xml',
-$dom->saveXML()
-);
+        $zip->addFromString(
+            'word/numbering.xml',
+            $dom->saveXML()
+        );
 
-return $numId;
-}
+        return $numId;
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | BUSCAR FILA ACTIVIDAD
 |--------------------------------------------------------------------------
 */
 
-private function buscarFilaActividad(
-DOMXPath $xpath
-): ?DOMElement {
+    private function buscarFilaActividad(
+        DOMXPath $xpath
+    ): ?DOMElement {
 
-$filas = $xpath->query(
-'//w:tr'
-);
+        $filas = $xpath->query(
+            '//w:tr'
+        );
 
-foreach ($filas as $fila) {
+        foreach ($filas as $fila) {
 
-$texto = $this->obtenerTexto(
-$xpath,
-$fila
-);
+            $texto = $this->obtenerTexto(
+                $xpath,
+                $fila
+            );
 
-if (
-str_contains($texto, 'ambito') &&
-str_contains($texto, 'destreza')
-) {
-return $fila;
-}
-}
+            if (
+                str_contains($texto, 'ambito') &&
+                str_contains($texto, 'destreza')
+            ) {
+                return $fila;
+            }
+        }
 
-return null;
-}
+        return null;
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | BUSCAR SNACK
 |--------------------------------------------------------------------------
 */
 
-private function buscarFilaSnack(
-DOMXPath $xpath
-): ?DOMElement {
+    private function buscarFilaSnack(
+        DOMXPath $xpath
+    ): ?DOMElement {
 
-$filas = $xpath->query(
-'//w:tr'
-);
+        $filas = $xpath->query(
+            '//w:tr'
+        );
 
-foreach ($filas as $fila) {
+        foreach ($filas as $fila) {
 
-$texto = $this->obtenerTexto(
-$xpath,
-$fila
-);
+            $texto = $this->obtenerTexto(
+                $xpath,
+                $fila
+            );
 
-if (
-stripos($texto, 'Snack') !== false
-) {
-return $fila;
-}
-}
+            if (
+                stripos($texto, 'Snack') !== false
+            ) {
+                return $fila;
+            }
+        }
 
-return null;
-}
+        return null;
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | OBTENER TEXTO
 |--------------------------------------------------------------------------
 */
 
-private function obtenerTexto(
-DOMXPath $xpath,
-DOMElement $elemento
-): string {
+    private function obtenerTexto(
+        DOMXPath $xpath,
+        DOMElement $elemento
+    ): string {
 
-$nodos = $xpath->query(
-'.//w:t',
-$elemento
-);
+        $nodos = $xpath->query(
+            './/w:t',
+            $elemento
+        );
 
-$texto = '';
+        $texto = '';
 
-foreach ($nodos as $nodo) {
-$texto .= $nodo->nodeValue;
-}
+        foreach ($nodos as $nodo) {
+            $texto .= $nodo->nodeValue;
+        }
 
-return $texto;
-}
+        return $texto;
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | CLONAR FILA
 |--------------------------------------------------------------------------
 */
 
-private function clonarFila(
-DOMElement $fila
-): DOMElement {
+    private function clonarFila(
+        DOMElement $fila
+    ): DOMElement {
 
-$clon = $fila->cloneNode(
-true
-);
+        $clon = $fila->cloneNode(
+            true
+        );
 
-if (!$clon instanceof DOMElement) {
+        if (!$clon instanceof DOMElement) {
 
-throw new \Exception(
-'No se pudo clonar la fila.'
-);
-}
+            throw new \Exception(
+                'No se pudo clonar la fila.'
+            );
+        }
 
-return $clon;
-}
+        return $clon;
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | RELLENAR ACTIVIDAD
 |--------------------------------------------------------------------------
 */
 
-private function rellenarActividad(
-DOMDocument $dom,
-DOMXPath $xpath,
-DOMElement $fila,
-array $actividad,
-int $numIdLista,
-int $tamanoLetraActividades
-): void {
+    private function rellenarActividad(
+        DOMDocument $dom,
+        DOMXPath $xpath,
+        DOMElement $fila,
+        array $actividad,
+        int $numIdLista,
+        int $tamanoLetraActividades
+    ): void {
 
-$datos = [
-'${ambito}' =>
-$actividad['ambito'] ?? '',
+        $datos = [
+            '${ambito}' =>
+            $actividad['ambito'] ?? '',
 
-'${destreza}' =>
-$actividad['destreza'] ?? '',
+            '${destreza}' =>
+            $actividad['destreza'] ?? '',
 
-'${estrategias_metologicas}' =>
-$actividad['estrategias_metologicas'] ?? '',
+            '${estrategias_metologicas}' =>
+            $actividad['estrategias_metologicas'] ?? '',
 
-'${recursos}' =>
-$actividad['recursos'] ?? '',
+            '${recursos}' =>
+            $actividad['recursos'] ?? '',
 
-'${indicadores_logro}' =>
-$actividad['indicadores_logro'] ?? '',
-];
+            '${indicadores_logro}' =>
+            $actividad['indicadores_logro'] ?? '',
+        ];
 
-foreach ($datos as $placeholder => $valor) {
+        foreach ($datos as $placeholder => $valor) {
 
-$this->reemplazarPlaceholder(
-$dom,
-$xpath,
-$fila,
-$placeholder,
-$valor,
-$numIdLista,
-$tamanoLetraActividades
-);
-}
-}
+            $this->reemplazarPlaceholder(
+                $dom,
+                $xpath,
+                $fila,
+                $placeholder,
+                $valor,
+                $numIdLista,
+                $tamanoLetraActividades
+            );
+        }
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | RELLENAR SNACK
 |--------------------------------------------------------------------------
 */
 
-private function rellenarSnack(
-DOMDocument $dom,
-DOMXPath $xpath,
-DOMElement $fila,
-?int $tamanoLetraActividades = null
-): void {
+    private function rellenarSnack(
+        DOMDocument $dom,
+        DOMXPath $xpath,
+        DOMElement $fila,
+        ?int $tamanoLetraActividades = null
+    ): void {
 
-$this->reemplazarPlaceholder(
-$dom,
-$xpath,
-$fila,
-'${ambito}',
-'(10:00 a 10:55)',
-null,
-$tamanoLetraActividades
-);
+        $this->reemplazarPlaceholder(
+            $dom,
+            $xpath,
+            $fila,
+            '${ambito}',
+            '(10:00 a 10:55)',
+            null,
+            $tamanoLetraActividades
+        );
 
-$this->reemplazarPlaceholder(
-$dom,
-$xpath,
-$fila,
-'${destreza}',
-'',
-null,
-$tamanoLetraActividades
-);
+        $this->reemplazarPlaceholder(
+            $dom,
+            $xpath,
+            $fila,
+            '${destreza}',
+            '',
+            null,
+            $tamanoLetraActividades
+        );
 
-$this->reemplazarPlaceholder(
-$dom,
-$xpath,
-$fila,
-'${estrategias_metologicas}',
-'*Snack – momento de recreación*',
-null,
-$tamanoLetraActividades
-);
+        $this->reemplazarPlaceholder(
+            $dom,
+            $xpath,
+            $fila,
+            '${estrategias_metologicas}',
+            '*Snack – momento de recreación*',
+            null,
+            $tamanoLetraActividades
+        );
 
-$this->reemplazarPlaceholder(
-$dom,
-$xpath,
-$fila,
-'${recursos}',
-'',
-null,
-$tamanoLetraActividades
-);
+        $this->reemplazarPlaceholder(
+            $dom,
+            $xpath,
+            $fila,
+            '${recursos}',
+            '',
+            null,
+            $tamanoLetraActividades
+        );
 
-$this->reemplazarPlaceholder(
-$dom,
-$xpath,
-$fila,
-'${indicadores_logro}',
-'',
-null,
-$tamanoLetraActividades
-);
+        $this->reemplazarPlaceholder(
+            $dom,
+            $xpath,
+            $fila,
+            '${indicadores_logro}',
+            '',
+            null,
+            $tamanoLetraActividades
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | VERDE DEL SNACK
 |--------------------------------------------------------------------------
 */
 
-$celdas = $xpath->query(
-'./w:tc',
-$fila
-);
+        $celdas = $xpath->query(
+            './w:tc',
+            $fila
+        );
 
-foreach ($celdas as $celda) {
+        foreach ($celdas as $celda) {
 
-$tcPr = $xpath->query(
-'./w:tcPr',
-$celda
-)->item(0);
+            $tcPr = $xpath->query(
+                './w:tcPr',
+                $celda
+            )->item(0);
 
-if (!$tcPr) {
+            if (!$tcPr) {
 
-$tcPr = $dom->createElementNS(
-self::WORD_NS,
-'w:tcPr'
-);
+                $tcPr = $dom->createElementNS(
+                    self::WORD_NS,
+                    'w:tcPr'
+                );
 
-$celda->insertBefore(
-$tcPr,
-$celda->firstChild
-);
-}
+                $celda->insertBefore(
+                    $tcPr,
+                    $celda->firstChild
+                );
+            }
 
-$shd = $xpath->query(
-'./w:shd',
-$tcPr
-)->item(0);
+            $shd = $xpath->query(
+                './w:shd',
+                $tcPr
+            )->item(0);
 
-if (!$shd) {
+            if (!$shd) {
 
-$shd = $dom->createElementNS(
-self::WORD_NS,
-'w:shd'
-);
+                $shd = $dom->createElementNS(
+                    self::WORD_NS,
+                    'w:shd'
+                );
 
-$tcPr->appendChild(
-$shd
-);
-}
+                $tcPr->appendChild(
+                    $shd
+                );
+            }
 
-$shd->setAttributeNS(
-self::WORD_NS,
-'w:fill',
-'8DD873'
-);
+            $shd->setAttributeNS(
+                self::WORD_NS,
+                'w:fill',
+                '8DD873'
+            );
 
-$shd->setAttributeNS(
-self::WORD_NS,
-'w:val',
-'clear'
-);
-}
+            $shd->setAttributeNS(
+                self::WORD_NS,
+                'w:val',
+                'clear'
+            );
+        }
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | ALTURA AUTOMÁTICA DEL SNACK
 |--------------------------------------------------------------------------
 */
 
-$trPr = $xpath->query(
-'./w:trPr',
-$fila
-)->item(0);
+        $trPr = $xpath->query(
+            './w:trPr',
+            $fila
+        )->item(0);
 
-if ($trPr) {
+        if ($trPr) {
 
-$alturas = $xpath->query(
-'./w:trHeight',
-$trPr
-);
+            $alturas = $xpath->query(
+                './w:trHeight',
+                $trPr
+            );
 
-foreach ($alturas as $altura) {
+            foreach ($alturas as $altura) {
 
-$trPr->removeChild(
-$altura
-);
-}
-}
-}
+                $trPr->removeChild(
+                    $altura
+                );
+            }
+        }
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | REEMPLAZAR PLACEHOLDER
 |--------------------------------------------------------------------------
 */
 
-private function reemplazarPlaceholder(
-DOMDocument $dom,
-DOMXPath $xpath,
-DOMElement $fila,
-string $placeholder,
-string $valor,
-?int $numIdLista = null,
-?int $tamanoLetraActividades = null
-): void {
+    private function reemplazarPlaceholder(
+        DOMDocument $dom,
+        DOMXPath $xpath,
+        DOMElement $fila,
+        string $placeholder,
+        string $valor,
+        ?int $numIdLista = null,
+        ?int $tamanoLetraActividades = null
+    ): void {
 
-$celdas = $xpath->query(
-'./w:tc',
-$fila
-);
+        $celdas = $xpath->query(
+            './w:tc',
+            $fila
+        );
 
-foreach ($celdas as $celda) {
+        foreach ($celdas as $celda) {
 
-$texto = $this->obtenerTexto(
-$xpath,
-$celda
-);
+            $texto = $this->obtenerTexto(
+                $xpath,
+                $celda
+            );
 
-if (
-str_contains(
-$texto,
-$placeholder
-)
-) {
+            if (
+                str_contains(
+                    $texto,
+                    $placeholder
+                )
+            ) {
 
-$this->ponerTexto(
-$dom,
-$xpath,
-$celda,
-$valor,
-$numIdLista,
-$tamanoLetraActividades
-);
+                $this->ponerTexto(
+                    $dom,
+                    $xpath,
+                    $celda,
+                    $valor,
+                    $numIdLista,
+                    $tamanoLetraActividades
+                );
 
-return;
-}
-}
-}
+                return;
+            }
+        }
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | PONER TEXTO EN CELDA
 |--------------------------------------------------------------------------
 */
 
-private function ponerTexto(
-DOMDocument $dom,
-DOMXPath $xpath,
-DOMElement $celda,
-string $valor,
-?int $numIdLista = null,
-?int $tamanoLetraActividades = null
-): void {
+    private function ponerTexto(
+        DOMDocument $dom,
+        DOMXPath $xpath,
+        DOMElement $celda,
+        string $valor,
+        ?int $numIdLista = null,
+        ?int $tamanoLetraActividades = null
+    ): void {
 
-$textos = $xpath->query(
-'.//w:t',
-$celda
-);
+        $textos = $xpath->query(
+            './/w:t',
+            $celda
+        );
 
-if ($textos->length === 0) {
-return;
-}
+        if ($textos->length === 0) {
+            return;
+        }
 
-$primerTexto =
-$textos->item(0);
+        $primerTexto =
+            $textos->item(0);
 
-$runOriginal =
-$primerTexto->parentNode;
+        $runOriginal =
+            $primerTexto->parentNode;
 
-if (
-!$runOriginal instanceof DOMElement
-) {
-return;
-}
+        if (
+            !$runOriginal instanceof DOMElement
+        ) {
+            return;
+        }
 
-$parrafo =
-$runOriginal->parentNode;
+        $parrafo =
+            $runOriginal->parentNode;
 
-if (
-!$parrafo instanceof DOMElement
-) {
-return;
-}
+        if (
+            !$parrafo instanceof DOMElement
+        ) {
+            return;
+        }
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | LIMPIAR CONTENIDO
 |--------------------------------------------------------------------------
 */
 
-$hijos = [];
+        $hijos = [];
 
-foreach (
-$parrafo->childNodes as $hijo
-) {
-$hijos[] = $hijo;
-}
+        foreach (
+            $parrafo->childNodes as $hijo
+        ) {
+            $hijos[] = $hijo;
+        }
 
-foreach ($hijos as $hijo) {
+        foreach ($hijos as $hijo) {
 
-if (
-$hijo instanceof DOMElement &&
-$hijo->localName === 'pPr'
-) {
-continue;
-}
+            if (
+                $hijo instanceof DOMElement &&
+                $hijo->localName === 'pPr'
+            ) {
+                continue;
+            }
 
-$parrafo->removeChild(
-$hijo
-);
-}
+            $parrafo->removeChild(
+                $hijo
+            );
+        }
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | CREAR CONTENIDO
 |--------------------------------------------------------------------------
 */
 
-$this->crearContenidoFormateado(
-$dom,
-$parrafo,
-$valor,
-$numIdLista,
-$tamanoLetraActividades
-);
-}
+        $this->crearContenidoFormateado(
+            $dom,
+            $parrafo,
+            $valor,
+            $numIdLista,
+            $tamanoLetraActividades
+        );
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | CREAR CONTENIDO FORMATEADO
 |--------------------------------------------------------------------------
 */
 
-private function crearContenidoFormateado(
-DOMDocument $dom,
-DOMElement $parrafo,
-string $valor,
-?int $numIdLista = null,
-?int $tamanoLetraActividades = null
-): void {
+    private function crearContenidoFormateado(
+        DOMDocument $dom,
+        DOMElement $parrafo,
+        string $valor,
+        ?int $numIdLista = null,
+        ?int $tamanoLetraActividades = null
+    ): void {
 
-$valor = str_replace(
-[
-"\r\n",
-"\n",
-"\r",
-"/n"
-],
-"\n",
-$valor
-);
+        $valor = str_replace(
+            [
+                "\r\n",
+                "\n",
+                "\r",
+                "/n"
+            ],
+            "\n",
+            $valor
+        );
 
-$lineas = preg_split(
-"/\r\n|\r|\n/",
-$valor
-);
+        $lineas = preg_split(
+            "/\r\n|\r|\n/",
+            $valor
+        );
 
-$tieneLista = false;
+        $tieneLista = false;
 
-foreach ($lineas as $linea) {
+        foreach ($lineas as $linea) {
 
-if (
-preg_match(
-'/^\s*\+/',
-$linea
-)
-) {
+            if (
+                preg_match(
+                    '/^\s*\+/',
+                    $linea
+                )
+            ) {
 
-$tieneLista = true;
+                $tieneLista = true;
 
-break;
-}
-}
+                break;
+            }
+        }
 
-if (!$tieneLista) {
+        if (!$tieneLista) {
 
-$this->crearRunsConFormato(
-$dom,
-$parrafo,
-$valor,
-$numIdLista,
-$tamanoLetraActividades
-);
+            $this->crearRunsConFormato(
+                $dom,
+                $parrafo,
+                $valor,
+                $numIdLista,
+                $tamanoLetraActividades
+            );
 
-return;
-}
+            return;
+        }
 
-$primerParrafo = true;
+        $primerParrafo = true;
 
-foreach ($lineas as $linea) {
+        foreach ($lineas as $linea) {
 
-/*
+            /*
 |--------------------------------------------------------------------------
 | ELEMENTO DE LISTA
 |--------------------------------------------------------------------------
 */
 
-if (
-preg_match(
-'/^\s*\+(.*)$/',
-$linea,
-$match
-)
-) {
+            if (
+                preg_match(
+                    '/^\s*\+(.*)$/',
+                    $linea,
+                    $match
+                )
+            ) {
 
-$textoLista =
-ltrim(
-$match[1]
-);
+                $textoLista =
+                    ltrim(
+                        $match[1]
+                    );
 
-if ($primerParrafo) {
+                if ($primerParrafo) {
 
-$this->agregarListaAlParrafo(
-$dom,
-$parrafo,
-$textoLista,
-$numIdLista,
-$tamanoLetraActividades
-);
+                    $this->agregarListaAlParrafo(
+                        $dom,
+                        $parrafo,
+                        $textoLista,
+                        $numIdLista,
+                        $tamanoLetraActividades
+                    );
 
-$primerParrafo = false;
+                    $primerParrafo = false;
+                } else {
 
-} else {
+                    $nuevoParrafo =
+                        $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:p'
+                        );
 
-$nuevoParrafo =
-$dom->createElementNS(
-self::WORD_NS,
-'w:p'
-);
+                    $parrafo->parentNode->insertBefore(
+                        $nuevoParrafo,
+                        $parrafo->nextSibling
+                    );
 
-$parrafo->parentNode->insertBefore(
-$nuevoParrafo,
-$parrafo->nextSibling
-);
+                    $this->agregarListaAlParrafo(
+                        $dom,
+                        $nuevoParrafo,
+                        $textoLista,
+                        $numIdLista,
+                        $tamanoLetraActividades
+                    );
 
-$this->agregarListaAlParrafo(
-$dom,
-$nuevoParrafo,
-$textoLista,
-$numIdLista,
-$tamanoLetraActividades
-);
+                    $parrafo =
+                        $nuevoParrafo;
+                }
 
-$parrafo =
-$nuevoParrafo;
-}
+                continue;
+            }
 
-continue;
-}
-
-/*
+            /*
 |--------------------------------------------------------------------------
 | LÍNEA NORMAL
 |--------------------------------------------------------------------------
 */
 
-if ($linea !== '') {
+            if ($linea !== '') {
 
-if ($primerParrafo) {
+                if ($primerParrafo) {
 
-$this->crearRunsConFormato(
-$dom,
-$parrafo,
-$linea,
-$numIdLista,
-$tamanoLetraActividades
-);
+                    $this->crearRunsConFormato(
+                        $dom,
+                        $parrafo,
+                        $linea,
+                        $numIdLista,
+                        $tamanoLetraActividades
+                    );
 
-$primerParrafo = false;
+                    $primerParrafo = false;
+                } else {
 
-} else {
+                    $nuevoParrafo =
+                        $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:p'
+                        );
 
-$nuevoParrafo =
-$dom->createElementNS(
-self::WORD_NS,
-'w:p'
-);
+                    $parrafo->parentNode->insertBefore(
+                        $nuevoParrafo,
+                        $parrafo->nextSibling
+                    );
 
-$parrafo->parentNode->insertBefore(
-$nuevoParrafo,
-$parrafo->nextSibling
-);
+                    $this->crearRunsConFormato(
+                        $dom,
+                        $nuevoParrafo,
+                        $linea,
+                        $numIdLista,
+                        $tamanoLetraActividades
+                    );
 
-$this->crearRunsConFormato(
-$dom,
-$nuevoParrafo,
-$linea,
-$numIdLista,
-$tamanoLetraActividades
-);
+                    $parrafo =
+                        $nuevoParrafo;
+                }
+            }
+        }
+    }
 
-$parrafo =
-$nuevoParrafo;
-}
-}
-}
-}
-
-/*
+    /*
 |--------------------------------------------------------------------------
 | AGREGAR LISTA
 |--------------------------------------------------------------------------
 */
 
-private function agregarListaAlParrafo(
-DOMDocument $dom,
-DOMElement $parrafo,
-string $texto,
-?int $numIdLista,
-?int $tamanoLetraActividades = null
-): void {
+    private function agregarListaAlParrafo(
+        DOMDocument $dom,
+        DOMElement $parrafo,
+        string $texto,
+        ?int $numIdLista,
+        ?int $tamanoLetraActividades = null
+    ): void {
 
-if ($numIdLista === null) {
+        if ($numIdLista === null) {
 
-$this->crearRunsConFormato(
-$dom,
-$parrafo,
-$texto,
-null,
-$tamanoLetraActividades
-);
+            $this->crearRunsConFormato(
+                $dom,
+                $parrafo,
+                $texto,
+                null,
+                $tamanoLetraActividades
+            );
 
-return;
-}
+            return;
+        }
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | PROPIEDADES DEL PÁRRAFO
 |--------------------------------------------------------------------------
 */
 
-$pPr =
-$dom->createElementNS(
-self::WORD_NS,
-'w:pPr'
-);
+        $pPr =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:pPr'
+            );
 
-$numPr =
-$dom->createElementNS(
-self::WORD_NS,
-'w:numPr'
-);
+        $numPr =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:numPr'
+            );
 
-$ilvl =
-$dom->createElementNS(
-self::WORD_NS,
-'w:ilvl'
-);
+        $ilvl =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:ilvl'
+            );
 
-$ilvl->setAttributeNS(
-self::WORD_NS,
-'w:val',
-'0'
-);
+        $ilvl->setAttributeNS(
+            self::WORD_NS,
+            'w:val',
+            '0'
+        );
 
-$numIdNode =
-$dom->createElementNS(
-self::WORD_NS,
-'w:numId'
-);
+        $numIdNode =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:numId'
+            );
 
-$numIdNode->setAttributeNS(
-self::WORD_NS,
-'w:val',
-(string) $numIdLista
-);
+        $numIdNode->setAttributeNS(
+            self::WORD_NS,
+            'w:val',
+            (string) $numIdLista
+        );
 
-$numPr->appendChild(
-$ilvl
-);
+        $numPr->appendChild(
+            $ilvl
+        );
 
-$numPr->appendChild(
-$numIdNode
-);
+        $numPr->appendChild(
+            $numIdNode
+        );
 
-$pPr->appendChild(
-$numPr
-);
+        $pPr->appendChild(
+            $numPr
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | AJUSTAR ESPACIO DE LA VIÑETA
 |--------------------------------------------------------------------------
 */
 
-$ind =
-$dom->createElementNS(
-self::WORD_NS,
-'w:ind'
-);
+        $ind =
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:ind'
+            );
 
-$ind->setAttributeNS(
-self::WORD_NS,
-'w:left',
-'180'
-);
+        $ind->setAttributeNS(
+            self::WORD_NS,
+            'w:left',
+            '180'
+        );
 
-$ind->setAttributeNS(
-self::WORD_NS,
-'w:hanging',
-'180'
-);
+        $ind->setAttributeNS(
+            self::WORD_NS,
+            'w:hanging',
+            '180'
+        );
 
-$pPr->appendChild(
-$ind
-);
+        $pPr->appendChild(
+            $ind
+        );
 
-$parrafo->insertBefore(
-$pPr,
-$parrafo->firstChild
-);
+        $parrafo->insertBefore(
+            $pPr,
+            $parrafo->firstChild
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | TEXTO
 |--------------------------------------------------------------------------
 */
 
-$this->crearRunsConFormato(
-$dom,
-$parrafo,
-$texto,
-$numIdLista,
-$tamanoLetraActividades
-);
-}
+        $this->crearRunsConFormato(
+            $dom,
+            $parrafo,
+            $texto,
+            $numIdLista,
+            $tamanoLetraActividades
+        );
+    }
 
-/*
+    /*
 |--------------------------------------------------------------------------
 | CREAR RUNS CON FORMATO
 |--------------------------------------------------------------------------
 */
 
-private function crearRunsConFormato(
-DOMDocument $dom,
-DOMElement $parrafo,
-string $valor,
-?int $numIdLista = null,
-?int $tamanoLetraActividades = null
-): void {
+    private function crearRunsConFormato(
+        DOMDocument $dom,
+        DOMElement $parrafo,
+        string $valor,
+        ?int $numIdLista = null,
+        ?int $tamanoLetraActividades = null
+    ): void {
 
-$valor = str_replace(
-[
-"\r\n",
-"\n",
-"\r",
-"/n"
-],
-"\n",
-$valor
-);
+        $valor = str_replace(
+            [
+                "\r\n",
+                "\n",
+                "\r",
+                "/n"
+            ],
+            "\n",
+            $valor
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | FORMATO
 |--------------------------------------------------------------------------
@@ -1705,379 +1713,391 @@ $valor
 |
 */
 
-$regex =
-'/(\*\*.*?\*\*|\*.*?\*)/s';
+        $regex =
+            '/(\*\*.*?\*\*|\*.*?\*)/s';
 
-preg_match_all(
-$regex,
-$valor,
-$matches,
-PREG_OFFSET_CAPTURE
-);
+        preg_match_all(
+            $regex,
+            $valor,
+            $matches,
+            PREG_OFFSET_CAPTURE
+        );
 
-/*
+        /*
 |--------------------------------------------------------------------------
 | CREAR RUN
 |--------------------------------------------------------------------------
 */
 
-$crearRun =
-function (
-string $texto,
-bool $negrita = false,
-bool $cursiva = false
-) use (
-$dom,
-$parrafo,
-$tamanoLetraActividades
-) {
+        $crearRun =
+            function (
+                string $texto,
+                bool $negrita = false,
+                bool $cursiva = false
+            ) use (
+                $dom,
+                $parrafo,
+                $tamanoLetraActividades
+            ) {
 
-$run =
-$dom->createElementNS(
-self::WORD_NS,
-'w:r'
-);
+                $run =
+                    $dom->createElementNS(
+                        self::WORD_NS,
+                        'w:r'
+                    );
 
-/*
+                /*
 |--------------------------------------------------------------------------
 | PROPIEDADES
 |--------------------------------------------------------------------------
 */
 
-$rPr =
-$dom->createElementNS(
-self::WORD_NS,
-'w:rPr'
-);
+                $rPr =
+                    $dom->createElementNS(
+                        self::WORD_NS,
+                        'w:rPr'
+                    );
 
-/*
+                /*
 |--------------------------------------------------------------------------
 | TIMES NEW ROMAN
 |--------------------------------------------------------------------------
 */
 
-$rFonts =
-$dom->createElementNS(
-self::WORD_NS,
-'w:rFonts'
-);
+                $rFonts =
+                    $dom->createElementNS(
+                        self::WORD_NS,
+                        'w:rFonts'
+                    );
 
-$rFonts->setAttributeNS(
-self::WORD_NS,
-'w:ascii',
-'Times New Roman'
-);
+                $rFonts->setAttributeNS(
+                    self::WORD_NS,
+                    'w:ascii',
+                    'Times New Roman'
+                );
 
-$rFonts->setAttributeNS(
-self::WORD_NS,
-'w:hAnsi',
-'Times New Roman'
-);
+                $rFonts->setAttributeNS(
+                    self::WORD_NS,
+                    'w:hAnsi',
+                    'Times New Roman'
+                );
 
-$rFonts->setAttributeNS(
-self::WORD_NS,
-'w:eastAsia',
-'Times New Roman'
-);
+                $rFonts->setAttributeNS(
+                    self::WORD_NS,
+                    'w:eastAsia',
+                    'Times New Roman'
+                );
 
-$rFonts->setAttributeNS(
-self::WORD_NS,
-'w:cs',
-'Times New Roman'
-);
+                $rFonts->setAttributeNS(
+                    self::WORD_NS,
+                    'w:cs',
+                    'Times New Roman'
+                );
 
-$rPr->appendChild(
-$rFonts
-);
+                $rPr->appendChild(
+                    $rFonts
+                );
 
-/*
+                /*
 |--------------------------------------------------------------------------
 | TAMAÑO DE LETRA
 |--------------------------------------------------------------------------
 */
 
-if (
-$tamanoLetraActividades !== null
-) {
+                if (
+                    $tamanoLetraActividades !== null
+                ) {
 
-$tamanoWord =
-(string) (
-$tamanoLetraActividades * 2
-);
+                    $tamanoWord =
+                        (string) (
+                            $tamanoLetraActividades * 2
+                        );
 
-$size =
-$dom->createElementNS(
-self::WORD_NS,
-'w:sz'
-);
+                    $size =
+                        $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:sz'
+                        );
 
-$size->setAttributeNS(
-self::WORD_NS,
-'w:val',
-$tamanoWord
-);
+                    $size->setAttributeNS(
+                        self::WORD_NS,
+                        'w:val',
+                        $tamanoWord
+                    );
 
-$rPr->appendChild(
-$size
-);
+                    $rPr->appendChild(
+                        $size
+                    );
 
-$sizeCs =
-$dom->createElementNS(
-self::WORD_NS,
-'w:szCs'
-);
+                    $sizeCs =
+                        $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:szCs'
+                        );
 
-$sizeCs->setAttributeNS(
-self::WORD_NS,
-'w:val',
-$tamanoWord
-);
+                    $sizeCs->setAttributeNS(
+                        self::WORD_NS,
+                        'w:val',
+                        $tamanoWord
+                    );
 
-$rPr->appendChild(
-$sizeCs
-);
-}
+                    $rPr->appendChild(
+                        $sizeCs
+                    );
+                }
 
-/*
+                /*
 |--------------------------------------------------------------------------
 | NEGRITA
 |--------------------------------------------------------------------------
 */
 
-if ($negrita) {
+                if ($negrita) {
 
-$bold =
-$dom->createElementNS(
-self::WORD_NS,
-'w:b'
-);
+                    $bold =
+                        $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:b'
+                        );
 
-$rPr->appendChild(
-$bold
-);
-}
+                    $rPr->appendChild(
+                        $bold
+                    );
+                }
 
-/*
+                /*
 |--------------------------------------------------------------------------
 | CURSIVA
 |--------------------------------------------------------------------------
 */
 
-if ($cursiva) {
+                if ($cursiva) {
 
-$italic =
-$dom->createElementNS(
-self::WORD_NS,
-'w:i'
-);
+                    $italic =
+                        $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:i'
+                        );
 
-$rPr->appendChild(
-$italic
-);
-}
+                    $rPr->appendChild(
+                        $italic
+                    );
+                }
 
-$run->appendChild(
-$rPr
-);
+                $run->appendChild(
+                    $rPr
+                );
 
-/*
+                /*
 |--------------------------------------------------------------------------
 | SALTOS DE LÍNEA
 |--------------------------------------------------------------------------
 */
 
-$lineas =
-preg_split(
-"/\r\n|\r|\n/",
-$texto
-);
+                $lineas =
+                    preg_split(
+                        "/\r\n|\r|\n/",
+                        $texto
+                    );
 
-foreach (
-$lineas as $indice => $linea
-) {
+                foreach (
+                    $lineas as $indice => $linea
+                ) {
 
-if ($linea !== '') {
+                    if ($linea !== '') {
 
-$textoWord =
-$dom->createElementNS(
-self::WORD_NS,
-'w:t'
-);
+                        $textoWord =
+                            $dom->createElementNS(
+                                self::WORD_NS,
+                                'w:t'
+                            );
 
-$textoWord->setAttributeNS(
-self::XML_NS,
-'xml:space',
-'preserve'
-);
+                        $textoWord->setAttributeNS(
+                            self::XML_NS,
+                            'xml:space',
+                            'preserve'
+                        );
 
-$textoWord->appendChild(
-$dom->createTextNode(
-$linea
-)
-);
+                        $textoWord->appendChild(
+                            $dom->createTextNode(
+                                $linea
+                            )
+                        );
 
-$run->appendChild(
-$textoWord
-);
-}
+                        $run->appendChild(
+                            $textoWord
+                        );
+                    }
 
-if (
-$indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
-    self::WORD_NS,
-    'w:br'
-    );
+                    if (
+                        $indice < count($lineas) - 1
+                    ) {
+                        $salto = $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:br'
+                        );
 
-    $run->appendChild(
-    $salto
-    );
-    }
-    }
+                        $run->appendChild(
+                            $salto
+                        );
+                    }
+                }
 
-    $parrafo->appendChild(
-    $run
-    );
-    };
+                $parrafo->appendChild(
+                    $run
+                );
+            };
 
-    /*
+        /*
     |--------------------------------------------------------------------------
     | RECORRER FORMATO
     |--------------------------------------------------------------------------
     */
 
-    $posicionActual = 0;
+        $posicionActual = 0;
 
-    foreach (
-    $matches[0] as $match
-    ) {
+        foreach (
+            $matches[0] as $match
+        ) {
 
-    $parte =
-    $match[0];
+            $parte =
+                $match[0];
 
-    $posicion =
-    $match[1];
+            $posicion =
+                $match[1];
 
-    /*
+            /*
     |--------------------------------------------------------------------------
     | TEXTO NORMAL
     |--------------------------------------------------------------------------
     */
 
-    if (
-    $posicion >
-    $posicionActual
-    ) {
+            if (
+                $posicion >
+                $posicionActual
+            ) {
 
-    $textoNormal =
-    substr(
-    $valor,
-    $posicionActual,
-    $posicion -
-    $posicionActual
-    );
+                $textoNormal =
+                    substr(
+                        $valor,
+                        $posicionActual,
+                        $posicion -
+                            $posicionActual
+                    );
 
-    $crearRun(
-    $textoNormal
-    );
-    }
+                $crearRun(
+                    $textoNormal
+                );
+            }
 
-    /*
+            /*
     |--------------------------------------------------------------------------
     | CURSIVA
     |--------------------------------------------------------------------------
     */
 
-    if (
-    str_starts_with(
-    $parte,
-    '**'
-    ) &&
-    str_ends_with(
-    $parte,
-    '**'
-    )
-    ) {
+            if (
+                str_starts_with(
+                    $parte,
+                    '**'
+                ) &&
+                str_ends_with(
+                    $parte,
+                    '**'
+                )
+            ) {
 
-    $textoCursiva =
-    substr(
-    $parte,
-    2,
-    -2
-    );
+                $textoCursiva =
+                    substr(
+                        $parte,
+                        2,
+                        -2
+                    );
 
-    $crearRun(
-    $textoCursiva,
-    false,
-    true
-    );
+                $crearRun(
+                    $textoCursiva,
+                    false,
+                    true
+                );
 
-    /*
+                /*
     |--------------------------------------------------------------------------
     | NEGRITA
     |--------------------------------------------------------------------------
     */
+            } elseif (
+                str_starts_with(
+                    $parte,
+                    '*'
+                ) &&
+                str_ends_with(
+                    $parte,
+                    '*'
+                )
+            ) {
 
-    } elseif (
-    str_starts_with(
-    $parte,
-    '*'
-    ) &&
-    str_ends_with(
-    $parte,
-    '*'
-    )
-    ) {
+                $textoNegrita =
+                    substr(
+                        $parte,
+                        1,
+                        -1
+                    );
 
-    $textoNegrita =
-    substr(
-    $parte,
-    1,
-    -1
-    );
+                $crearRun(
+                    $textoNegrita,
+                    true,
+                    false
+                );
+            }
 
-    $crearRun(
-    $textoNegrita,
-    true,
-    false
-    );
-    }
+            $posicionActual =
+                $posicion +
+                strlen($parte);
+        }
 
-    $posicionActual =
-    $posicion +
-    strlen($parte);
-    }
-
-    /*
+        /*
     |--------------------------------------------------------------------------
     | TEXTO FINAL
     |--------------------------------------------------------------------------
     */
 
-    if (
-    $posicionActual < strlen($valor) ) { $textoFinal=substr( $valor, $posicionActual ); $crearRun( $textoFinal ); } /*
+        if (
+            $posicionActual < strlen($valor)
+        ) {
+            $textoFinal = substr($valor, $posicionActual);
+            $crearRun($textoFinal);
+        } /*
         |-------------------------------------------------------------------------- | TEXTO VACÍO
-        |-------------------------------------------------------------------------- */ if ($valor==='' ) {
-        $crearRun(''); } } /* |-------------------------------------------------------------------------- | APLICAR
-        FORMATO GLOBAL |-------------------------------------------------------------------------- */ private function
-        aplicarFormatoGlobal( string $archivo, ?int $numIdLista=null ): void { $zip=new ZipArchive(); if ( $zip->
-        open($archivo) !== true
+        |-------------------------------------------------------------------------- */
+        if ($valor === '') {
+            $crearRun('');
+        }
+    } /* |-------------------------------------------------------------------------- | APLICAR
+        FORMATO GLOBAL |-------------------------------------------------------------------------- */
+    private function
+    aplicarFormatoGlobal(string $archivo, ?int $numIdLista = null): void
+    {
+        $zip = new ZipArchive();
+        if (
+            $zip->open($archivo) !== true
         ) {
 
-        throw new \Exception(
-        'No se pudo abrir el archivo generado.'
-        );
+            throw new \Exception(
+                'No se pudo abrir el archivo generado.'
+            );
         }
 
         $xml = $zip->getFromName(
-        'word/document.xml'
+            'word/document.xml'
         );
 
         if ($xml === false) {
 
-        $zip->close();
+            $zip->close();
 
-        throw new \Exception(
-        'No se encontró word/document.xml.'
-        );
+            throw new \Exception(
+                'No se encontró word/document.xml.'
+            );
         }
 
         $dom = new DOMDocument();
@@ -2094,194 +2114,194 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         $xpath = new DOMXPath($dom);
 
         $xpath->registerNamespace(
-        'w',
-        self::WORD_NS
+            'w',
+            self::WORD_NS
         );
 
         $parrafos = $xpath->query(
-        '//w:p'
+            '//w:p'
         );
 
         foreach ($parrafos as $parrafo) {
 
-        $this->procesarMarcadoresDelParrafo(
-        $dom,
-        $xpath,
-        $parrafo,
-        $numIdLista
-        );
+            $this->procesarMarcadoresDelParrafo(
+                $dom,
+                $xpath,
+                $parrafo,
+                $numIdLista
+            );
         }
 
         $zip->addFromString(
-        'word/document.xml',
-        $dom->saveXML()
+            'word/document.xml',
+            $dom->saveXML()
         );
 
         $zip->close();
-        }
+    }
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | PROCESAR MARCADORES
         |--------------------------------------------------------------------------
         */
 
-        private function procesarMarcadoresDelParrafo(
+    private function procesarMarcadoresDelParrafo(
         DOMDocument $dom,
         DOMXPath $xpath,
         DOMElement $parrafo,
         ?int $numIdLista = null
-        ): void {
+    ): void {
 
         $runs = $xpath->query(
-        './w:r',
-        $parrafo
+            './w:r',
+            $parrafo
         );
 
         foreach ($runs as $run) {
 
-        $textos = $xpath->query(
-        './w:t',
-        $run
-        );
+            $textos = $xpath->query(
+                './w:t',
+                $run
+            );
 
-        if ($textos->length === 0) {
-        continue;
-        }
+            if ($textos->length === 0) {
+                continue;
+            }
 
-        $textoCompleto = '';
+            $textoCompleto = '';
 
-        foreach ($textos as $texto) {
+            foreach ($textos as $texto) {
 
-        $textoCompleto .=
-        $texto->nodeValue;
-        }
+                $textoCompleto .=
+                    $texto->nodeValue;
+            }
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | BUSCAR MARCADORES
         |--------------------------------------------------------------------------
         */
 
-        if (
-        !str_contains(
-        $textoCompleto,
-        '*'
-        ) &&
-        !str_contains(
-        $textoCompleto,
-        '+'
-        ) &&
-        !str_contains(
-        $textoCompleto,
-        "\n"
-        ) &&
-        !str_contains(
-        $textoCompleto,
-        '/n'
-        )
-        ) {
-        continue;
-        }
+            if (
+                !str_contains(
+                    $textoCompleto,
+                    '*'
+                ) &&
+                !str_contains(
+                    $textoCompleto,
+                    '+'
+                ) &&
+                !str_contains(
+                    $textoCompleto,
+                    "\n"
+                ) &&
+                !str_contains(
+                    $textoCompleto,
+                    '/n'
+                )
+            ) {
+                continue;
+            }
 
-        $tieneFormato =
-        preg_match(
-        '/(\*\*.*?\*\*|\*.*?\*)/s',
-        $textoCompleto
-        );
+            $tieneFormato =
+                preg_match(
+                    '/(\*\*.*?\*\*|\*.*?\*)/s',
+                    $textoCompleto
+                );
 
-        $tieneLista =
-        preg_match(
-        '/(^|\n)\s*\+/',
-        $textoCompleto
-        );
+            $tieneLista =
+                preg_match(
+                    '/(^|\n)\s*\+/',
+                    $textoCompleto
+                );
 
-        $tieneSalto =
-        str_contains(
-        $textoCompleto,
-        "\n"
-        ) ||
-        str_contains(
-        $textoCompleto,
-        '/n'
-        );
+            $tieneSalto =
+                str_contains(
+                    $textoCompleto,
+                    "\n"
+                ) ||
+                str_contains(
+                    $textoCompleto,
+                    '/n'
+                );
 
-        if (
-        !$tieneFormato &&
-        !$tieneLista &&
-        !$tieneSalto
-        ) {
-        continue;
-        }
+            if (
+                !$tieneFormato &&
+                !$tieneLista &&
+                !$tieneSalto
+            ) {
+                continue;
+            }
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | GUARDAR FORMATO DEL RUN
         |--------------------------------------------------------------------------
         */
 
-        $runReferencia =
-        $run->cloneNode(
-        true
-        );
+            $runReferencia =
+                $run->cloneNode(
+                    true
+                );
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | QUITAR TEXTO ORIGINAL
         |--------------------------------------------------------------------------
         */
 
-        foreach ($textos as $texto) {
+            foreach ($textos as $texto) {
 
-        $run->removeChild(
-        $texto
-        );
-        }
+                $run->removeChild(
+                    $texto
+                );
+            }
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | CREAR NUEVO CONTENIDO
         |--------------------------------------------------------------------------
         */
 
-        $this->agregarRunsFormateadosGlobal(
-        $dom,
-        $parrafo,
-        $runReferencia,
-        $textoCompleto,
-        $numIdLista
-        );
+            $this->agregarRunsFormateadosGlobal(
+                $dom,
+                $parrafo,
+                $runReferencia,
+                $textoCompleto,
+                $numIdLista
+            );
 
-        /*
+            /*
         |--------------------------------------------------------------------------
         | ELIMINAR RUN ORIGINAL
         |--------------------------------------------------------------------------
         */
 
-        if (
-        $run->parentNode === $parrafo
-        ) {
+            if (
+                $run->parentNode === $parrafo
+            ) {
 
-        $parrafo->removeChild(
-        $run
-        );
+                $parrafo->removeChild(
+                    $run
+                );
+            }
         }
-        }
-        }
+    }
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | AGREGAR FORMATO GLOBAL
         |--------------------------------------------------------------------------
         */
 
-        private function agregarRunsFormateadosGlobal(
+    private function agregarRunsFormateadosGlobal(
         DOMDocument $dom,
         DOMElement $parrafo,
         DOMElement $runReferencia,
         string $valor,
         ?int $numIdLista = null
-        ): void {
+    ): void {
 
         /*
         |--------------------------------------------------------------------------
@@ -2290,14 +2310,14 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         */
 
         $valor = str_replace(
-        [
-        "\r\n",
-        "\n",
-        "\r",
-        "/n"
-        ],
-        "\n",
-        $valor
+            [
+                "\r\n",
+                "\n",
+                "\r",
+                "/n"
+            ],
+            "\n",
+            $valor
         );
 
         /*
@@ -2307,130 +2327,127 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         */
 
         if (
-        preg_match(
-        '/(^|\n)\s*\+/',
-        $valor
-        )
+            preg_match(
+                '/(^|\n)\s*\+/',
+                $valor
+            )
         ) {
 
-        $lineas =
-        preg_split(
-        "/\r\n|\r|\n/",
-        $valor
-        );
+            $lineas =
+                preg_split(
+                    "/\r\n|\r|\n/",
+                    $valor
+                );
 
-        $primera = true;
+            $primera = true;
 
-        foreach ($lineas as $linea) {
+            foreach ($lineas as $linea) {
 
-        /*
+                /*
         |--------------------------------------------------------------------------
         | ELEMENTO CON +
         |--------------------------------------------------------------------------
         */
 
-        if (
-        preg_match(
-        '/^\s*\+(.*)$/',
-        $linea,
-        $match
-        )
-        ) {
+                if (
+                    preg_match(
+                        '/^\s*\+(.*)$/',
+                        $linea,
+                        $match
+                    )
+                ) {
 
-        $texto =
-        ltrim(
-        $match[1]
-        );
+                    $texto =
+                        ltrim(
+                            $match[1]
+                        );
 
-        if ($primera) {
+                    if ($primera) {
 
-        $this->convertirParrafoEnLista(
-        $dom,
-        $parrafo,
-        $numIdLista
-        );
+                        $this->convertirParrafoEnLista(
+                            $dom,
+                            $parrafo,
+                            $numIdLista
+                        );
 
-        $this->crearRunsGlobales(
-        $dom,
-        $parrafo,
-        $texto,
-        $runReferencia
-        );
+                        $this->crearRunsGlobales(
+                            $dom,
+                            $parrafo,
+                            $texto,
+                            $runReferencia
+                        );
 
-        $primera = false;
+                        $primera = false;
+                    } else {
 
-        } else {
+                        $nuevoParrafo =
+                            $dom->createElementNS(
+                                self::WORD_NS,
+                                'w:p'
+                            );
 
-        $nuevoParrafo =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:p'
-        );
+                        $parrafo->parentNode->insertBefore(
+                            $nuevoParrafo,
+                            $parrafo->nextSibling
+                        );
 
-        $parrafo->parentNode->insertBefore(
-        $nuevoParrafo,
-        $parrafo->nextSibling
-        );
+                        $this->convertirParrafoEnLista(
+                            $dom,
+                            $nuevoParrafo,
+                            $numIdLista
+                        );
 
-        $this->convertirParrafoEnLista(
-        $dom,
-        $nuevoParrafo,
-        $numIdLista
-        );
+                        $this->crearRunsGlobales(
+                            $dom,
+                            $nuevoParrafo,
+                            $texto,
+                            $runReferencia
+                        );
 
-        $this->crearRunsGlobales(
-        $dom,
-        $nuevoParrafo,
-        $texto,
-        $runReferencia
-        );
+                        $parrafo =
+                            $nuevoParrafo;
+                    }
+                } elseif (
+                    trim($linea) !== ''
+                ) {
 
-        $parrafo =
-        $nuevoParrafo;
-        }
+                    if ($primera) {
 
-        } elseif (
-        trim($linea) !== ''
-        ) {
+                        $this->crearRunsGlobales(
+                            $dom,
+                            $parrafo,
+                            $linea,
+                            $runReferencia
+                        );
 
-        if ($primera) {
+                        $primera = false;
+                    } else {
 
-        $this->crearRunsGlobales(
-        $dom,
-        $parrafo,
-        $linea,
-        $runReferencia
-        );
+                        $nuevoParrafo =
+                            $dom->createElementNS(
+                                self::WORD_NS,
+                                'w:p'
+                            );
 
-        $primera = false;
+                        $parrafo->parentNode->insertBefore(
+                            $nuevoParrafo,
+                            $parrafo->nextSibling
+                        );
 
-        } else {
+                        $this->crearRunsGlobales(
+                            $dom,
+                            $nuevoParrafo,
+                            $linea,
+                            $runReferencia
+                        );
 
-        $nuevoParrafo =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:p'
-        );
+                        $parrafo =
+                            $nuevoParrafo;
+                    }
+                }
+            }
 
-        $parrafo->parentNode->insertBefore(
-        $nuevoParrafo,
-        $parrafo->nextSibling
-        );
-
-        $this->crearRunsGlobales(
-        $dom,
-        $nuevoParrafo,
-        $linea,
-        $runReferencia
-        );
-
-        $parrafo =
-        $nuevoParrafo;
-        }
-        }
-        }
-
-        return;
+            return;
         }
 
         /*
@@ -2440,75 +2457,75 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         */
 
         $this->crearRunsGlobales(
-        $dom,
-        $parrafo,
-        $valor,
-        $runReferencia
+            $dom,
+            $parrafo,
+            $valor,
+            $runReferencia
         );
-        }
+    }
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | CONVERTIR EN LISTA
         |--------------------------------------------------------------------------
         */
 
-        private function convertirParrafoEnLista(
+    private function convertirParrafoEnLista(
         DOMDocument $dom,
         DOMElement $parrafo,
         ?int $numIdLista
-        ): void {
+    ): void {
 
         if ($numIdLista === null) {
-        return;
+            return;
         }
 
         $pPr =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:pPr'
-        );
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:pPr'
+            );
 
         $numPr =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:numPr'
-        );
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:numPr'
+            );
 
         $ilvl =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:ilvl'
-        );
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:ilvl'
+            );
 
         $ilvl->setAttributeNS(
-        self::WORD_NS,
-        'w:val',
-        '0'
+            self::WORD_NS,
+            'w:val',
+            '0'
         );
 
         $numIdNode =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:numId'
-        );
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:numId'
+            );
 
         $numIdNode->setAttributeNS(
-        self::WORD_NS,
-        'w:val',
-        (string) $numIdLista
+            self::WORD_NS,
+            'w:val',
+            (string) $numIdLista
         );
 
         $numPr->appendChild(
-        $ilvl
+            $ilvl
         );
 
         $numPr->appendChild(
-        $numIdNode
+            $numIdNode
         );
 
         $pPr->appendChild(
-        $numPr
+            $numPr
         );
 
         /*
@@ -2518,45 +2535,45 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         */
 
         $ind =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:ind'
+            $dom->createElementNS(
+                self::WORD_NS,
+                'w:ind'
+            );
+
+        $ind->setAttributeNS(
+            self::WORD_NS,
+            'w:left',
+            '180'
         );
 
         $ind->setAttributeNS(
-        self::WORD_NS,
-        'w:left',
-        '180'
-        );
-
-        $ind->setAttributeNS(
-        self::WORD_NS,
-        'w:hanging',
-        '180'
+            self::WORD_NS,
+            'w:hanging',
+            '180'
         );
 
         $pPr->appendChild(
-        $ind
+            $ind
         );
 
         $parrafo->insertBefore(
-        $pPr,
-        $parrafo->firstChild
+            $pPr,
+            $parrafo->firstChild
         );
-        }
+    }
 
-        /*
+    /*
         |--------------------------------------------------------------------------
         | CREAR RUNS GLOBALES
         |--------------------------------------------------------------------------
         */
 
-        private function crearRunsGlobales(
+    private function crearRunsGlobales(
         DOMDocument $dom,
         DOMElement $parrafo,
         string $valor,
         DOMElement $runReferencia
-        ): void {
+    ): void {
 
         /*
         |--------------------------------------------------------------------------
@@ -2565,14 +2582,14 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         */
 
         $valor = str_replace(
-        [
-        "\r\n",
-        "\n",
-        "\r",
-        "/n"
-        ],
-        "\n",
-        $valor
+            [
+                "\r\n",
+                "\n",
+                "\r",
+                "/n"
+            ],
+            "\n",
+            $valor
         );
 
         /*
@@ -2582,13 +2599,13 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         */
 
         $regex =
-        '/(\*\*.*?\*\*|\*.*?\*)/s';
+            '/(\*\*.*?\*\*|\*.*?\*)/s';
 
         preg_match_all(
-        $regex,
-        $valor,
-        $matches,
-        PREG_OFFSET_CAPTURE
+            $regex,
+            $valor,
+            $matches,
+            PREG_OFFSET_CAPTURE
         );
 
         /*
@@ -2598,257 +2615,258 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
         */
 
         $crearRun =
-        function (
-        string $texto,
-        bool $negrita = false,
-        bool $cursiva = false
-        ) use (
-        $dom,
-        $parrafo,
-        $runReferencia
-        ) {
+            function (
+                string $texto,
+                bool $negrita = false,
+                bool $cursiva = false
+            ) use (
+                $dom,
+                $parrafo,
+                $runReferencia
+            ) {
 
-        $run =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:r'
-        );
+                $run =
+                    $dom->createElementNS(
+                        self::WORD_NS,
+                        'w:r'
+                    );
 
-        /*
+                /*
         |--------------------------------------------------------------------------
         | PROPIEDADES ORIGINALES
         |--------------------------------------------------------------------------
         */
 
-        $rPrOriginal = null;
+                $rPrOriginal = null;
 
-        foreach (
-        $runReferencia->childNodes as $hijo
-        ) {
+                foreach (
+                    $runReferencia->childNodes as $hijo
+                ) {
 
-        if (
-        $hijo instanceof DOMElement &&
-        $hijo->localName === 'rPr'
-        ) {
+                    if (
+                        $hijo instanceof DOMElement &&
+                        $hijo->localName === 'rPr'
+                    ) {
 
-        $rPrOriginal =
-        $hijo->cloneNode(
-        true
-        );
+                        $rPrOriginal =
+                            $hijo->cloneNode(
+                                true
+                            );
 
-        break;
-        }
-        }
+                        break;
+                    }
+                }
 
-        if (
-        $rPrOriginal instanceof DOMElement
-        ) {
+                if (
+                    $rPrOriginal instanceof DOMElement
+                ) {
 
-        $run->appendChild(
-        $rPrOriginal
-        );
+                    $run->appendChild(
+                        $rPrOriginal
+                    );
+                } else {
 
-        } else {
+                    $rPr =
+                        $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:rPr'
+                        );
 
-        $rPr =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:rPr'
-        );
+                    $rFonts =
+                        $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:rFonts'
+                        );
 
-        $rFonts =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:rFonts'
-        );
+                    $rFonts->setAttributeNS(
+                        self::WORD_NS,
+                        'w:ascii',
+                        'Times New Roman'
+                    );
 
-        $rFonts->setAttributeNS(
-        self::WORD_NS,
-        'w:ascii',
-        'Times New Roman'
-        );
+                    $rFonts->setAttributeNS(
+                        self::WORD_NS,
+                        'w:hAnsi',
+                        'Times New Roman'
+                    );
 
-        $rFonts->setAttributeNS(
-        self::WORD_NS,
-        'w:hAnsi',
-        'Times New Roman'
-        );
+                    $rFonts->setAttributeNS(
+                        self::WORD_NS,
+                        'w:eastAsia',
+                        'Times New Roman'
+                    );
 
-        $rFonts->setAttributeNS(
-        self::WORD_NS,
-        'w:eastAsia',
-        'Times New Roman'
-        );
+                    $rFonts->setAttributeNS(
+                        self::WORD_NS,
+                        'w:cs',
+                        'Times New Roman'
+                    );
 
-        $rFonts->setAttributeNS(
-        self::WORD_NS,
-        'w:cs',
-        'Times New Roman'
-        );
+                    $rPr->appendChild(
+                        $rFonts
+                    );
 
-        $rPr->appendChild(
-        $rFonts
-        );
+                    $run->appendChild(
+                        $rPr
+                    );
+                }
 
-        $run->appendChild(
-        $rPr
-        );
-        }
-
-        /*
+                /*
         |--------------------------------------------------------------------------
         | NEGRITA
         |--------------------------------------------------------------------------
         */
 
-        if ($negrita) {
+                if ($negrita) {
 
-        $rPr = null;
+                    $rPr = null;
 
-        foreach (
-        $run->childNodes as $hijo
-        ) {
+                    foreach (
+                        $run->childNodes as $hijo
+                    ) {
 
-        if (
-        $hijo instanceof DOMElement &&
-        $hijo->localName === 'rPr'
-        ) {
+                        if (
+                            $hijo instanceof DOMElement &&
+                            $hijo->localName === 'rPr'
+                        ) {
 
-        $rPr = $hijo;
+                            $rPr = $hijo;
 
-        break;
-        }
-        }
+                            break;
+                        }
+                    }
 
-        if ($rPr) {
+                    if ($rPr) {
 
-        $bold =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:b'
-        );
+                        $bold =
+                            $dom->createElementNS(
+                                self::WORD_NS,
+                                'w:b'
+                            );
 
-        $rPr->appendChild(
-        $bold
-        );
-        }
-        }
+                        $rPr->appendChild(
+                            $bold
+                        );
+                    }
+                }
 
-        /*
+                /*
         |--------------------------------------------------------------------------
         | CURSIVA
         |--------------------------------------------------------------------------
         */
 
-        if ($cursiva) {
+                if ($cursiva) {
 
-        $rPr = null;
+                    $rPr = null;
 
-        foreach (
-        $run->childNodes as $hijo
-        ) {
+                    foreach (
+                        $run->childNodes as $hijo
+                    ) {
 
-        if (
-        $hijo instanceof DOMElement &&
-        $hijo->localName === 'rPr'
-        ) {
+                        if (
+                            $hijo instanceof DOMElement &&
+                            $hijo->localName === 'rPr'
+                        ) {
 
-        $rPr = $hijo;
+                            $rPr = $hijo;
 
-        break;
-        }
-        }
+                            break;
+                        }
+                    }
 
-        if ($rPr) {
+                    if ($rPr) {
 
-        $italic =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:i'
-        );
+                        $italic =
+                            $dom->createElementNS(
+                                self::WORD_NS,
+                                'w:i'
+                            );
 
-        $rPr->appendChild(
-        $italic
-        );
-        }
-        }
+                        $rPr->appendChild(
+                            $italic
+                        );
+                    }
+                }
 
-        /*
+                /*
         |--------------------------------------------------------------------------
         | TEXTO Y SALTOS
         |--------------------------------------------------------------------------
         */
 
-        $lineas =
-        preg_split(
-        "/\r\n|\r|\n/",
-        $texto
-        );
+                $lineas =
+                    preg_split(
+                        "/\r\n|\r|\n/",
+                        $texto
+                    );
 
-        foreach (
-        $lineas as $indice => $linea
-        ) {
+                foreach (
+                    $lineas as $indice => $linea
+                ) {
 
-        if ($linea !== '') {
+                    if ($linea !== '') {
 
-        $textoWord =
-        $dom->createElementNS(
-        self::WORD_NS,
-        'w:t'
-        );
+                        $textoWord =
+                            $dom->createElementNS(
+                                self::WORD_NS,
+                                'w:t'
+                            );
 
-        $textoWord->setAttributeNS(
-        self::XML_NS,
-        'xml:space',
-        'preserve'
-        );
+                        $textoWord->setAttributeNS(
+                            self::XML_NS,
+                            'xml:space',
+                            'preserve'
+                        );
 
-        $textoWord->appendChild(
-        $dom->createTextNode(
-        $linea
-        )
-        );
+                        $textoWord->appendChild(
+                            $dom->createTextNode(
+                                $linea
+                            )
+                        );
 
-        $run->appendChild(
-        $textoWord
-        );
-        }
+                        $run->appendChild(
+                            $textoWord
+                        );
+                    }
 
-        if (
-        $indice < count($lineas) - 1 ) { $br=$dom->createElementNS(
-            self::WORD_NS,
-            'w:br'
-            );
+                    if (
+                        $indice < count($lineas) - 1
+                    ) {
+                        $br = $dom->createElementNS(
+                            self::WORD_NS,
+                            'w:br'
+                        );
 
-            $run->appendChild(
-            $br
-            );
-            }
-            }
+                        $run->appendChild(
+                            $br
+                        );
+                    }
+                }
 
-            $parrafo->insertBefore(
-            $run,
-            $runReferencia
-            );
+                $parrafo->insertBefore(
+                    $run,
+                    $runReferencia
+                );
             };
 
-            /*
+        /*
             |--------------------------------------------------------------------------
             | RECORRER FORMATO
             |--------------------------------------------------------------------------
             */
 
-            $posicionActual = 0;
+        $posicionActual = 0;
 
-            foreach (
+        foreach (
             $matches[0] as $match
-            ) {
+        ) {
 
             $parte =
-            $match[0];
+                $match[0];
 
             $posicion =
-            $match[1];
+                $match[1];
 
             /*
             |--------------------------------------------------------------------------
@@ -2857,21 +2875,21 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
             */
 
             if (
-            $posicion >
-            $posicionActual
+                $posicion >
+                $posicionActual
             ) {
 
-            $normal =
-            substr(
-            $valor,
-            $posicionActual,
-            $posicion -
-            $posicionActual
-            );
+                $normal =
+                    substr(
+                        $valor,
+                        $posicionActual,
+                        $posicion -
+                            $posicionActual
+                    );
 
-            $crearRun(
-            $normal
-            );
+                $crearRun(
+                    $normal
+                );
             }
 
             /*
@@ -2881,107 +2899,120 @@ $indice < count($lineas) - 1 ) { $salto=$dom->createElementNS(
             */
 
             if (
-            str_starts_with(
-            $parte,
-            '**'
-            ) &&
-            str_ends_with(
-            $parte,
-            '**'
-            )
+                str_starts_with(
+                    $parte,
+                    '**'
+                ) &&
+                str_ends_with(
+                    $parte,
+                    '**'
+                )
             ) {
 
-            $texto =
-            substr(
-            $parte,
-            2,
-            -2
-            );
+                $texto =
+                    substr(
+                        $parte,
+                        2,
+                        -2
+                    );
 
-            $crearRun(
-            $texto,
-            false,
-            true
-            );
+                $crearRun(
+                    $texto,
+                    false,
+                    true
+                );
 
-            /*
+                /*
             |--------------------------------------------------------------------------
             | NEGRITA
             |--------------------------------------------------------------------------
             */
-
             } elseif (
-            str_starts_with(
-            $parte,
-            '*'
-            ) &&
-            str_ends_with(
-            $parte,
-            '*'
-            )
+                str_starts_with(
+                    $parte,
+                    '*'
+                ) &&
+                str_ends_with(
+                    $parte,
+                    '*'
+                )
             ) {
 
-            $texto =
-            substr(
-            $parte,
-            1,
-            -1
-            );
+                $texto =
+                    substr(
+                        $parte,
+                        1,
+                        -1
+                    );
 
-            $crearRun(
-            $texto,
-            true,
-            false
-            );
+                $crearRun(
+                    $texto,
+                    true,
+                    false
+                );
             }
 
             $posicionActual =
-            $posicion +
-            strlen($parte);
-            }
+                $posicion +
+                strlen($parte);
+        }
 
-            /*
+        /*
             |--------------------------------------------------------------------------
             | TEXTO FINAL
             |--------------------------------------------------------------------------
             */
 
-            if (
-            $posicionActual < strlen($valor) ) { $final=substr( $valor, $posicionActual ); $crearRun( $final ); } } /*
+        if (
+            $posicionActual < strlen($valor)
+        ) {
+            $final = substr($valor, $posicionActual);
+            $crearRun($final);
+        }
+    } /*
                 |-------------------------------------------------------------------------- | INSERTAR DESPUÉS
-                |-------------------------------------------------------------------------- */ private function
-                insertarDespues( DOMElement $referencia, DOMElement $nuevaFila ): void { $padre=$referencia->parentNode;
+                |-------------------------------------------------------------------------- */
+    private function
+    insertarDespues(DOMElement $referencia, DOMElement $nuevaFila): void
+    {
+        $padre = $referencia->parentNode;
 
-                $siguiente =
-                $referencia->nextSibling;
+        $siguiente =
+            $referencia->nextSibling;
 
-                if ($siguiente !== null) {
+        if ($siguiente !== null) {
 
-                $padre->insertBefore(
+            $padre->insertBefore(
                 $nuevaFila,
                 $siguiente
-                );
+            );
+        } else {
 
-                } else {
-
-                $padre->appendChild(
+            $padre->appendChild(
                 $nuevaFila
-                );
-                }
-                }
+            );
+        }
+    }
 
-                /*
+    /*
                 |--------------------------------------------------------------------------
                 | ELIMINAR TEMPORAL
                 |--------------------------------------------------------------------------
                 */
 
-                private function eliminarTemporal(
-                string $archivo
-                ): void {
+    private function eliminarTemporal(
+        string $archivo
+    ): void {
 
-                if (!file_exists($archivo)) {
+        if (!file_exists($archivo)) {
+            return;
+        }
+
+        for ($i = 0; $i < 10; $i++) {
+            if (@unlink($archivo)) {
                 return;
-                }
-
-                for ($i = 0; $i < 10; $i++) { if (@unlink($archivo)) { return; } usleep(100000); } } }
+            }
+            usleep(100000);
+        }
+    }
+}
