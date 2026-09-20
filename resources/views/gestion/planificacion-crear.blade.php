@@ -28,6 +28,8 @@
                 Complete la información para crear su planificación.
             </p>
 
+            
+
         </div>
 
     </div>
@@ -41,6 +43,8 @@
     ================================================== --}}
 
         <aside class="planning-sidebar">
+
+        
 
             {{-- PROGRESO --}}
 
@@ -145,8 +149,15 @@
                 </div>
 
             </div>
+            <div class="progress-container">
+                        <a href="{{ route('gestion.planificacion.index') }}" class="btn-primary" > ← Ir a planificaciones </a>
+            </div>
+            
+
 
         </aside>
+
+
 
 
         {{-- =================================================
