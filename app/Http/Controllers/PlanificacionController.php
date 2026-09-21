@@ -12,11 +12,17 @@ class PlanificacionController extends Controller
     // ==========================================
     // GESTIÓN DE PLANIFICACIONES
     // ==========================================
+public function index()
+{
+    // Limpiar la referencia del borrador activo
+    // pero NO borrar la planificación de la base de datos.
+    session()->forget([
+        'planificacion_borrador_id',
+        'planificacion_borrador_plantilla_id'
+    ]);
 
-    public function index()
-    {
-        return view('gestion.planificaciones');
-    }
+    return view('gestion.planificaciones');
+}
 
 
     // ==========================================
