@@ -226,166 +226,166 @@ document.addEventListener('DOMContentLoaded', async function () {
     // NO REDIRECCIONA
     // =========================================================
 
-async function autoguardarPlanificacion() {
+    async function autoguardarPlanificacion() {
 
-    if (autoGuardando) {
-        autoGuardadoPendiente = true;
-        return;
-    }
-
-    if (!cambiosPendientes) {
-        return;
-    }
-
-    autoGuardando = true;
-    autoGuardadoPendiente = false;
-
-    const formData = new FormData(form);
-
-    /*
-    Si estamos creando desde una plantilla,
-    guardamos de dónde salió.
-    */
-    if (usandoPlantilla && window.plantillaId) {
-        formData.set(
-            'plantilla_origen_id',
-            window.plantillaId
-        );
-    }
-
-    let url = '/planificaciones';
-
-    /*
-    NUEVA PLANIFICACIÓN
-    -------------------
-    No existe todavía un ID real.
-
-    También aplica cuando estamos usando una plantilla,
-    porque la plantilla NO es la planificación nueva.
-    */
-    if (
-        !window.planificacionId ||
-        usandoPlantilla
-    ) {
-
-        formData.set(
-            'es_plantilla',
-            '0'
-        );
-
-        url = '/planificaciones';
-
-    }
-
-    /*
-    PLANIFICACIÓN YA CREADA
-    -----------------------
-    A partir de aquí actualizamos el ID real.
-    */
-    else {
-
-        url =
-            `/planificaciones/${window.planificacionId}`;
-
-        formData.append(
-            '_method',
-            'PUT'
-        );
-    }
-
-    try {
-
-        const response =
-            await fetch(
-                url,
-                {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With':
-                            'XMLHttpRequest',
-                        'Accept':
-                            'application/json'
-                    }
-                }
-            );
-
-        if (!response.ok) {
-
-            const texto =
-                await response.text();
-
-            console.error(
-                'Respuesta del servidor:',
-                texto
-            );
-
-            throw new Error(
-                'Error al autoguardar.'
-            );
+        if (autoGuardando) {
+            autoGuardadoPendiente = true;
+            return;
         }
 
-        const data =
-            await response.json();
-
-        if (!data.success) {
-
-            throw new Error(
-                data.message ||
-                'No se pudo autoguardar.'
-            );
+        if (!cambiosPendientes) {
+            return;
         }
+
+        autoGuardando = true;
+        autoGuardadoPendiente = false;
+
+        const formData = new FormData(form);
 
         /*
-        SI ACABAMOS DE CREAR LA PLANIFICACIÓN
-        -------------------------------------
+        Si estamos creando desde una plantilla,
+        guardamos de dónde salió.
+        */
+        if (usandoPlantilla && window.plantillaId) {
+            formData.set(
+                'plantilla_origen_id',
+                window.plantillaId
+            );
+        }
 
-        El controller devuelve:
+        let url = '/planificaciones';
 
-        data.planificacion_id
-
-        Ese será desde ahora el ID REAL.
+        /*
+        NUEVA PLANIFICACIÓN
+        -------------------
+        No existe todavía un ID real.
+    
+        También aplica cuando estamos usando una plantilla,
+        porque la plantilla NO es la planificación nueva.
         */
         if (
             !window.planificacionId ||
             usandoPlantilla
         ) {
 
-            window.planificacionId =
-                data.planificacion_id;
+            formData.set(
+                'es_plantilla',
+                '0'
+            );
 
-            planificacionCreadaPorAutoguardado =
-                true;
+            url = '/planificaciones';
 
-            usandoPlantilla = false;
         }
 
-        cambiosPendientes = false;
+        /*
+        PLANIFICACIÓN YA CREADA
+        -----------------------
+        A partir de aquí actualizamos el ID real.
+        */
+        else {
 
-    } catch (error) {
+            url =
+                `/planificaciones/${window.planificacionId}`;
 
-        console.error(
-            'Error en autoguardado:',
-            error
-        );
-
-    } finally {
-
-        autoGuardando = false;
-
-        if (autoGuardadoPendiente) {
-
-            autoGuardadoPendiente = false;
-
-            setTimeout(
-                function () {
-                    autoguardarPlanificacion();
-                },
-                500
+            formData.append(
+                '_method',
+                'PUT'
             );
         }
+
+        try {
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With':
+                                'XMLHttpRequest',
+                            'Accept':
+                                'application/json'
+                        }
+                    }
+                );
+
+            if (!response.ok) {
+
+                const texto =
+                    await response.text();
+
+                console.error(
+                    'Respuesta del servidor:',
+                    texto
+                );
+
+                throw new Error(
+                    'Error al autoguardar.'
+                );
+            }
+
+            const data =
+                await response.json();
+
+            if (!data.success) {
+
+                throw new Error(
+                    data.message ||
+                    'No se pudo autoguardar.'
+                );
+            }
+
+            /*
+            SI ACABAMOS DE CREAR LA PLANIFICACIÓN
+            -------------------------------------
+    
+            El controller devuelve:
+    
+            data.planificacion_id
+    
+            Ese será desde ahora el ID REAL.
+            */
+            if (
+                !window.planificacionId ||
+                usandoPlantilla
+            ) {
+
+                window.planificacionId =
+                    data.planificacion_id;
+
+                planificacionCreadaPorAutoguardado =
+                    true;
+
+                usandoPlantilla = false;
+            }
+
+            cambiosPendientes = false;
+
+        } catch (error) {
+
+            console.error(
+                'Error en autoguardado:',
+                error
+            );
+
+        } finally {
+
+            autoGuardando = false;
+
+            if (autoGuardadoPendiente) {
+
+                autoGuardadoPendiente = false;
+
+                setTimeout(
+                    function () {
+                        autoguardarPlanificacion();
+                    },
+                    500
+                );
+            }
+        }
     }
-}
 
     /* =========================================================
        OBTENER CARDS
@@ -633,17 +633,25 @@ async function autoguardarPlanificacion() {
                 </div>
 
                 <div class="activity-field activity-field-full">
+    <label>
+        Estrategias metodológicas
+    </label>
 
-                    <label>
-                        Estrategias metodológicas
-                    </label>
+    <textarea
+        name="${prefijo}[${numero - 1}][estrategias_metologicas]"
+        placeholder="Describe las estrategias metodológicas..."
+    ></textarea>
 
-                    <textarea
-                        name="${prefijo}[${numero - 1}][estrategias_metologicas]"
-                        placeholder="Describe las estrategias metodológicas..."
-                    ></textarea>
+    <label style="margin-top: 10px;">
+        Imagen de estrategias metodológicas
+    </label>
 
-                </div>
+    <input
+        type="file"
+        name="${prefijo}[${numero - 1}][estrategias_metologicas_imagen]"
+        accept="image/*"
+    >
+</div>
 
                 <div class="activity-field">
 
@@ -741,6 +749,21 @@ async function autoguardarPlanificacion() {
                 estrategias.value =
                     datos.estrategias_metologicas ?? '';
             }
+
+            if (datos.estrategias_metologicas_imagen) {
+    const imagenExistente =
+        document.createElement('input');
+
+    imagenExistente.type = 'hidden';
+
+    imagenExistente.name =
+        `${prefijo}[${numero - 1}][estrategias_metologicas_imagen_existente]`;
+
+    imagenExistente.value =
+        datos.estrategias_metologicas_imagen;
+
+    card.appendChild(imagenExistente);
+}
 
             if (recursos) {
                 recursos.value =
@@ -2098,398 +2121,398 @@ async function autoguardarPlanificacion() {
    CARGAR PLANIFICACIÓN / PLANTILLA
 ========================================================== */
 
-const idParaCargar =
-    tienePlantillaId
-        ? window.plantillaId
-        : window.planificacionId;
+    const idParaCargar =
+        tienePlantillaId
+            ? window.plantillaId
+            : window.planificacionId;
 
-if (idParaCargar) {
+    if (idParaCargar) {
 
-    try {
+        try {
 
-        const response =
-            await fetch(
-                `/api/planificaciones/${idParaCargar}`
-            );
+            const response =
+                await fetch(
+                    `/api/planificaciones/${idParaCargar}`
+                );
 
-        if (!response.ok) {
-
-            throw new Error(
-                'No se pudo cargar la planificación.'
-            );
-        }
-
-        const result =
-            await response.json();
-
-        if (!result.success) {
-
-            throw new Error(
-                result.message ||
-                'No se pudo cargar la planificación.'
-            );
-        }
-
-        const planificacion =
-            result.data;
-
-        /*
-        =====================================================
-        DETECTAR SI EL REGISTRO ES REALMENTE UNA PLANTILLA
-        =====================================================
-        */
-
-        const esPlantillaExistente =
-            Boolean(
-                planificacion.es_plantilla
-            );
-
-        /*
-        =====================================================
-        USANDO PLANTILLA
-        =====================================================
-
-        La plantilla SOLO sirve como origen de datos.
-
-        Su ID NO se asigna a window.planificacionId.
-        */
-
-        if (usandoPlantilla) {
-
-            if (!esPlantillaExistente) {
+            if (!response.ok) {
 
                 throw new Error(
-                    'El registro seleccionado no es una plantilla.'
+                    'No se pudo cargar la planificación.'
                 );
             }
 
-            if (templateButton) {
+            const result =
+                await response.json();
 
-                templateButton.style.display =
-                    'none';
+            if (!result.success) {
+
+                throw new Error(
+                    result.message ||
+                    'No se pudo cargar la planificación.'
+                );
             }
 
-            if (saveButton) {
+            const planificacion =
+                result.data;
 
-                saveButton.textContent =
-                    'Guardar nueva planificación';
+            /*
+            =====================================================
+            DETECTAR SI EL REGISTRO ES REALMENTE UNA PLANTILLA
+            =====================================================
+            */
 
-                saveButton.type =
-                    'button';
-            }
-        }
+            const esPlantillaExistente =
+                Boolean(
+                    planificacion.es_plantilla
+                );
 
-        /*
-        =====================================================
-        EDITANDO PLANIFICACIÓN EXISTENTE
-        =====================================================
-        */
+            /*
+            =====================================================
+            USANDO PLANTILLA
+            =====================================================
+    
+            La plantilla SOLO sirve como origen de datos.
+    
+            Su ID NO se asigna a window.planificacionId.
+            */
 
-        if (
-            editando &&
-            !esPlantillaExistente
-        ) {
+            if (usandoPlantilla) {
 
-            editandoPlantillaExistente =
-                false;
+                if (!esPlantillaExistente) {
 
-            if (templateButton) {
-
-                templateButton.style.display =
-                    'none';
-            }
-
-            if (saveButton) {
-
-                saveButton.textContent =
-                    'Actualizar planificación';
-
-                saveButton.type =
-                    'button';
-            }
-        }
-
-        /*
-        =====================================================
-        EDITANDO PLANTILLA EXISTENTE
-        =====================================================
-        */
-
-        if (
-            editando &&
-            esPlantillaExistente
-        ) {
-
-            editandoPlantillaExistente =
-                true;
-
-            if (templateButton) {
-
-                templateButton.style.display =
-                    'none';
-            }
-
-            if (saveButton) {
-
-                saveButton.textContent =
-                    'Actualizar plantilla';
-
-                saveButton.type =
-                    'button';
-            }
-        }
-
-        /*
-        =====================================================
-        DATOS GENERALES
-        =====================================================
-        */
-
-        const campos = {
-
-            '1_experiencia_prendizaje':
-                planificacion.experiencia_aprendizaje,
-
-            '2_descripcion_general_experiencia':
-                planificacion.descripcion_general_experiencia,
-
-            '3_nombre_maestra':
-                planificacion.nombre_maestra,
-
-            '4_tiempo_estimado':
-                planificacion.tiempo_estimado,
-
-            '5_fecha':
-                planificacion.fecha,
-
-            '6_nivel_educativo':
-                planificacion.nivel_educativo,
-
-            '7_objetivo_aprendizaje':
-                planificacion.objetivo_aprendizaje,
-
-            '8_elemento_integrador':
-                planificacion.elemento_integrador,
-
-            '9_nocion_dia':
-                planificacion.nocion_dia,
-
-            'tamano_letra_actividades':
-                planificacion.tamano_letra_actividades ?? 8
-        };
-
-        Object.entries(campos).forEach(
-            function ([nombre, valor]) {
-
-                const campo =
-                    form.querySelector(
-                        `[name="${nombre}"]`
-                    );
-
-                if (campo) {
-
-                    campo.value =
-                        valor ?? '';
-                }
-            }
-        );
-
-        /*
-        =====================================================
-        PROGRESO
-        =====================================================
-        */
-
-        const progreso =
-            Number(
-                planificacion.progreso ?? 0
-            );
-
-        /*
-        Si usamos plantilla NO copiamos el progreso.
-
-        La nueva planificación debe calcular su propio progreso.
-        */
-
-        if (!usandoPlantilla) {
-
-            if (progresoInput) {
-
-                progresoInput.value =
-                    progreso;
-            }
-
-            if (progressPercent) {
-
-                progressPercent.textContent =
-                    progreso + '%';
-            }
-
-            if (progressValue) {
-
-                progressValue.style.width =
-                    progreso + '%';
-            }
-        }
-
-        /*
-        =====================================================
-        LIMPIAR ACTIVIDADES ACTUALES
-        =====================================================
-        */
-
-        part1Container
-            .querySelectorAll(
-                '.activity-card'
-            )
-            .forEach(
-                function (card) {
-
-                    card.remove();
-                }
-            );
-
-        part2Container
-            .querySelectorAll(
-                '.activity-card'
-            )
-            .forEach(
-                function (card) {
-
-                    card.remove();
-                }
-            );
-
-        /*
-        =====================================================
-        OBTENER ACTIVIDADES
-        =====================================================
-        */
-
-        const actividades =
-            planificacion.actividades ?? [];
-
-        const part1Actividades =
-            actividades.filter(
-                function (actividad) {
-
-                    return actividad.seccion === 'part1';
-                }
-            );
-
-        const part2Actividades =
-            actividades.filter(
-                function (actividad) {
-
-                    return actividad.seccion === 'part2';
-                }
-            );
-
-        /*
-        =====================================================
-        PARTE 1
-        =====================================================
-        */
-
-        part1Actividades
-            .sort(
-                function (a, b) {
-
-                    return a.orden - b.orden;
-                }
-            )
-            .slice(
-                0,
-                MAX_ACTIVIDADES
-            )
-            .forEach(
-                function (actividad, index) {
-
-                    crearActividad(
-                        part1Container,
-                        'part1',
-                        index + 1,
-                        actividad
+                    throw new Error(
+                        'El registro seleccionado no es una plantilla.'
                     );
                 }
+
+                if (templateButton) {
+
+                    templateButton.style.display =
+                        'none';
+                }
+
+                if (saveButton) {
+
+                    saveButton.textContent =
+                        'Guardar nueva planificación';
+
+                    saveButton.type =
+                        'button';
+                }
+            }
+
+            /*
+            =====================================================
+            EDITANDO PLANIFICACIÓN EXISTENTE
+            =====================================================
+            */
+
+            if (
+                editando &&
+                !esPlantillaExistente
+            ) {
+
+                editandoPlantillaExistente =
+                    false;
+
+                if (templateButton) {
+
+                    templateButton.style.display =
+                        'none';
+                }
+
+                if (saveButton) {
+
+                    saveButton.textContent =
+                        'Actualizar planificación';
+
+                    saveButton.type =
+                        'button';
+                }
+            }
+
+            /*
+            =====================================================
+            EDITANDO PLANTILLA EXISTENTE
+            =====================================================
+            */
+
+            if (
+                editando &&
+                esPlantillaExistente
+            ) {
+
+                editandoPlantillaExistente =
+                    true;
+
+                if (templateButton) {
+
+                    templateButton.style.display =
+                        'none';
+                }
+
+                if (saveButton) {
+
+                    saveButton.textContent =
+                        'Actualizar plantilla';
+
+                    saveButton.type =
+                        'button';
+                }
+            }
+
+            /*
+            =====================================================
+            DATOS GENERALES
+            =====================================================
+            */
+
+            const campos = {
+
+                '1_experiencia_prendizaje':
+                    planificacion.experiencia_aprendizaje,
+
+                '2_descripcion_general_experiencia':
+                    planificacion.descripcion_general_experiencia,
+
+                '3_nombre_maestra':
+                    planificacion.nombre_maestra,
+
+                '4_tiempo_estimado':
+                    planificacion.tiempo_estimado,
+
+                '5_fecha':
+                    planificacion.fecha,
+
+                '6_nivel_educativo':
+                    planificacion.nivel_educativo,
+
+                '7_objetivo_aprendizaje':
+                    planificacion.objetivo_aprendizaje,
+
+                '8_elemento_integrador':
+                    planificacion.elemento_integrador,
+
+                '9_nocion_dia':
+                    planificacion.nocion_dia,
+
+                'tamano_letra_actividades':
+                    planificacion.tamano_letra_actividades ?? 8
+            };
+
+            Object.entries(campos).forEach(
+                function ([nombre, valor]) {
+
+                    const campo =
+                        form.querySelector(
+                            `[name="${nombre}"]`
+                        );
+
+                    if (campo) {
+
+                        campo.value =
+                            valor ?? '';
+                    }
+                }
             );
 
-        /*
-        =====================================================
-        PARTE 2
-        =====================================================
-        */
+            /*
+            =====================================================
+            PROGRESO
+            =====================================================
+            */
 
-        part2Actividades
-            .sort(
-                function (a, b) {
+            const progreso =
+                Number(
+                    planificacion.progreso ?? 0
+                );
 
-                    return a.orden - b.orden;
+            /*
+            Si usamos plantilla NO copiamos el progreso.
+    
+            La nueva planificación debe calcular su propio progreso.
+            */
+
+            if (!usandoPlantilla) {
+
+                if (progresoInput) {
+
+                    progresoInput.value =
+                        progreso;
                 }
-            )
-            .slice(
-                0,
-                MAX_ACTIVIDADES
-            )
-            .forEach(
-                function (actividad, index) {
 
-                    crearActividad(
-                        part2Container,
-                        'part2',
-                        index + 1,
-                        actividad
-                    );
+                if (progressPercent) {
+
+                    progressPercent.textContent =
+                        progreso + '%';
                 }
+
+                if (progressValue) {
+
+                    progressValue.style.width =
+                        progreso + '%';
+                }
+            }
+
+            /*
+            =====================================================
+            LIMPIAR ACTIVIDADES ACTUALES
+            =====================================================
+            */
+
+            part1Container
+                .querySelectorAll(
+                    '.activity-card'
+                )
+                .forEach(
+                    function (card) {
+
+                        card.remove();
+                    }
+                );
+
+            part2Container
+                .querySelectorAll(
+                    '.activity-card'
+                )
+                .forEach(
+                    function (card) {
+
+                        card.remove();
+                    }
+                );
+
+            /*
+            =====================================================
+            OBTENER ACTIVIDADES
+            =====================================================
+            */
+
+            const actividades =
+                planificacion.actividades ?? [];
+
+            const part1Actividades =
+                actividades.filter(
+                    function (actividad) {
+
+                        return actividad.seccion === 'part1';
+                    }
+                );
+
+            const part2Actividades =
+                actividades.filter(
+                    function (actividad) {
+
+                        return actividad.seccion === 'part2';
+                    }
+                );
+
+            /*
+            =====================================================
+            PARTE 1
+            =====================================================
+            */
+
+            part1Actividades
+                .sort(
+                    function (a, b) {
+
+                        return a.orden - b.orden;
+                    }
+                )
+                .slice(
+                    0,
+                    MAX_ACTIVIDADES
+                )
+                .forEach(
+                    function (actividad, index) {
+
+                        crearActividad(
+                            part1Container,
+                            'part1',
+                            index + 1,
+                            actividad
+                        );
+                    }
+                );
+
+            /*
+            =====================================================
+            PARTE 2
+            =====================================================
+            */
+
+            part2Actividades
+                .sort(
+                    function (a, b) {
+
+                        return a.orden - b.orden;
+                    }
+                )
+                .slice(
+                    0,
+                    MAX_ACTIVIDADES
+                )
+                .forEach(
+                    function (actividad, index) {
+
+                        crearActividad(
+                            part2Container,
+                            'part2',
+                            index + 1,
+                            actividad
+                        );
+                    }
+                );
+
+            /*
+            =====================================================
+            COMENZAR EN LA PRIMERA ACTIVIDAD
+            =====================================================
+            */
+
+            part1Actual = 0;
+            part2Actual = 0;
+
+            if (part1Actividades.length > 0) {
+
+                mostrarActividad(
+                    part1Container,
+                    0
+                );
+            }
+
+            if (part2Actividades.length > 0) {
+
+                mostrarActividad(
+                    part2Container,
+                    0
+                );
+            }
+
+            /*
+            =====================================================
+            ACTUALIZAR ESTADO
+            =====================================================
+            */
+
+            actualizarEstado();
+
+        } catch (error) {
+
+            console.error(
+                'Error cargando planificación:',
+                error
             );
 
-        /*
-        =====================================================
-        COMENZAR EN LA PRIMERA ACTIVIDAD
-        =====================================================
-        */
-
-        part1Actual = 0;
-        part2Actual = 0;
-
-        if (part1Actividades.length > 0) {
-
-            mostrarActividad(
-                part1Container,
-                0
+            alert(
+                usandoPlantilla
+                    ? 'No se pudo cargar la plantilla.'
+                    : 'No se pudo cargar la planificación.'
             );
         }
-
-        if (part2Actividades.length > 0) {
-
-            mostrarActividad(
-                part2Container,
-                0
-            );
-        }
-
-        /*
-        =====================================================
-        ACTUALIZAR ESTADO
-        =====================================================
-        */
-
-        actualizarEstado();
-
-    } catch (error) {
-
-        console.error(
-            'Error cargando planificación:',
-            error
-        );
-
-        alert(
-            usandoPlantilla
-                ? 'No se pudo cargar la plantilla.'
-                : 'No se pudo cargar la planificación.'
-        );
     }
-}
     /* =========================================================
        INICIALIZAR
     ========================================================== */

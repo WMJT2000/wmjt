@@ -5,7 +5,7 @@
 @section('content')
 
 <script>
-   window.planificacionId = @json($planificacionId);
+    window.planificacionId = @json($planificacionId);
     window.plantillaId = @json($plantillaId);
     window.usarPlantilla = @json(request()->query('plantilla') == 1);
     window.recuperandoBorrador = @json($recuperandoBorrador ?? false);
@@ -30,8 +30,6 @@
                 Complete la información para crear su planificación.
             </p>
 
-            
-
         </div>
 
     </div>
@@ -46,7 +44,6 @@
 
         <aside class="planning-sidebar">
 
-        
 
             {{-- PROGRESO --}}
 
@@ -151,15 +148,20 @@
                 </div>
 
             </div>
+
+
             <div class="progress-container">
-                        <a href="{{ route('gestion.planificacion.index') }}" class="btn-primary" > ← Ir a planificaciones </a>
+
+                <a
+                    href="{{ route('gestion.planificacion.index') }}"
+                    class="btn-primary">
+                    ← Ir a planificaciones
+                </a>
+
             </div>
-            
 
 
         </aside>
-
-
 
 
         {{-- =================================================
@@ -168,10 +170,12 @@
 
         <main class="planning-content">
 
+            {{-- IMPORTANTE: enctype permite enviar imágenes --}}
             <form
                 action="{{ route('word.generar') }}"
                 method="POST"
-                id="planningForm">
+                id="planningForm"
+                enctype="multipart/form-data">
 
                 @csrf
 
@@ -370,12 +374,15 @@
                                 id="tamano_letra_actividades"
                                 name="tamano_letra_actividades"
                                 class="planning-input">
-                                <option value="6" selected>
+
+                                <option value="6">
                                     6 pt
                                 </option>
-                                <option value="7" selected>
+
+                                <option value="7">
                                     7 pt
                                 </option>
+
                                 <option value="8" selected>
                                     8 pt
                                 </option>

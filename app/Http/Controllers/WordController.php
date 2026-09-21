@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpWord\TemplateProcessor;
 use PhpOffice\PhpWord\Settings;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 use ZipArchive;
 use DOMDocument;
@@ -39,12 +40,15 @@ class WordController extends Controller
                 'El directorio temporal no tiene permisos de escritura: ' . $tmpDir
             );
         }
+
         Settings::setTempDir($tmpDir);
+
         putenv('TMPDIR=' . $tmpDir);
         putenv('TMP=' . $tmpDir);
         putenv('TEMP=' . $tmpDir);
 
         @ini_set('sys_temp_dir', $tmpDir);
+
         $request->validate([
             '1_experiencia_prendizaje' => 'required',
             '2_descripcion_general_experiencia' => 'required',
@@ -55,8 +59,10 @@ class WordController extends Controller
             '7_objetivo_aprendizaje' => 'required',
             '8_elemento_integrador' => 'required',
             '9_nocion_dia' => 'required',
+
             'tamano_letra_actividades' =>
                 'nullable|integer|min:6|max:20',
+
             'part1' =>
                 'nullable|array|max:10',
 
@@ -72,6 +78,12 @@ class WordController extends Controller
             'part1.*.estrategias_metologicas' =>
                 'nullable|string',
 
+            'part1.*.estrategias_metologicas_imagen' =>
+                'nullable|image|max:5120',
+
+            'part1.*.estrategias_metologicas_imagen_existente' =>
+                'nullable|string',
+
             'part1.*.recursos' =>
                 'nullable|string',
 
@@ -85,6 +97,12 @@ class WordController extends Controller
                 'nullable|string',
 
             'part2.*.estrategias_metologicas' =>
+                'nullable|string',
+
+            'part2.*.estrategias_metologicas_imagen' =>
+                'nullable|image|max:5120',
+
+            'part2.*.estrategias_metologicas_imagen_existente' =>
                 'nullable|string',
 
             'part2.*.recursos' =>
@@ -103,10 +121,40 @@ class WordController extends Controller
             'part2',
             []
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Obtener los archivos de imagen
+        |--------------------------------------------------------------------------
+        */
+
+        $archivosPart1 = $request->file(
+            'part1',
+            []
+        );
+
+        $archivosPart2 = $request->file(
+            'part2',
+            []
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tamaño de letra
+        |--------------------------------------------------------------------------
+        */
+
         $tamanoLetraActividades = (int) $request->input(
             'tamano_letra_actividades',
             8
         );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Plantilla
+        |--------------------------------------------------------------------------
+        */
+
         $plantilla = storage_path(
             'app/plantillas/planificacion.docx'
         );
@@ -117,7 +165,11 @@ class WordController extends Controller
             );
         }
 
-
+        /*
+        |--------------------------------------------------------------------------
+        | Archivo temporal
+        |--------------------------------------------------------------------------
+        */
 
         $temporal = $tmpDir .
             '/temporal_planificacion_' .
@@ -130,7 +182,23 @@ class WordController extends Controller
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Array donde guardaremos:
+        | macro => ruta de imagen
+        |--------------------------------------------------------------------------
+        */
+
+        $imagenesEstrategias = [];
+
         try {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Abrir Word como ZIP
+            |--------------------------------------------------------------------------
+            */
+
             $zip = new ZipArchive();
 
             if ($zip->open($temporal) !== true) {
@@ -138,6 +206,12 @@ class WordController extends Controller
                     'No se pudo abrir la plantilla Word.'
                 );
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Obtener document.xml
+            |--------------------------------------------------------------------------
+            */
 
             $xml = $zip->getFromName(
                 'word/document.xml'
@@ -150,6 +224,13 @@ class WordController extends Controller
                     'No se encontró word/document.xml.'
                 );
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Cargar XML
+            |--------------------------------------------------------------------------
+            */
+
             $dom = new DOMDocument();
 
             $dom->preserveWhiteSpace = true;
@@ -169,15 +250,35 @@ class WordController extends Controller
                 );
             }
 
+            /*
+            |--------------------------------------------------------------------------
+            | XPath
+            |--------------------------------------------------------------------------
+            */
+
             $xpath = new DOMXPath($dom);
 
             $xpath->registerNamespace(
                 'w',
                 self::WORD_NS
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Preparar lista
+            |--------------------------------------------------------------------------
+            */
+
             $numIdLista = $this->prepararListaWord(
                 $zip
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Buscar fila de actividad
+            |--------------------------------------------------------------------------
+            */
+
             $filaActividad = $this->buscarFilaActividad(
                 $xpath
             );
@@ -189,16 +290,105 @@ class WordController extends Controller
                     'No se encontró la fila de actividades en el Word.'
                 );
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Buscar fila de snack
+            |--------------------------------------------------------------------------
+            */
+
             $filaSnack = $this->buscarFilaSnack(
                 $xpath
             );
 
+            /*
+            |--------------------------------------------------------------------------
+            | Padre de la fila
+            |--------------------------------------------------------------------------
+            */
+
             $padre = $filaActividad->parentNode;
-            foreach ($part1 as $actividad) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | ACTIVIDADES PARTE 1
+            |--------------------------------------------------------------------------
+            */
+
+            foreach ($part1 as $indice => $actividad) {
 
                 $fila = $this->clonarFila(
                     $filaActividad
                 );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Macro único para la imagen
+                |--------------------------------------------------------------------------
+                */
+
+                $macroImagen =
+                    'estrategias_imagen_part1_' .
+                    $indice;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Obtener imagen nueva
+                |--------------------------------------------------------------------------
+                */
+
+                $imagenNueva = null;
+
+                if (
+                    isset($archivosPart1[$indice]) &&
+                    isset(
+                    $archivosPart1[$indice][
+                        'estrategias_metologicas_imagen'
+                    ]
+                )
+                ) {
+                    $imagenNueva =
+                        $archivosPart1[$indice][
+                            'estrategias_metologicas_imagen'
+                        ];
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Guardar imagen
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    $imagenNueva instanceof
+                    \Illuminate\Http\UploadedFile
+                ) {
+
+                    $imagenesEstrategias[$macroImagen] =
+                        $imagenNueva->store(
+                            'estrategias_metologicas',
+                            'public'
+                        );
+
+                } else {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Si no hay imagen nueva, utilizar la existente
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $imagenesEstrategias[$macroImagen] =
+                        $actividad[
+                            'estrategias_metologicas_imagen_existente'
+                        ] ?? '';
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Rellenar actividad
+                |--------------------------------------------------------------------------
+                */
 
                 $this->rellenarActividad(
                     $dom,
@@ -206,14 +396,28 @@ class WordController extends Controller
                     $fila,
                     $actividad,
                     $numIdLista,
-                    $tamanoLetraActividades
+                    $tamanoLetraActividades,
+                    $macroImagen
                 );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Insertar actividad
+                |--------------------------------------------------------------------------
+                */
 
                 $padre->insertBefore(
                     $fila,
                     $filaActividad
                 );
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | FILA SNACK
+            |--------------------------------------------------------------------------
+            */
+
             if ($filaSnack === null) {
 
                 $filaSnack = $this->clonarFila(
@@ -232,11 +436,87 @@ class WordController extends Controller
                     $filaActividad
                 );
             }
-            foreach ($part2 as $actividad) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | ACTIVIDADES PARTE 2
+            |--------------------------------------------------------------------------
+            */
+
+            foreach ($part2 as $indice => $actividad) {
 
                 $fila = $this->clonarFila(
                     $filaActividad
                 );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Macro único para la imagen
+                |--------------------------------------------------------------------------
+                */
+
+                $macroImagen =
+                    'estrategias_imagen_part2_' .
+                    $indice;
+
+                /*
+                |--------------------------------------------------------------------------
+                | Obtener imagen nueva
+                |--------------------------------------------------------------------------
+                */
+
+                $imagenNueva = null;
+
+                if (
+                    isset($archivosPart2[$indice]) &&
+                    isset(
+                    $archivosPart2[$indice][
+                        'estrategias_metologicas_imagen'
+                    ]
+                )
+                ) {
+                    $imagenNueva =
+                        $archivosPart2[$indice][
+                            'estrategias_metologicas_imagen'
+                        ];
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Guardar imagen
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    $imagenNueva instanceof
+                    \Illuminate\Http\UploadedFile
+                ) {
+
+                    $imagenesEstrategias[$macroImagen] =
+                        $imagenNueva->store(
+                            'estrategias_metologicas',
+                            'public'
+                        );
+
+                } else {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Si no hay imagen nueva, utilizar la existente
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $imagenesEstrategias[$macroImagen] =
+                        $actividad[
+                            'estrategias_metologicas_imagen_existente'
+                        ] ?? '';
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Rellenar actividad
+                |--------------------------------------------------------------------------
+                */
 
                 $this->rellenarActividad(
                     $dom,
@@ -244,8 +524,15 @@ class WordController extends Controller
                     $fila,
                     $actividad,
                     $numIdLista,
-                    $tamanoLetraActividades
+                    $tamanoLetraActividades,
+                    $macroImagen
                 );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Insertar después de la actividad anterior
+                |--------------------------------------------------------------------------
+                */
 
                 $this->insertarDespues(
                     $filaSnack,
@@ -254,18 +541,45 @@ class WordController extends Controller
 
                 $filaSnack = $fila;
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Eliminar fila original
+            |--------------------------------------------------------------------------
+            */
+
             $padre->removeChild(
                 $filaActividad
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Guardar document.xml modificado
+            |--------------------------------------------------------------------------
+            */
+
             $zip->addFromString(
                 'word/document.xml',
                 $dom->saveXML()
             );
 
             $zip->close();
+
+            /*
+            |--------------------------------------------------------------------------
+            | TemplateProcessor
+            |--------------------------------------------------------------------------
+            */
+
             $template = new TemplateProcessor(
                 $temporal
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Datos generales
+            |--------------------------------------------------------------------------
+            */
 
             $template->setValue(
                 '1_experiencia_prendizaje',
@@ -295,16 +609,33 @@ class WordController extends Controller
                 )
             );
 
-            $fecha = $request->input('5_fecha');
+            /*
+            |--------------------------------------------------------------------------
+            | Fecha
+            |--------------------------------------------------------------------------
+            */
 
-            $fechaFormateada = \Carbon\Carbon::parse($fecha)
-                ->locale('es')
-                ->translatedFormat('l d \d\e F \d\e Y');
+            $fecha = $request->input(
+                '5_fecha'
+            );
+
+            $fechaFormateada =
+                \Carbon\Carbon::parse($fecha)
+                    ->locale('es')
+                    ->translatedFormat(
+                        'l d \d\e F \d\e Y'
+                    );
 
             $template->setValue(
                 '5_fecha',
                 ucfirst($fechaFormateada)
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Resto de datos generales
+            |--------------------------------------------------------------------------
+            */
 
             $template->setValue(
                 '6_nivel_educativo',
@@ -334,22 +665,57 @@ class WordController extends Controller
                 )
             );
 
+            /*
+            |--------------------------------------------------------------------------
+            | INSERTAR IMÁGENES
+            |--------------------------------------------------------------------------
+            */
 
+            $this->aplicarImagenesEstrategias(
+                $template,
+                $imagenesEstrategias
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Archivo final
+            |--------------------------------------------------------------------------
+            */
 
             $archivo = $tmpDir .
                 '/planificacion_generada_' .
                 uniqid('', true) .
                 '.docx';
 
+            /*
+            |--------------------------------------------------------------------------
+            | Guardar Word
+            |--------------------------------------------------------------------------
+            */
+
             $template->saveAs(
                 $archivo
             );
 
             unset($template);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Aplicar formato global
+            |--------------------------------------------------------------------------
+            */
+
             $this->aplicarFormatoGlobal(
                 $archivo,
                 $numIdLista
             );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Nombre de descarga
+            |--------------------------------------------------------------------------
+            */
+
             $nombreDescarga =
                 'planificacion_' .
                 date('Y-m-d_H-i-s') .
@@ -357,17 +723,31 @@ class WordController extends Controller
                 uniqid() .
                 '.docx';
 
+            /*
+            |--------------------------------------------------------------------------
+            | Descargar
+            |--------------------------------------------------------------------------
+            */
+
             return response()
                 ->download(
                     $archivo,
                     $nombreDescarga
                 )
                 ->deleteFileAfterSend(true);
+
         } finally {
 
             if (isset($template)) {
                 unset($template);
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Eliminar archivo temporal
+            |--------------------------------------------------------------------------
+            */
+
             $this->eliminarTemporal(
                 $temporal
             );
@@ -751,7 +1131,8 @@ class WordController extends Controller
         DOMElement $fila,
         array $actividad,
         int $numIdLista,
-        int $tamanoLetraActividades
+        int $tamanoLetraActividades,
+        ?string $macroImagen = null
     ): void {
 
         $datos = [
@@ -780,6 +1161,19 @@ class WordController extends Controller
                 $placeholder,
                 $valor,
                 $numIdLista,
+                $tamanoLetraActividades
+            );
+        }
+
+        if ($macroImagen !== null) {
+
+            $this->reemplazarPlaceholder(
+                $dom,
+                $xpath,
+                $fila,
+                '${estrategias_metologicas_imagen}',
+                '${' . $macroImagen . '}',
+                null,
                 $tamanoLetraActividades
             );
         }
@@ -840,6 +1234,18 @@ class WordController extends Controller
             null,
             $tamanoLetraActividades
         );
+
+        $this->reemplazarPlaceholder(
+            $dom,
+            $xpath,
+            $fila,
+            '${estrategias_metologicas_imagen}',
+            '',
+            null,
+            $tamanoLetraActividades
+        );
+
+
         $celdas = $xpath->query(
             './w:tc',
             $fila
@@ -914,6 +1320,7 @@ class WordController extends Controller
             }
         }
     }
+
     private function reemplazarPlaceholder(
         DOMDocument $dom,
         DOMXPath $xpath,
@@ -931,22 +1338,31 @@ class WordController extends Controller
 
         foreach ($celdas as $celda) {
 
-            $texto = $this->obtenerTexto(
-                $xpath,
+            $parrafos = $xpath->query(
+                './/w:p',
                 $celda
             );
 
-            if (
-                str_contains(
-                    $texto,
-                    $placeholder
-                )
-            ) {
+            foreach ($parrafos as $parrafo) {
 
-                $this->ponerTexto(
+                $texto = $this->obtenerTexto(
+                    $xpath,
+                    $parrafo
+                );
+
+                if (
+                    !str_contains(
+                        $texto,
+                        $placeholder
+                    )
+                ) {
+                    continue;
+                }
+
+                $this->ponerTextoEnParrafo(
                     $dom,
                     $xpath,
-                    $celda,
+                    $parrafo,
                     $valor,
                     $numIdLista,
                     $tamanoLetraActividades
@@ -956,6 +1372,48 @@ class WordController extends Controller
             }
         }
     }
+
+
+    private function ponerTextoEnParrafo(
+    DOMDocument $dom,
+    DOMXPath $xpath,
+    DOMElement $parrafo,
+    string $valor,
+    ?int $numIdLista = null,
+    ?int $tamanoLetraActividades = null
+): void {
+
+    $hijos = [];
+
+    foreach (
+        $parrafo->childNodes as $hijo
+    ) {
+        $hijos[] = $hijo;
+    }
+
+    foreach ($hijos as $hijo) {
+
+        if (
+            $hijo instanceof DOMElement &&
+            $hijo->localName === 'pPr'
+        ) {
+            continue;
+        }
+
+        $parrafo->removeChild(
+            $hijo
+        );
+    }
+
+    $this->crearContenidoFormateado(
+        $dom,
+        $parrafo,
+        $valor,
+        $numIdLista,
+        $tamanoLetraActividades
+    );
+}
+
     private function ponerTexto(
         DOMDocument $dom,
         DOMXPath $xpath,
@@ -2479,8 +2937,11 @@ class WordController extends Controller
         string $archivoFinal
     ): void {
         if (empty($archivos)) {
-            throw new \Exception('No hay documentos para unir.');
+            throw new \Exception(
+                'No hay documentos para unir.'
+            );
         }
+
         if (!copy($archivos[0], $archivoFinal)) {
             throw new \Exception(
                 'No se pudo crear el documento Word final.'
@@ -2494,180 +2955,681 @@ class WordController extends Controller
                 'No se pudo abrir el documento Word final.'
             );
         }
-        $xmlPrincipal = $zipFinal->getFromName(
-            'word/document.xml'
-        );
 
-        if ($xmlPrincipal === false) {
-            $zipFinal->close();
+        try {
 
-            throw new \Exception(
-                'No se encontró word/document.xml en el documento base.'
-            );
-        }
-        $domPrincipal = new DOMDocument();
+            /*
+            |--------------------------------------------------------------------------
+            | DOCUMENT.XML PRINCIPAL
+            |--------------------------------------------------------------------------
+            */
 
-        $domPrincipal->preserveWhiteSpace = false;
-
-        if (!$domPrincipal->loadXML($xmlPrincipal)) {
-            $zipFinal->close();
-
-            throw new \Exception(
-                'No se pudo leer el XML del documento base.'
-            );
-        }
-
-        $xpathPrincipal = new DOMXPath($domPrincipal);
-
-        $xpathPrincipal->registerNamespace(
-            'w',
-            self::WORD_NS
-        );
-        $bodyPrincipal = $xpathPrincipal->query(
-            '//w:body'
-        )->item(0);
-
-        if (!$bodyPrincipal) {
-            $zipFinal->close();
-
-            throw new \Exception(
-                'No se encontró el cuerpo del documento Word.'
-            );
-        }
-
-
-        $sectPr = $xpathPrincipal->query(
-            './w:sectPr',
-            $bodyPrincipal
-        )->item(0);
-        for ($i = 1; $i < count($archivos); $i++) {
-
-            $archivo = $archivos[$i];
-
-            $zipSecundario = new ZipArchive();
-
-            if ($zipSecundario->open($archivo) !== true) {
-                $zipFinal->close();
-
-                throw new \Exception(
-                    "No se pudo abrir el documento: {$archivo}"
-                );
-            }
-            $xmlSecundario = $zipSecundario->getFromName(
+            $xmlPrincipal = $zipFinal->getFromName(
                 'word/document.xml'
             );
 
-            if ($xmlSecundario === false) {
-                $zipSecundario->close();
-                $zipFinal->close();
-
+            if ($xmlPrincipal === false) {
                 throw new \Exception(
-                    'No se encontró word/document.xml en uno de los documentos.'
-                );
-            }
-            $domSecundario = new DOMDocument();
-
-            $domSecundario->preserveWhiteSpace = false;
-
-            if (!$domSecundario->loadXML($xmlSecundario)) {
-                $zipSecundario->close();
-                $zipFinal->close();
-
-                throw new \Exception(
-                    'No se pudo leer el XML de una de las planificaciones.'
+                    'No se encontró word/document.xml en el documento base.'
                 );
             }
 
-            $xpathSecundario = new DOMXPath($domSecundario);
+            $domPrincipal = new DOMDocument();
 
-            $xpathSecundario->registerNamespace(
+            $domPrincipal->preserveWhiteSpace = false;
+
+            if (!$domPrincipal->loadXML($xmlPrincipal)) {
+                throw new \Exception(
+                    'No se pudo leer el XML del documento base.'
+                );
+            }
+
+            $xpathPrincipal = new DOMXPath(
+                $domPrincipal
+            );
+
+            $xpathPrincipal->registerNamespace(
                 'w',
                 self::WORD_NS
             );
 
-            $bodySecundario = $xpathSecundario->query(
-                '//w:body'
-            )->item(0);
+            $xpathPrincipal->registerNamespace(
+                'r',
+                'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
+            );
 
-            if (!$bodySecundario) {
-                $zipSecundario->close();
-                $zipFinal->close();
+            $bodyPrincipal =
+                $xpathPrincipal->query(
+                    '//w:body'
+                )->item(0);
 
+            if (!$bodyPrincipal) {
                 throw new \Exception(
-                    'No se encontró el body de una de las planificaciones.'
-                );
-            }
-            $parrafoSalto = $domPrincipal->createElementNS(
-                self::WORD_NS,
-                'w:p'
-            );
-
-            $runSalto = $domPrincipal->createElementNS(
-                self::WORD_NS,
-                'w:r'
-            );
-
-            $br = $domPrincipal->createElementNS(
-                self::WORD_NS,
-                'w:br'
-            );
-
-            $br->setAttributeNS(
-                self::WORD_NS,
-                'w:type',
-                'page'
-            );
-
-            $runSalto->appendChild($br);
-            $parrafoSalto->appendChild($runSalto);
-            if ($sectPr) {
-                $bodyPrincipal->insertBefore(
-                    $parrafoSalto,
-                    $sectPr
-                );
-            } else {
-                $bodyPrincipal->appendChild(
-                    $parrafoSalto
+                    'No se encontró el cuerpo del documento Word.'
                 );
             }
 
+            $sectPr =
+                $xpathPrincipal->query(
+                    './w:sectPr',
+                    $bodyPrincipal
+                )->item(0);
 
-            foreach ($bodySecundario->childNodes as $nodo) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | RELACIONES DEL DOCUMENTO PRINCIPAL
+            |--------------------------------------------------------------------------
+            */
+
+            $relsPrincipalXml =
+                $zipFinal->getFromName(
+                    'word/_rels/document.xml.rels'
+                );
+
+            if ($relsPrincipalXml === false) {
+                $relsPrincipalXml =
+                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
+                    '<Relationships xmlns="' .
+                    'http://schemas.openxmlformats.org/package/2006/relationships' .
+                    '"></Relationships>';
+            }
+
+            $domRelsPrincipal =
+                new DOMDocument();
+
+            $domRelsPrincipal->preserveWhiteSpace = false;
+
+            if (
+                !$domRelsPrincipal->loadXML(
+                    $relsPrincipalXml
+                )
+            ) {
+                throw new \Exception(
+                    'No se pudieron leer las relaciones del documento Word principal.'
+                );
+            }
+
+            $xpathRelsPrincipal =
+                new DOMXPath(
+                    $domRelsPrincipal
+                );
+
+            $xpathRelsPrincipal->registerNamespace(
+                'rel',
+                'http://schemas.openxmlformats.org/package/2006/relationships'
+            );
+
+            $relationshipsPrincipal =
+                $domRelsPrincipal->documentElement;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | PROCESAR CADA DOCUMENTO SECUNDARIO
+            |--------------------------------------------------------------------------
+            */
+
+            for (
+                $i = 1;
+                $i < count($archivos);
+                $i++
+            ) {
+
+                $archivo =
+                    $archivos[$i];
+
+                $zipSecundario =
+                    new ZipArchive();
 
                 if (
-                    $nodo->nodeType === XML_ELEMENT_NODE &&
-                    $nodo->localName === 'sectPr'
+                    $zipSecundario->open(
+                        $archivo
+                    ) !== true
                 ) {
-                    continue;
+                    throw new \Exception(
+                        "No se pudo abrir el documento: {$archivo}"
+                    );
                 }
 
-                $nodoImportado = $domPrincipal->importNode(
-                    $nodo,
-                    true
-                );
+                try {
 
-                if ($sectPr) {
-                    $bodyPrincipal->insertBefore(
-                        $nodoImportado,
-                        $sectPr
+                    /*
+                    |--------------------------------------------------------------------------
+                    | DOCUMENT.XML SECUNDARIO
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $xmlSecundario =
+                        $zipSecundario->getFromName(
+                            'word/document.xml'
+                        );
+
+                    if (
+                        $xmlSecundario === false
+                    ) {
+                        throw new \Exception(
+                            'No se encontró word/document.xml en uno de los documentos.'
+                        );
+                    }
+
+                    $domSecundario =
+                        new DOMDocument();
+
+                    $domSecundario->preserveWhiteSpace = false;
+
+                    if (
+                        !$domSecundario->loadXML(
+                            $xmlSecundario
+                        )
+                    ) {
+                        throw new \Exception(
+                            'No se pudo leer el XML de una de las planificaciones.'
+                        );
+                    }
+
+                    $xpathSecundario =
+                        new DOMXPath(
+                            $domSecundario
+                        );
+
+                    $xpathSecundario->registerNamespace(
+                        'w',
+                        self::WORD_NS
                     );
-                } else {
-                    $bodyPrincipal->appendChild(
-                        $nodoImportado
+
+                    $xpathSecundario->registerNamespace(
+                        'r',
+                        'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
                     );
+
+                    $bodySecundario =
+                        $xpathSecundario->query(
+                            '//w:body'
+                        )->item(0);
+
+                    if (!$bodySecundario) {
+                        throw new \Exception(
+                            'No se encontró el body de una de las planificaciones.'
+                        );
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | RELACIONES SECUNDARIAS
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $relsSecundarioXml =
+                        $zipSecundario->getFromName(
+                            'word/_rels/document.xml.rels'
+                        );
+
+                    if (
+                        $relsSecundarioXml !== false
+                    ) {
+
+                        $domRelsSecundario =
+                            new DOMDocument();
+
+                        $domRelsSecundario->preserveWhiteSpace =
+                            false;
+
+                        if (
+                            !$domRelsSecundario->loadXML(
+                                $relsSecundarioXml
+                            )
+                        ) {
+                            throw new \Exception(
+                                'No se pudieron leer las relaciones de una de las planificaciones.'
+                            );
+                        }
+
+                        $xpathRelsSecundario =
+                            new DOMXPath(
+                                $domRelsSecundario
+                            );
+
+                        $xpathRelsSecundario->registerNamespace(
+                            'rel',
+                            'http://schemas.openxmlformats.org/package/2006/relationships'
+                        );
+
+                        $relacionesSecundarias =
+                            $xpathRelsSecundario->query(
+                                '/rel:Relationships/rel:Relationship'
+                            );
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | MAPA DE RID
+                        |--------------------------------------------------------------------------
+                        */
+
+                        $mapaRids = [];
+
+                        foreach (
+                            $relacionesSecundarias as $relacion
+                        ) {
+
+                            $idViejo =
+                                $relacion->getAttribute(
+                                    'Id'
+                                );
+
+                            $tipo =
+                                $relacion->getAttribute(
+                                    'Type'
+                                );
+
+                            $target =
+                                $relacion->getAttribute(
+                                    'Target'
+                                );
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | SOLO PROCESAR IMÁGENES
+                            |--------------------------------------------------------------------------
+                            */
+
+                            $esImagen =
+                                str_contains(
+                                    $tipo,
+                                    '/image'
+                                );
+
+                            if (!$esImagen) {
+                                continue;
+                            }
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | NOMBRE NUEVO PARA LA IMAGEN
+                            |--------------------------------------------------------------------------
+                            */
+
+                            $nombreOriginal =
+                                basename(
+                                    $target
+                                );
+
+                            $extension =
+                                pathinfo(
+                                    $nombreOriginal,
+                                    PATHINFO_EXTENSION
+                                );
+
+                            if (
+                                $extension === ''
+                            ) {
+                                $extension = 'png';
+                            }
+
+                            $nombreImagenNuevo =
+                                'image_' .
+                                uniqid(
+                                    '',
+                                    true
+                                ) .
+                                '_' .
+                                $i .
+                                '.' .
+                                strtolower(
+                                    $extension
+                                );
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | RUTA DE LA IMAGEN SECUNDARIA
+                            |--------------------------------------------------------------------------
+                            */
+
+                            $rutaImagen =
+                                'word/media/' .
+                                $nombreOriginal;
+
+                            $contenidoImagen =
+                                $zipSecundario->getFromName(
+                                    $rutaImagen
+                                );
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | SI LA RUTA TIENE OTRA FORMA,
+                            | BUSCAR DIRECTAMENTE EN WORD/MEDIA
+                            |--------------------------------------------------------------------------
+                            */
+
+                            if (
+                                $contenidoImagen === false
+                            ) {
+
+                                $nombreTarget =
+                                    ltrim(
+                                        str_replace(
+                                            '\\',
+                                            '/',
+                                            $target
+                                        ),
+                                        '/'
+                                    );
+
+                                $rutaImagen =
+                                    'word/' .
+                                    $nombreTarget;
+
+                                $contenidoImagen =
+                                    $zipSecundario->getFromName(
+                                        $rutaImagen
+                                    );
+                            }
+
+                            if (
+                                $contenidoImagen === false
+                            ) {
+                                continue;
+                            }
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | COPIAR IMAGEN AL DOCUMENTO FINAL
+                            |--------------------------------------------------------------------------
+                            */
+
+                            $zipFinal->addFromString(
+                                'word/media/' .
+                                $nombreImagenNuevo,
+                                $contenidoImagen
+                            );
+
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | CREAR RID NUEVO
+                            |--------------------------------------------------------------------------
+                            */
+
+                            $ridNuevo =
+                                'rId' .
+                                (
+                                    1000 +
+                                    ($i * 100) +
+                                    count(
+                                        $mapaRids
+                                    ) +
+                                    1
+                                );
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | ASEGURAR QUE EL RID NO EXISTA
+                            |--------------------------------------------------------------------------
+                            */
+
+                            while (
+                                $xpathRelsPrincipal->query(
+                                    '/rel:Relationships/rel:Relationship[@Id="' .
+                                    $ridNuevo .
+                                    '"]'
+                                )->length > 0
+                            ) {
+
+                                $ridNuevo =
+                                    'rId' .
+                                    (
+                                        2000 +
+                                        rand(
+                                            1,
+                                            999999
+                                        )
+                                    );
+                            }
+
+                            $mapaRids[
+                                $idViejo
+                            ] = $ridNuevo;
+
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | CREAR RELACIÓN NUEVA
+                            |--------------------------------------------------------------------------
+                            */
+
+                            $nuevaRelacion =
+                                $domRelsPrincipal->createElementNS(
+                                    'http://schemas.openxmlformats.org/package/2006/relationships',
+                                    'Relationship'
+                                );
+
+                            $nuevaRelacion->setAttribute(
+                                'Id',
+                                $ridNuevo
+                            );
+
+                            $nuevaRelacion->setAttribute(
+                                'Type',
+                                $tipo
+                            );
+
+                            $nuevaRelacion->setAttribute(
+                                'Target',
+                                'media/' .
+                                $nombreImagenNuevo
+                            );
+
+                            $relationshipsPrincipal->appendChild(
+                                $nuevaRelacion
+                            );
+                        }
+
+
+                        /*
+                        |--------------------------------------------------------------------------
+                        | CAMBIAR LOS rId DEL DOCUMENT.XML SECUNDARIO
+                        |--------------------------------------------------------------------------
+                        */
+
+                        if (!empty($mapaRids)) {
+
+                            $elementosConRid =
+                                $xpathSecundario->query(
+                                    '//*[@r:embed or @r:id or @r:link]'
+                                );
+
+                            foreach (
+                                $elementosConRid as $elemento
+                            ) {
+
+                                foreach (
+                                    [
+                                        'embed',
+                                        'id',
+                                        'link'
+                                    ] as $atributo
+                                ) {
+
+                                    if (
+                                        !$elemento->hasAttributeNS(
+                                            'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+                                            $atributo
+                                        )
+                                    ) {
+                                        continue;
+                                    }
+
+                                    $ridViejo =
+                                        $elemento->getAttributeNS(
+                                            'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+                                            $atributo
+                                        );
+
+                                    if (
+                                        isset(
+                                        $mapaRids[
+                                            $ridViejo
+                                        ]
+                                    )
+                                    ) {
+
+                                        $elemento->setAttributeNS(
+                                            'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
+                                            'r:' . $atributo,
+                                            $mapaRids[
+                                                $ridViejo
+                                            ]
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | SALTO DE PÁGINA
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $parrafoSalto =
+                        $domPrincipal->createElementNS(
+                            self::WORD_NS,
+                            'w:p'
+                        );
+
+                    $runSalto =
+                        $domPrincipal->createElementNS(
+                            self::WORD_NS,
+                            'w:r'
+                        );
+
+                    $br =
+                        $domPrincipal->createElementNS(
+                            self::WORD_NS,
+                            'w:br'
+                        );
+
+                    $br->setAttributeNS(
+                        self::WORD_NS,
+                        'w:type',
+                        'page'
+                    );
+
+                    $runSalto->appendChild(
+                        $br
+                    );
+
+                    $parrafoSalto->appendChild(
+                        $runSalto
+                    );
+
+                    if ($sectPr) {
+
+                        $bodyPrincipal->insertBefore(
+                            $parrafoSalto,
+                            $sectPr
+                        );
+
+                    } else {
+
+                        $bodyPrincipal->appendChild(
+                            $parrafoSalto
+                        );
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | COPIAR CONTENIDO DEL SEGUNDO DOCUMENTO
+                    |--------------------------------------------------------------------------
+                    */
+
+                    foreach (
+                        $bodySecundario->childNodes as $nodo
+                    ) {
+
+                        if (
+                            $nodo->nodeType ===
+                            XML_ELEMENT_NODE &&
+                            $nodo->localName ===
+                            'sectPr'
+                        ) {
+                            continue;
+                        }
+
+                        $nodoImportado =
+                            $domPrincipal->importNode(
+                                $nodo,
+                                true
+                            );
+
+                        if ($sectPr) {
+
+                            $bodyPrincipal->insertBefore(
+                                $nodoImportado,
+                                $sectPr
+                            );
+
+                        } else {
+
+                            $bodyPrincipal->appendChild(
+                                $nodoImportado
+                            );
+                        }
+                    }
+
+                } finally {
+
+                    $zipSecundario->close();
                 }
             }
 
-            $zipSecundario->close();
+
+            /*
+            |--------------------------------------------------------------------------
+            | GUARDAR DOCUMENT.XML FINAL
+            |--------------------------------------------------------------------------
+            */
+
+            $xmlFinal =
+                $domPrincipal->saveXML();
+
+            $zipFinal->addFromString(
+                'word/document.xml',
+                $xmlFinal
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | GUARDAR document.xml.rels FINAL
+            |--------------------------------------------------------------------------
+            */
+
+            $zipFinal->addFromString(
+                'word/_rels/document.xml.rels',
+                $domRelsPrincipal->saveXML()
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CERRAR DOCUMENTO FINAL
+            |--------------------------------------------------------------------------
+            */
+
+            $zipFinal->close();
+
+        } catch (\Throwable $e) {
+
+            $zipFinal->close();
+
+            throw $e;
         }
-        $xmlFinal = $domPrincipal->saveXML();
-
-        $zipFinal->addFromString(
-            'word/document.xml',
-            $xmlFinal
-        );
-
-        $zipFinal->close();
     }
 
     private function generarDocumentoDesdePlanificacion(
@@ -2693,6 +3655,11 @@ class WordController extends Controller
         putenv('TEMP=' . $tmpDir);
 
         @ini_set('sys_temp_dir', $tmpDir);
+
+        // ==========================================================
+        // ACTIVIDADES PART 1
+        // ==========================================================
+
         $part1 = $planificacion->actividades
             ->where('seccion', 'part1')
             ->sortBy('orden')
@@ -2707,6 +3674,9 @@ class WordController extends Controller
                     'estrategias_metologicas' =>
                         $actividad->estrategias_metologicas ?? '',
 
+                    'estrategias_metologicas_imagen' =>
+                        $actividad->estrategias_metologicas_imagen ?? '',
+
                     'recursos' =>
                         $actividad->recursos ?? '',
 
@@ -2717,6 +3687,10 @@ class WordController extends Controller
             ->values()
             ->toArray();
 
+
+        // ==========================================================
+        // ACTIVIDADES PART 2
+        // ==========================================================
 
         $part2 = $planificacion->actividades
             ->where('seccion', 'part2')
@@ -2732,6 +3706,9 @@ class WordController extends Controller
                     'estrategias_metologicas' =>
                         $actividad->estrategias_metologicas ?? '',
 
+                    'estrategias_metologicas_imagen' =>
+                        $actividad->estrategias_metologicas_imagen ?? '',
+
                     'recursos' =>
                         $actividad->recursos ?? '',
 
@@ -2741,10 +3718,13 @@ class WordController extends Controller
             })
             ->values()
             ->toArray();
+
+
         $tamanoLetraActividades =
             (int) (
                 $planificacion->tamano_letra_actividades ?? 8
             );
+
         $plantilla = storage_path(
             'app/plantillas/planificacion.docx'
         );
@@ -2754,6 +3734,7 @@ class WordController extends Controller
                 'No existe la plantilla Word.'
             );
         }
+
         $temporal = $tmpDir .
             '/temporal_planificacion_' .
             uniqid('', true) .
@@ -2767,6 +3748,7 @@ class WordController extends Controller
 
 
         try {
+
             $zip = new ZipArchive();
 
             if ($zip->open($temporal) !== true) {
@@ -2774,6 +3756,7 @@ class WordController extends Controller
                     'No se pudo abrir la plantilla Word.'
                 );
             }
+
             $xml = $zip->getFromName(
                 'word/document.xml'
             );
@@ -2785,6 +3768,7 @@ class WordController extends Controller
                     'No se encontró word/document.xml.'
                 );
             }
+
             $dom = new DOMDocument();
 
             $dom->preserveWhiteSpace = true;
@@ -2811,9 +3795,11 @@ class WordController extends Controller
                 'w',
                 self::WORD_NS
             );
+
             $numIdLista = $this->prepararListaWord(
                 $zip
             );
+
             $filaActividad =
                 $this->buscarFilaActividad(
                     $xpath
@@ -2826,20 +3812,39 @@ class WordController extends Controller
                     'No se encontró la fila de actividades en el Word.'
                 );
             }
+
             $filaSnack =
                 $this->buscarFilaSnack(
                     $xpath
                 );
 
 
+            // ==========================================================
+            // MACROS DE IMÁGENES
+            // ==========================================================
+
+            $imagenesEstrategias = [];
+
+
+            // ==========================================================
+            // PART 1
+            // ==========================================================
+
             $padre =
                 $filaActividad->parentNode;
-            foreach ($part1 as $actividad) {
+
+            foreach ($part1 as $indice => $actividad) {
 
                 $fila =
                     $this->clonarFila(
                         $filaActividad
                     );
+
+                $macroImagen =
+                    'estrategias_imagen_part1_' . $indice;
+
+                $imagenesEstrategias[$macroImagen] =
+                    $actividad['estrategias_metologicas_imagen'] ?? '';
 
                 $this->rellenarActividad(
                     $dom,
@@ -2847,7 +3852,8 @@ class WordController extends Controller
                     $fila,
                     $actividad,
                     $numIdLista,
-                    $tamanoLetraActividades
+                    $tamanoLetraActividades,
+                    $macroImagen
                 );
 
                 $padre->insertBefore(
@@ -2855,6 +3861,12 @@ class WordController extends Controller
                     $filaActividad
                 );
             }
+
+
+            // ==========================================================
+            // FILA SNACK
+            // ==========================================================
+
             if ($filaSnack === null) {
 
                 $filaSnack =
@@ -2874,12 +3886,24 @@ class WordController extends Controller
                     $filaActividad
                 );
             }
-            foreach ($part2 as $actividad) {
+
+
+            // ==========================================================
+            // PART 2
+            // ==========================================================
+
+            foreach ($part2 as $indice => $actividad) {
 
                 $fila =
                     $this->clonarFila(
                         $filaActividad
                     );
+
+                $macroImagen =
+                    'estrategias_imagen_part2_' . $indice;
+
+                $imagenesEstrategias[$macroImagen] =
+                    $actividad['estrategias_metologicas_imagen'] ?? '';
 
                 $this->rellenarActividad(
                     $dom,
@@ -2887,7 +3911,8 @@ class WordController extends Controller
                     $fila,
                     $actividad,
                     $numIdLista,
-                    $tamanoLetraActividades
+                    $tamanoLetraActividades,
+                    $macroImagen
                 );
 
                 $this->insertarDespues(
@@ -2897,15 +3922,33 @@ class WordController extends Controller
 
                 $filaSnack = $fila;
             }
+
+
+            // ==========================================================
+            // ELIMINAR FILA ORIGINAL
+            // ==========================================================
+
             $padre->removeChild(
                 $filaActividad
             );
+
+
+            // ==========================================================
+            // GUARDAR DOCUMENT.XML
+            // ==========================================================
+
             $zip->addFromString(
                 'word/document.xml',
                 $dom->saveXML()
             );
 
             $zip->close();
+
+
+            // ==========================================================
+            // TEMPLATE PROCESSOR
+            // ==========================================================
+
             $template =
                 new TemplateProcessor(
                     $temporal
@@ -2934,6 +3977,8 @@ class WordController extends Controller
                 '4_tiempo_estimado',
                 $planificacion->tiempo_estimado ?? ''
             );
+
+
             $fecha = $planificacion->fecha;
 
             if ($fecha) {
@@ -2983,23 +4028,90 @@ class WordController extends Controller
                 '9_nocion_dia',
                 $planificacion->nocion_dia ?? ''
             );
+
+
+            // ==========================================================
+            // APLICAR IMÁGENES DE ESTRATEGIAS METODOLÓGICAS
+            // ==========================================================
+
+            $this->aplicarImagenesEstrategias(
+                $template,
+                $imagenesEstrategias
+            );
+
+
+            // ==========================================================
+            // GUARDAR WORD
+            // ==========================================================
+
             $template->saveAs(
                 $archivo
             );
 
             unset($template);
+
+
+            // ==========================================================
+            // FORMATO GLOBAL
+            // ==========================================================
+
             $this->aplicarFormatoGlobal(
                 $archivo,
                 $numIdLista
             );
+
 
         } finally {
 
             if (isset($template)) {
                 unset($template);
             }
+
             $this->eliminarTemporal(
                 $temporal
+            );
+        }
+    }
+
+
+    private function aplicarImagenesEstrategias(
+        TemplateProcessor $template,
+        array $imagenes
+    ): void {
+
+        foreach ($imagenes as $macro => $ruta) {
+
+            if (empty($ruta)) {
+
+                $template->setValue(
+                    $macro,
+                    ''
+                );
+
+                continue;
+            }
+
+            $rutaFisica = Storage::disk('public')
+                ->path($ruta);
+
+            if (!is_file($rutaFisica)) {
+
+                $template->setValue(
+                    $macro,
+                    ''
+                );
+
+                continue;
+            }
+
+            $template->setImageValue(
+                $macro,
+                [
+                    'path' => $rutaFisica,
+                    'width' => 100,
+                    'height' => 100,
+                    'ratio' => true,
+                ]
             );
         }
     }
