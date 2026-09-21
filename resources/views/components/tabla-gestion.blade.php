@@ -26,6 +26,23 @@
 
                 <tr>
 
+                    {{-- =================================================
+                    COLUMNA DE SELECCIÓN
+                    ================================================== --}}
+
+                    @if ($selectable ?? false)
+
+                        <th>
+                            Seleccionar
+                        </th>
+
+                    @endif
+
+
+                    {{-- =================================================
+                    COLUMNAS
+                    ================================================== --}}
+
                     @foreach ($columns as $column)
 
                         <th>
@@ -34,6 +51,10 @@
 
                     @endforeach
 
+
+                    {{-- =================================================
+                    ACCIONES
+                    ================================================== --}}
 
                     @if (
                         ($actions['edit'] ?? false) ||
@@ -56,7 +77,16 @@
                 <tr>
 
                     <td
-                        colspan="{{ count($columns) + (($actions['edit'] ?? false) || ($actions['delete'] ?? false) ? 1 : 0) }}"
+                        colspan="{{
+                            count($columns)
+                            + (($selectable ?? false) ? 1 : 0)
+                            + (
+                                ($actions['edit'] ?? false) ||
+                                ($actions['delete'] ?? false)
+                                ? 1
+                                : 0
+                            )
+                        }}"
                         class="tabla-gestion-loading"
                     >
                         Cargando...

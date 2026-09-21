@@ -60,6 +60,9 @@ export class TablaGestion {
                 delete: true
             };
 
+        this.selectable =
+            config.selectable ?? false;
+
 
         this.emptyMessage =
             config.emptyMessage ??
@@ -213,6 +216,54 @@ export class TablaGestion {
 
                 const fila =
                     document.createElement('tr');
+
+
+                /*
+|--------------------------------------------------------------------------
+| SELECCIÓN
+|--------------------------------------------------------------------------
+*/
+
+                if (this.selectable) {
+
+                    const celdaSeleccion =
+                        document.createElement('td');
+
+
+                    celdaSeleccion.className =
+                        'tabla-gestion-select';
+
+
+                    const checkbox =
+                        document.createElement('input');
+
+
+                    checkbox.type =
+                        'checkbox';
+
+
+                    checkbox.className =
+                        'planificacion-checkbox';
+
+
+                    checkbox.value =
+                        registro.id;
+
+
+                    checkbox.dataset.id =
+                        registro.id;
+
+
+                    celdaSeleccion.appendChild(
+                        checkbox
+                    );
+
+
+                    fila.appendChild(
+                        celdaSeleccion
+                    );
+
+                }
 
 
                 /*
@@ -670,6 +721,13 @@ export class TablaGestion {
             this.columns.length;
 
 
+        if (this.selectable) {
+
+            cantidad++;
+
+        }
+
+
         if (
             this.actions.edit ||
             this.actions.sections ||
@@ -686,7 +744,6 @@ export class TablaGestion {
         return cantidad;
 
     }
-
 
     /*
     |--------------------------------------------------------------------------

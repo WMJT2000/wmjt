@@ -18,8 +18,6 @@ use App\Http\Controllers\ManualController;
 use App\Http\Controllers\ManualSectionController;
 use App\Http\Controllers\ManualStepController;
 use App\Http\Controllers\ManualExecutionController;
-use App\Http\Controllers\HelladController;
-use App\Http\Controllers\PruebaWordController;
 use App\Http\Controllers\WordController;
 use App\Http\Controllers\PlanificacionController;
 
@@ -75,12 +73,17 @@ Route::middleware('auth')->group(function () {
     // API - PLANIFICACIONES
     // ==========================================================
 
-    Route::get('/api/planificaciones', [PlanificacionController::class, 'apiIndex'])
-        ->name('planificaciones.api.index');
+Route::get(
+    '/api/planificaciones/por-fechas',
+    [PlanificacionController::class, 'porFechas']
+)->name('planificaciones.porFechas');
 
-    Route::get('/api/planificaciones/{id}', [PlanificacionController::class, 'apiShow'])
-        ->name('planificaciones.api.show');
+Route::get('/api/planificaciones', [PlanificacionController::class, 'apiIndex'])
+    ->name('planificaciones.api.index');
 
+Route::get('/api/planificaciones/{id}', [PlanificacionController::class, 'apiShow'])
+    ->whereNumber('id')
+    ->name('planificaciones.api.show');
 
     // ==========================================================
     // API - PLANTILLAS
@@ -107,21 +110,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/word/generar', [WordController::class, 'generar'])
         ->name('word.generar');
 
-    Route::get('/prueba-word', [PruebaWordController::class, 'generar']);
+    Route::post(
+        '/planificaciones/generar-multiples',
+        [WordController::class, 'generarMultiples']
+    )->name('planificaciones.generarMultiples');
+
+   
 
 
-    // planificaciones educacion inicial
-    Route::get('/hellad', [HelladController::class, 'index'])
-        ->name('hellad.index');
-
-    Route::get('/hellad/eje/{id}', [HelladController::class, 'eje'])
-        ->name('hellad.eje');
-
-    Route::get('/hellad/ambito/{id}', [HelladController::class, 'ambito'])
-        ->name('hellad.ambito');
-
-    Route::get('/hellad/objetivo/{id}', [HelladController::class, 'objetivo'])
-        ->name('hellad.objetivo');
 
 
     // ==========================================================
@@ -304,6 +300,9 @@ Route::middleware('auth')->group(function () {
         '/gestion/planificaciones',
         [PlanificacionController::class, 'index']
     )->name('gestion.planificacion.index');
+
+
+
 
 
     // ==========================================================

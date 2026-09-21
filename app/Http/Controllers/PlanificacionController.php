@@ -39,6 +39,43 @@ class PlanificacionController extends Controller
 
 
     // ==========================================
+// API - PLANIFICACIONES POR RANGO DE FECHAS
+// ==========================================
+
+public function porFechas(Request $request)
+{
+    $request->validate([
+        'desde' => 'required|date',
+        'hasta' => 'required|date',
+    ]);
+
+    $desde = $request->input('desde');
+    $hasta = $request->input('hasta');
+
+    if ($desde > $hasta) {
+        return response()->json([
+            'success' => false,
+            'message' => 'La fecha inicial no puede ser mayor que la fecha final.'
+        ], 422);
+    }
+
+    $planificaciones = Auth::user()
+        ->planificaciones()
+        ->where('es_plantilla', false)
+        ->whereDate('fecha', '>=', $desde)
+        ->whereDate('fecha', '<=', $hasta)
+        ->orderBy('fecha', 'asc')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    return response()->json([
+        'success' => true,
+        'data' => $planificaciones
+    ]);
+}
+
+
+    // ==========================================
     // API - LISTAR PLANTILLAS
     // ==========================================
 

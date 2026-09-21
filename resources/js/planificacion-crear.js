@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     async function autoguardarPlanificacion() {
 
-       
+
 
         // Evitar dos autoguardados simultáneos
         if (autoGuardando) {
@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async function () {
             const data =
                 await response.json();
 
-           
+
 
             if (!data.success) {
 
@@ -343,16 +343,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                 !window.planificacionId ||
                 usandoPlantilla
             ) {
-
                 window.planificacionId =
                     data.planificacion_id;
 
                 planificacionCreadaPorAutoguardado =
                     true;
 
-                // MUY IMPORTANTE
-                // Desde ahora ya no estamos usando
-                // la plantilla original.
                 usandoPlantilla = false;
 
               
@@ -366,7 +362,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             cambiosPendientes = false;
 
-          
+
 
         } catch (error) {
 
@@ -1649,15 +1645,17 @@ document.addEventListener('DOMContentLoaded', async function () {
         ---------------------------------------------------------
         */
 
+        const tienePlanificacionGuardada =
+            window.planificacionId !== null &&
+            window.planificacionId !== undefined &&
+            window.planificacionId !== '';
+
         const url =
-            editando
+            tienePlanificacionGuardada
                 ? `/planificaciones/${window.planificacionId}`
-                : saveButton.formAction ||
-                '/planificaciones';
+                : '/planificaciones';
 
-
-        if (editando) {
-
+        if (tienePlanificacionGuardada) {
             formData.append(
                 '_method',
                 'PUT'
@@ -1883,7 +1881,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             alert(
                 'Plantilla guardada correctamente.'
-            );
+);
 
 
             window.location.href =
@@ -1917,51 +1915,51 @@ document.addEventListener('DOMContentLoaded', async function () {
     /* =========================================================
        ACTUALIZAR AL ESCRIBIR
     ========================================================== */
-  form.addEventListener(
-    'input',
-    function (event) {
+    form.addEventListener(
+        'input',
+        function (event) {
 
-       
 
-        const campo = event.target;
 
-        if (
-            campo.matches(
-                'input, textarea, select'
-            )
-        ) {
+            const campo = event.target;
 
-           
+            if (
+                campo.matches(
+                    'input, textarea, select'
+                )
+            ) {
 
-            actualizarEstado();
 
-            marcarCambiosPendientes();
+
+                actualizarEstado();
+
+                marcarCambiosPendientes();
+            }
         }
-    }
-);
+    );
 
-  form.addEventListener(
-    'change',
-    function (event) {
+    form.addEventListener(
+        'change',
+        function (event) {
 
-       
 
-        const campo = event.target;
 
-        if (
-            campo.matches(
-                'input, textarea, select'
-            )
-        ) {
+            const campo = event.target;
 
-         
+            if (
+                campo.matches(
+                    'input, textarea, select'
+                )
+            ) {
 
-            actualizarEstado();
 
-            marcarCambiosPendientes();
+
+                actualizarEstado();
+
+                marcarCambiosPendientes();
+            }
         }
-    }
-);
+    );
 
 
     /* =========================================================
@@ -2105,11 +2103,11 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         if (usandoPlantilla) {
 
-           
+
 
         } else {
 
-           
+
         }
 
 
@@ -2196,7 +2194,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
 
 
-             
+
             }
 
 
@@ -2228,7 +2226,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
 
 
-              
+
             }
 
 
@@ -2261,7 +2259,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
 
 
-               
+
             }
 
 

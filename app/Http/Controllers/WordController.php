@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use PhpOffice\PhpWord\TemplateProcessor;
 use PhpOffice\PhpWord\Settings;
+use Illuminate\Support\Facades\Auth;
 
 use ZipArchive;
 use DOMDocument;
@@ -3015,4 +3016,1076 @@ class WordController extends Controller
             usleep(100000);
         }
     }
+
+public function generarMultiples(Request $request)
+{
+    $request->validate([
+        'planificaciones' => 'required|array|min:1',
+        'planificaciones.*' => 'integer',
+    ]);
+
+    $tempDir = storage_path('app/tmp');
+
+    if (!is_dir($tempDir)) {
+        mkdir($tempDir, 0777, true);
+    }
+
+    // Configuración de PhpWord
+    Settings::setTempDir($tempDir);
+
+    putenv('TMP=' . $tempDir);
+    putenv('TEMP=' . $tempDir);
+    putenv('TMPDIR=' . $tempDir);
+
+    $ids = $request->input('planificaciones');
+
+    /*
+    |--------------------------------------------------------------------------
+    | OBTENER PLANIFICACIONES
+    |--------------------------------------------------------------------------
+    */
+
+    $planificaciones = Auth::user()
+        ->planificaciones()
+        ->with('actividades')
+        ->whereIn('id', $ids)
+        ->get()
+        ->keyBy('id');
+
+    /*
+    |--------------------------------------------------------------------------
+    | MANTENER EL ORDEN ENVIADO DESDE EL FRONTEND
+    |--------------------------------------------------------------------------
+    */
+
+    $planificacionesOrdenadas = collect($ids)
+        ->map(function ($id) use ($planificaciones) {
+            return $planificaciones->get($id);
+        })
+        ->filter();
+
+    if ($planificacionesOrdenadas->isEmpty()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No se encontraron planificaciones válidas.'
+        ], 404);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONSTRUIR NOMBRE SEGÚN LAS FECHAS
+    |--------------------------------------------------------------------------
+    |
+    | Ejemplos:
+    |
+    | 2026-09-07
+    |      ↓
+    | 2026-09-07
+    |
+    | 2026-09-07
+    | 2026-09-08
+    | 2026-09-10
+    |      ↓
+    | 2026-09-07-08-10
+    |
+    | 2026-08-01
+    | 2026-08-02
+    | 2026-09-04
+    | 2026-09-05
+    |      ↓
+    | 2026-08-01-02_09-04-05
+    |
+    | 2025-09-01
+    | 2026-08-01
+    | 2026-08-02
+    | 2026-09-04
+    | 2026-09-05
+    |      ↓
+    | 2025-09-01-2026-08-01-02_09-04-05
+    |
+    */
+
+    $fechas = $planificacionesOrdenadas
+        ->pluck('fecha')
+        ->filter()
+        ->map(function ($fecha) {
+            return \Carbon\Carbon::parse($fecha);
+        })
+        ->sortBy(function ($fecha) {
+            return $fecha->timestamp;
+        })
+        ->values();
+
+    /*
+    |--------------------------------------------------------------------------
+    | AGRUPAR POR AÑO Y MES
+    |--------------------------------------------------------------------------
+    */
+
+    $gruposFechas = [];
+
+    foreach ($fechas as $fecha) {
+
+        $anio = $fecha->format('Y');
+        $mes = $fecha->format('m');
+        $dia = $fecha->format('d');
+
+        if (!isset($gruposFechas[$anio])) {
+            $gruposFechas[$anio] = [];
+        }
+
+        if (!isset($gruposFechas[$anio][$mes])) {
+            $gruposFechas[$anio][$mes] = [];
+        }
+
+        $gruposFechas[$anio][$mes][] = $dia;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONSTRUIR TEXTO DE FECHAS
+    |--------------------------------------------------------------------------
+    */
+
+    $partesFecha = [];
+
+    foreach ($gruposFechas as $anio => $meses) {
+
+        foreach ($meses as $mes => $dias) {
+
+            /*
+            |--------------------------------------------------------------
+            | Eliminar días repetidos
+            |--------------------------------------------------------------
+            */
+
+            $dias = array_unique($dias);
+
+            sort($dias);
+
+            /*
+            |--------------------------------------------------------------
+            | Primer día lleva año y mes.
+            | Los siguientes solamente llevan el día.
+            |--------------------------------------------------------------
+            */
+
+            $textoDias = $anio . '-' . $mes;
+
+            foreach ($dias as $indice => $dia) {
+
+                if ($indice === 0) {
+
+                    $textoDias .= '-' . $dia;
+
+                } else {
+
+                    $textoDias .= '-' . $dia;
+                }
+            }
+
+            $partesFecha[] = $textoDias;
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | NOMBRE FINAL
+    |--------------------------------------------------------------------------
+    */
+
+    $nombreBase = 'planificaciones';
+
+    if (!empty($partesFecha)) {
+
+        $nombreBase .= ' ' .
+            implode('_', $partesFecha);
+    }
+
+    $nombreDescarga = $nombreBase . '.docx';
+
+    /*
+    |--------------------------------------------------------------------------
+    | ARCHIVOS TEMPORALES
+    |--------------------------------------------------------------------------
+    */
+
+    $archivosTemporales = [];
+
+    try {
+
+        /*
+        |--------------------------------------------------------------------------
+        | GENERAR UN WORD POR CADA PLANIFICACIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($planificacionesOrdenadas as $planificacion) {
+
+            $archivoTemporal =
+                $tempDir .
+                '/planificacion_' .
+                $planificacion->id .
+                '_' .
+                uniqid() .
+                '.docx';
+
+            $this->generarDocumentoDesdePlanificacion(
+                $planificacion,
+                $archivoTemporal
+            );
+
+            $archivosTemporales[] =
+                $archivoTemporal;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ARCHIVO WORD FINAL
+        |--------------------------------------------------------------------------
+        */
+
+        $archivoFinal =
+            $tempDir .
+            '/planificaciones_' .
+            date('Ymd_His') .
+            '_' .
+            uniqid() .
+            '.docx';
+
+        /*
+        |--------------------------------------------------------------------------
+        | UNIR TODOS LOS WORD
+        |--------------------------------------------------------------------------
+        */
+
+        $this->unirDocumentosWord(
+            $archivosTemporales,
+            $archivoFinal
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELIMINAR WORD INDIVIDUALES
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($archivosTemporales as $archivo) {
+
+            $this->eliminarTemporal(
+                $archivo
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | DESCARGAR WORD FINAL
+        |--------------------------------------------------------------------------
+        */
+
+        return response()
+            ->download(
+                $archivoFinal,
+                $nombreDescarga,
+                [
+                    'Content-Type' =>
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                ]
+            )
+            ->deleteFileAfterSend(true);
+
+    } catch (\Throwable $e) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | LIMPIAR ARCHIVOS TEMPORALES
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($archivosTemporales as $archivo) {
+
+            $this->eliminarTemporal(
+                $archivo
+            );
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' =>
+                'Error al generar las planificaciones.',
+            'error' =>
+                $e->getMessage(),
+        ], 500);
+    }
+}
+
+private function unirDocumentosWord(
+    array $archivos,
+    string $archivoFinal
+): void {
+    if (empty($archivos)) {
+        throw new \Exception('No hay documentos para unir.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Copiar el primer documento como documento base
+    |--------------------------------------------------------------------------
+    */
+    if (!copy($archivos[0], $archivoFinal)) {
+        throw new \Exception(
+            'No se pudo crear el documento Word final.'
+        );
+    }
+
+    $zipFinal = new ZipArchive();
+
+    if ($zipFinal->open($archivoFinal) !== true) {
+        throw new \Exception(
+            'No se pudo abrir el documento Word final.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Leer document.xml del primer Word
+    |--------------------------------------------------------------------------
+    */
+    $xmlPrincipal = $zipFinal->getFromName(
+        'word/document.xml'
+    );
+
+    if ($xmlPrincipal === false) {
+        $zipFinal->close();
+
+        throw new \Exception(
+            'No se encontró word/document.xml en el documento base.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | DOM principal
+    |--------------------------------------------------------------------------
+    */
+    $domPrincipal = new DOMDocument();
+
+    $domPrincipal->preserveWhiteSpace = false;
+
+    if (!$domPrincipal->loadXML($xmlPrincipal)) {
+        $zipFinal->close();
+
+        throw new \Exception(
+            'No se pudo leer el XML del documento base.'
+        );
+    }
+
+    $xpathPrincipal = new DOMXPath($domPrincipal);
+
+    $xpathPrincipal->registerNamespace(
+        'w',
+        self::WORD_NS
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Buscar <w:body>
+    |--------------------------------------------------------------------------
+    */
+    $bodyPrincipal = $xpathPrincipal->query(
+        '//w:body'
+    )->item(0);
+
+    if (!$bodyPrincipal) {
+        $zipFinal->close();
+
+        throw new \Exception(
+            'No se encontró el cuerpo del documento Word.'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Buscar <w:sectPr>
+    |
+    | sectPr debe permanecer SIEMPRE al final del body.
+    |--------------------------------------------------------------------------
+    */
+    $sectPr = $xpathPrincipal->query(
+        './w:sectPr',
+        $bodyPrincipal
+    )->item(0);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Procesar los demás documentos
+    |--------------------------------------------------------------------------
+    */
+    for ($i = 1; $i < count($archivos); $i++) {
+
+        $archivo = $archivos[$i];
+
+        $zipSecundario = new ZipArchive();
+
+        if ($zipSecundario->open($archivo) !== true) {
+            $zipFinal->close();
+
+            throw new \Exception(
+                "No se pudo abrir el documento: {$archivo}"
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Leer document.xml secundario
+        |--------------------------------------------------------------------------
+        */
+        $xmlSecundario = $zipSecundario->getFromName(
+            'word/document.xml'
+        );
+
+        if ($xmlSecundario === false) {
+            $zipSecundario->close();
+            $zipFinal->close();
+
+            throw new \Exception(
+                'No se encontró word/document.xml en uno de los documentos.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | DOM secundario
+        |--------------------------------------------------------------------------
+        */
+        $domSecundario = new DOMDocument();
+
+        $domSecundario->preserveWhiteSpace = false;
+
+        if (!$domSecundario->loadXML($xmlSecundario)) {
+            $zipSecundario->close();
+            $zipFinal->close();
+
+            throw new \Exception(
+                'No se pudo leer el XML de una de las planificaciones.'
+            );
+        }
+
+        $xpathSecundario = new DOMXPath($domSecundario);
+
+        $xpathSecundario->registerNamespace(
+            'w',
+            self::WORD_NS
+        );
+
+        $bodySecundario = $xpathSecundario->query(
+            '//w:body'
+        )->item(0);
+
+        if (!$bodySecundario) {
+            $zipSecundario->close();
+            $zipFinal->close();
+
+            throw new \Exception(
+                'No se encontró el body de una de las planificaciones.'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Salto de página antes de la siguiente planificación
+        |--------------------------------------------------------------------------
+        */
+        $parrafoSalto = $domPrincipal->createElementNS(
+            self::WORD_NS,
+            'w:p'
+        );
+
+        $runSalto = $domPrincipal->createElementNS(
+            self::WORD_NS,
+            'w:r'
+        );
+
+        $br = $domPrincipal->createElementNS(
+            self::WORD_NS,
+            'w:br'
+        );
+
+        $br->setAttributeNS(
+            self::WORD_NS,
+            'w:type',
+            'page'
+        );
+
+        $runSalto->appendChild($br);
+        $parrafoSalto->appendChild($runSalto);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Insertar el salto antes de sectPr
+        |--------------------------------------------------------------------------
+        */
+        if ($sectPr) {
+            $bodyPrincipal->insertBefore(
+                $parrafoSalto,
+                $sectPr
+            );
+        } else {
+            $bodyPrincipal->appendChild(
+                $parrafoSalto
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Copiar todos los elementos del body secundario
+        |
+        | Exceptuamos w:sectPr porque el documento final solamente
+        | debe conservar el sectPr del documento base.
+        |--------------------------------------------------------------------------
+        */
+        foreach ($bodySecundario->childNodes as $nodo) {
+
+            if (
+                $nodo->nodeType === XML_ELEMENT_NODE &&
+                $nodo->localName === 'sectPr'
+            ) {
+                continue;
+            }
+
+            $nodoImportado = $domPrincipal->importNode(
+                $nodo,
+                true
+            );
+
+            if ($sectPr) {
+                $bodyPrincipal->insertBefore(
+                    $nodoImportado,
+                    $sectPr
+                );
+            } else {
+                $bodyPrincipal->appendChild(
+                    $nodoImportado
+                );
+            }
+        }
+
+        $zipSecundario->close();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Guardar XML final
+    |--------------------------------------------------------------------------
+    */
+    $xmlFinal = $domPrincipal->saveXML();
+
+    $zipFinal->addFromString(
+        'word/document.xml',
+        $xmlFinal
+    );
+
+    $zipFinal->close();
+}
+
+private function generarDocumentoDesdePlanificacion(
+    $planificacion,
+    string $archivo
+): void {
+    /*
+    |--------------------------------------------------------------------------
+    | DIRECTORIO TEMPORAL
+    |--------------------------------------------------------------------------
+    */
+
+    $tmpDir = storage_path('app/tmp');
+
+    if (!is_dir($tmpDir)) {
+        mkdir($tmpDir, 0775, true);
+    }
+
+    if (!is_writable($tmpDir)) {
+        throw new \Exception(
+            'El directorio temporal no tiene permisos de escritura: ' . $tmpDir
+        );
+    }
+
+    Settings::setTempDir($tmpDir);
+
+    putenv('TMPDIR=' . $tmpDir);
+    putenv('TMP=' . $tmpDir);
+    putenv('TEMP=' . $tmpDir);
+
+    @ini_set('sys_temp_dir', $tmpDir);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACTIVIDADES
+    |--------------------------------------------------------------------------
+    */
+
+    $part1 = $planificacion->actividades
+        ->where('seccion', 'part1')
+        ->sortBy('orden')
+        ->map(function ($actividad) {
+            return [
+                'ambito' =>
+                    $actividad->ambito ?? '',
+
+                'destreza' =>
+                    $actividad->destreza ?? '',
+
+                'estrategias_metologicas' =>
+                    $actividad->estrategias_metologicas ?? '',
+
+                'recursos' =>
+                    $actividad->recursos ?? '',
+
+                'indicadores_logro' =>
+                    $actividad->indicadores_logro ?? '',
+            ];
+        })
+        ->values()
+        ->toArray();
+
+
+    $part2 = $planificacion->actividades
+        ->where('seccion', 'part2')
+        ->sortBy('orden')
+        ->map(function ($actividad) {
+            return [
+                'ambito' =>
+                    $actividad->ambito ?? '',
+
+                'destreza' =>
+                    $actividad->destreza ?? '',
+
+                'estrategias_metologicas' =>
+                    $actividad->estrategias_metologicas ?? '',
+
+                'recursos' =>
+                    $actividad->recursos ?? '',
+
+                'indicadores_logro' =>
+                    $actividad->indicadores_logro ?? '',
+            ];
+        })
+        ->values()
+        ->toArray();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | TAMAÑO DE LETRA
+    |--------------------------------------------------------------------------
+    */
+
+    $tamanoLetraActividades =
+        (int) (
+            $planificacion->tamano_letra_actividades ?? 8
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PLANTILLA
+    |--------------------------------------------------------------------------
+    */
+
+    $plantilla = storage_path(
+        'app/plantillas/planificacion.docx'
+    );
+
+    if (!file_exists($plantilla)) {
+        throw new \Exception(
+            'No existe la plantilla Word.'
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | COPIAR PLANTILLA
+    |--------------------------------------------------------------------------
+    */
+
+    $temporal = $tmpDir .
+        '/temporal_planificacion_' .
+        uniqid('', true) .
+        '.docx';
+
+    if (!copy($plantilla, $temporal)) {
+        throw new \Exception(
+            'No se pudo crear el archivo temporal de Word.'
+        );
+    }
+
+
+    try {
+
+        /*
+        |--------------------------------------------------------------------------
+        | ABRIR WORD
+        |--------------------------------------------------------------------------
+        */
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($temporal) !== true) {
+            throw new \Exception(
+                'No se pudo abrir la plantilla Word.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DOCUMENT.XML
+        |--------------------------------------------------------------------------
+        */
+
+        $xml = $zip->getFromName(
+            'word/document.xml'
+        );
+
+        if ($xml === false) {
+            $zip->close();
+
+            throw new \Exception(
+                'No se encontró word/document.xml.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DOM
+        |--------------------------------------------------------------------------
+        */
+
+        $dom = new DOMDocument();
+
+        $dom->preserveWhiteSpace = true;
+        $dom->formatOutput = false;
+
+        libxml_use_internal_errors(true);
+
+        $resultado = $dom->loadXML($xml);
+
+        libxml_clear_errors();
+
+        if (!$resultado) {
+            $zip->close();
+
+            throw new \Exception(
+                'No se pudo leer el XML del Word.'
+            );
+        }
+
+
+        $xpath = new DOMXPath($dom);
+
+        $xpath->registerNamespace(
+            'w',
+            self::WORD_NS
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREAR LISTA REAL DE WORD
+        |--------------------------------------------------------------------------
+        */
+
+        $numIdLista = $this->prepararListaWord(
+            $zip
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BUSCAR FILA DE ACTIVIDAD
+        |--------------------------------------------------------------------------
+        */
+
+        $filaActividad =
+            $this->buscarFilaActividad(
+                $xpath
+            );
+
+        if ($filaActividad === null) {
+            $zip->close();
+
+            throw new \Exception(
+                'No se encontró la fila de actividades en el Word.'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BUSCAR SNACK
+        |--------------------------------------------------------------------------
+        */
+
+        $filaSnack =
+            $this->buscarFilaSnack(
+                $xpath
+            );
+
+
+        $padre =
+            $filaActividad->parentNode;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTIVIDADES PART1
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($part1 as $actividad) {
+
+            $fila =
+                $this->clonarFila(
+                    $filaActividad
+                );
+
+            $this->rellenarActividad(
+                $dom,
+                $xpath,
+                $fila,
+                $actividad,
+                $numIdLista,
+                $tamanoLetraActividades
+            );
+
+            $padre->insertBefore(
+                $fila,
+                $filaActividad
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | SNACK
+        |--------------------------------------------------------------------------
+        */
+
+        if ($filaSnack === null) {
+
+            $filaSnack =
+                $this->clonarFila(
+                    $filaActividad
+                );
+
+            $this->rellenarSnack(
+                $dom,
+                $xpath,
+                $filaSnack,
+                $tamanoLetraActividades
+            );
+
+            $padre->insertBefore(
+                $filaSnack,
+                $filaActividad
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ACTIVIDADES PART2
+        |--------------------------------------------------------------------------
+        */
+
+        foreach ($part2 as $actividad) {
+
+            $fila =
+                $this->clonarFila(
+                    $filaActividad
+                );
+
+            $this->rellenarActividad(
+                $dom,
+                $xpath,
+                $fila,
+                $actividad,
+                $numIdLista,
+                $tamanoLetraActividades
+            );
+
+            $this->insertarDespues(
+                $filaSnack,
+                $fila
+            );
+
+            $filaSnack = $fila;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELIMINAR FILA ORIGINAL
+        |--------------------------------------------------------------------------
+        */
+
+        $padre->removeChild(
+            $filaActividad
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | GUARDAR DOCUMENT.XML
+        |--------------------------------------------------------------------------
+        */
+
+        $zip->addFromString(
+            'word/document.xml',
+            $dom->saveXML()
+        );
+
+        $zip->close();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATOS GENERALES
+        |--------------------------------------------------------------------------
+        */
+
+        $template =
+            new TemplateProcessor(
+                $temporal
+            );
+
+
+        $template->setValue(
+            '1_experiencia_prendizaje',
+            $planificacion->experiencia_aprendizaje ?? ''
+        );
+
+
+        $template->setValue(
+            '2_descripcion_general_experiencia',
+            $planificacion->descripcion_general_experiencia ?? ''
+        );
+
+
+        $template->setValue(
+            '3_nombre_maestra',
+            $planificacion->nombre_maestra ?? ''
+        );
+
+
+        $template->setValue(
+            '4_tiempo_estimado',
+            $planificacion->tiempo_estimado ?? ''
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FECHA
+        |--------------------------------------------------------------------------
+        */
+
+        $fecha = $planificacion->fecha;
+
+        if ($fecha) {
+
+            $fechaFormateada =
+                \Carbon\Carbon::parse($fecha)
+                    ->locale('es')
+                    ->translatedFormat(
+                        'l d \d\e F \d\e Y'
+                    );
+
+            $fechaFormateada =
+                ucfirst($fechaFormateada);
+
+        } else {
+
+            $fechaFormateada = '';
+
+        }
+
+
+        $template->setValue(
+            '5_fecha',
+            $fechaFormateada
+        );
+
+
+        $template->setValue(
+            '6_nivel_educativo',
+            $planificacion->nivel_educativo ?? ''
+        );
+
+
+        $template->setValue(
+            '7_objetivo_aprendizaje',
+            $planificacion->objetivo_aprendizaje ?? ''
+        );
+
+
+        $template->setValue(
+            '8_elemento_integrador',
+            $planificacion->elemento_integrador ?? ''
+        );
+
+
+        $template->setValue(
+            '9_nocion_dia',
+            $planificacion->nocion_dia ?? ''
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | GUARDAR DOCUMENTO
+        |--------------------------------------------------------------------------
+        */
+
+        $template->saveAs(
+            $archivo
+        );
+
+        unset($template);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FORMATO GLOBAL
+        |--------------------------------------------------------------------------
+        */
+
+        $this->aplicarFormatoGlobal(
+            $archivo,
+            $numIdLista
+        );
+
+    } finally {
+
+        if (isset($template)) {
+            unset($template);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | ELIMINAR TEMPORAL
+        |--------------------------------------------------------------------------
+        */
+
+        $this->eliminarTemporal(
+            $temporal
+        );
+    }
+}
+
+
+
 }
