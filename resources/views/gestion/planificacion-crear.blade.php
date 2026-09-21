@@ -5,8 +5,10 @@
 @section('content')
 
 <script>
-    window.planificacionId = @json($planificacionId);
+   window.planificacionId = @json($planificacionId);
+    window.plantillaId = @json($plantillaId);
     window.usarPlantilla = @json(request()->query('plantilla') == 1);
+    window.recuperandoBorrador = @json($recuperandoBorrador ?? false);
 </script>
 
 <div class="planning-page">

@@ -39,40 +39,41 @@ class PlanificacionController extends Controller
 
 
     // ==========================================
-// API - PLANIFICACIONES POR RANGO DE FECHAS
-// ==========================================
+    // API - PLANIFICACIONES POR RANGO DE FECHAS
+    // ==========================================
 
-public function porFechas(Request $request)
-{
-    $request->validate([
-        'desde' => 'required|date',
-        'hasta' => 'required|date',
-    ]);
+    public function porFechas(Request $request)
+    {
+        $request->validate([
+            'desde' => 'required|date',
+            'hasta' => 'required|date',
+        ]);
 
-    $desde = $request->input('desde');
-    $hasta = $request->input('hasta');
+        $desde = $request->input('desde');
+        $hasta = $request->input('hasta');
 
-    if ($desde > $hasta) {
+        if ($desde > $hasta) {
+            return response()->json([
+                'success' => false,
+                'message' =>
+                    'La fecha inicial no puede ser mayor que la fecha final.'
+            ], 422);
+        }
+
+        $planificaciones = Auth::user()
+            ->planificaciones()
+            ->where('es_plantilla', false)
+            ->whereDate('fecha', '>=', $desde)
+            ->whereDate('fecha', '<=', $hasta)
+            ->orderBy('fecha', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
         return response()->json([
-            'success' => false,
-            'message' => 'La fecha inicial no puede ser mayor que la fecha final.'
-        ], 422);
+            'success' => true,
+            'data' => $planificaciones
+        ]);
     }
-
-    $planificaciones = Auth::user()
-        ->planificaciones()
-        ->where('es_plantilla', false)
-        ->whereDate('fecha', '>=', $desde)
-        ->whereDate('fecha', '<=', $hasta)
-        ->orderBy('fecha', 'asc')
-        ->orderBy('id', 'asc')
-        ->get();
-
-    return response()->json([
-        'success' => true,
-        'data' => $planificaciones
-    ]);
-}
 
 
     // ==========================================
@@ -109,7 +110,8 @@ public function porFechas(Request $request)
         if (!$planificacion) {
             return response()->json([
                 'success' => false,
-                'message' => 'Planificación no encontrada.'
+                'message' =>
+                    'Planificación no encontrada.'
             ], 404);
         }
 
@@ -126,9 +128,179 @@ public function porFechas(Request $request)
 
     public function create(Request $request)
     {
-        return view('gestion.planificacion-crear', [
-            'planificacionId' => $request->query('id')
-        ]);
+        $idUrl = $request->query('id');
+
+        $usandoPlantilla =
+            $request->query('plantilla') == 1;
+
+        $planificacionId = null;
+        $plantillaId = null;
+        $recuperandoBorrador = false;
+
+
+        // =====================================================
+        // CREAR UNA NUEVA PLANIFICACIÓN DESDE UNA PLANTILLA
+        // =====================================================
+
+        if ($usandoPlantilla && $idUrl) {
+
+            /*
+            -----------------------------------------------------
+            PRIMERO BUSCAMOS SI YA EXISTE UN BORRADOR CREADO
+            DESDE ESTA MISMA PLANTILLA.
+            -----------------------------------------------------
+            */
+
+            $borradorId =
+                session('planificacion_borrador_id');
+
+            $borradorPlantillaId =
+                session('planificacion_borrador_plantilla_id');
+
+
+            /*
+            -----------------------------------------------------
+            COMPROBAR QUE EL BORRADOR CORRESPONDA A ESTA
+            PLANTILLA.
+            -----------------------------------------------------
+            */
+
+            if (
+                $borradorId &&
+                $borradorPlantillaId &&
+                (string) $borradorPlantillaId ===
+                    (string) $idUrl
+            ) {
+
+                $borrador = Auth::user()
+                    ->planificaciones()
+                    ->where('id', $borradorId)
+                    ->where('estado', 'borrador')
+                    ->where('es_plantilla', false)
+                    ->first();
+
+                if ($borrador) {
+
+                    /*
+                    -------------------------------------------------
+                    IMPORTANTE:
+
+                    Aquí NO usamos el ID de la plantilla.
+
+                    Usamos el ID de la NUEVA planificación.
+                    -------------------------------------------------
+                    */
+
+                    $planificacionId =
+                        $borrador->id;
+
+                    $recuperandoBorrador =
+                        true;
+                }
+            }
+
+
+            /*
+            -----------------------------------------------------
+            SI NO EXISTE BORRADOR:
+
+            Ahora sí cargamos la plantilla original.
+            -----------------------------------------------------
+            */
+
+            if (!$recuperandoBorrador) {
+
+                $plantilla = Auth::user()
+                    ->planificaciones()
+                    ->where('id', $idUrl)
+                    ->where('es_plantilla', true)
+                    ->firstOrFail();
+
+                $plantillaId =
+                    $plantilla->id;
+            }
+        }
+
+
+        // =====================================================
+        // EDITAR PLANIFICACIÓN EXISTENTE
+        // =====================================================
+
+        elseif ($idUrl) {
+
+            $planificacion = Auth::user()
+                ->planificaciones()
+                ->where('id', $idUrl)
+                ->where('es_plantilla', false)
+                ->firstOrFail();
+
+            $planificacionId =
+                $planificacion->id;
+        }
+
+
+        // =====================================================
+        // NUEVA PLANIFICACIÓN / RECUPERAR BORRADOR
+        // =====================================================
+
+        else {
+
+            $borradorId =
+                session('planificacion_borrador_id');
+
+            if ($borradorId) {
+
+                $borrador = Auth::user()
+                    ->planificaciones()
+                    ->where('id', $borradorId)
+                    ->where('estado', 'borrador')
+                    ->where('es_plantilla', false)
+                    ->first();
+
+                if ($borrador) {
+
+                    $planificacionId =
+                        $borrador->id;
+
+                    $recuperandoBorrador =
+                        true;
+
+                } else {
+
+                    /*
+                    ---------------------------------------------
+                    El borrador ya no existe.
+
+                    Limpiamos ambas variables de sesión.
+                    ---------------------------------------------
+                    */
+
+                    session()->forget([
+                        'planificacion_borrador_id',
+                        'planificacion_borrador_plantilla_id'
+                    ]);
+                }
+            }
+        }
+
+
+        // =====================================================
+        // ENVIAR DATOS A LA VISTA
+        // =====================================================
+
+        return view(
+            'gestion.planificacion-crear',
+            [
+                'planificacionId' =>
+                    $planificacionId,
+
+                'plantillaId' =>
+                    $plantillaId,
+
+                'recuperandoBorrador' =>
+                    $recuperandoBorrador,
+            ]
+        );
     }
 
 
@@ -138,9 +310,22 @@ public function porFechas(Request $request)
 
     public function store(Request $request)
     {
+        // ==========================================
+        // DETERMINAR SI ES GUARDADO DEFINITIVO
+        // ==========================================
+
+        $finalizar =
+            $request->boolean('finalizar');
+
+
+        // ==========================================
+        // CREAR PLANIFICACIÓN
+        // ==========================================
+
         $planificacion = Planificacion::create([
 
-            'user_id' => Auth::id(),
+            'user_id' =>
+                Auth::id(),
 
             'experiencia_aprendizaje' =>
                 $request->input(
@@ -193,8 +378,14 @@ public function porFechas(Request $request)
                     8
                 ),
 
+            // ==========================================
+            // BORRADOR / FINALIZADA
+            // ==========================================
+
             'estado' =>
-                'borrador',
+                $finalizar
+                    ? 'finalizada'
+                    : 'borrador',
 
             'progreso' =>
                 $request->input(
@@ -203,13 +394,13 @@ public function porFechas(Request $request)
                 ),
 
             // ==========================================
-            // IMPORTANTE
-            // 0 = planificación normal
-            // 1 = plantilla
+            // NORMAL / PLANTILLA
             // ==========================================
 
             'es_plantilla' =>
-                $request->boolean('es_plantilla'),
+                $request->boolean(
+                    'es_plantilla'
+                ),
         ]);
 
 
@@ -222,7 +413,10 @@ public function porFechas(Request $request)
             []
         );
 
-        foreach ($part1 as $index => $actividad) {
+        foreach (
+            $part1
+            as $index => $actividad
+        ) {
 
             Actividad::create([
 
@@ -242,13 +436,17 @@ public function porFechas(Request $request)
                     $actividad['destreza'] ?? null,
 
                 'estrategias_metologicas' =>
-                    $actividad['estrategias_metologicas'] ?? null,
+                    $actividad[
+                        'estrategias_metologicas'
+                    ] ?? null,
 
                 'recursos' =>
                     $actividad['recursos'] ?? null,
 
                 'indicadores_logro' =>
-                    $actividad['indicadores_logro'] ?? null,
+                    $actividad[
+                        'indicadores_logro'
+                    ] ?? null,
             ]);
         }
 
@@ -262,7 +460,10 @@ public function porFechas(Request $request)
             []
         );
 
-        foreach ($part2 as $index => $actividad) {
+        foreach (
+            $part2
+            as $index => $actividad
+        ) {
 
             Actividad::create([
 
@@ -282,39 +483,116 @@ public function porFechas(Request $request)
                     $actividad['destreza'] ?? null,
 
                 'estrategias_metologicas' =>
-                    $actividad['estrategias_metologicas'] ?? null,
+                    $actividad[
+                        'estrategias_metologicas'
+                    ] ?? null,
 
                 'recursos' =>
                     $actividad['recursos'] ?? null,
 
                 'indicadores_logro' =>
-                    $actividad['indicadores_logro'] ?? null,
+                    $actividad[
+                        'indicadores_logro'
+                    ] ?? null,
             ]);
         }
 
 
         // ==========================================
-        // RESPUESTA
+        // MANEJAR BORRADOR EN SESIÓN
+        // ==========================================
+
+        if (
+            !$planificacion->es_plantilla &&
+            $planificacion->estado === 'borrador'
+        ) {
+
+            /*
+            -----------------------------------------------------
+            Guardamos el ID de la nueva planificación.
+            -----------------------------------------------------
+            */
+
+            session([
+                'planificacion_borrador_id' =>
+                    $planificacion->id,
+
+                /*
+                -------------------------------------------------
+                Si vino desde una plantilla, guardamos cuál fue.
+
+                Ejemplo:
+
+                plantilla = 1
+                borrador = 25
+
+                queda:
+
+                planificacion_borrador_id = 25
+                planificacion_borrador_plantilla_id = 1
+                -------------------------------------------------
+                */
+
+                'planificacion_borrador_plantilla_id' =>
+                    $request->input(
+                        'plantilla_origen_id'
+                    )
+            ]);
+
+        } elseif (
+            !$planificacion->es_plantilla &&
+            $planificacion->estado === 'finalizada'
+        ) {
+
+            /*
+            -----------------------------------------------------
+            La planificación ya terminó.
+            Ya no debe recuperarse como borrador.
+            -----------------------------------------------------
+            */
+
+            session()->forget([
+                'planificacion_borrador_id',
+                'planificacion_borrador_plantilla_id'
+            ]);
+        }
+
+
+        // ==========================================
+        // RESPUESTA JSON
         // ==========================================
 
         if ($request->expectsJson()) {
 
             return response()->json([
-                'success' => true,
+
+                'success' =>
+                    true,
 
                 'message' =>
                     $planificacion->es_plantilla
                         ? 'Plantilla guardada correctamente.'
-                        : 'Planificación guardada correctamente.',
+                        : (
+                            $finalizar
+                                ? 'Planificación guardada correctamente.'
+                                : 'Borrador guardado correctamente.'
+                        ),
 
                 'planificacion_id' =>
                     $planificacion->id,
 
                 'es_plantilla' =>
                     $planificacion->es_plantilla,
+
+                'estado' =>
+                    $planificacion->estado,
             ]);
         }
 
+
+        // ==========================================
+        // RESPUESTA NORMAL
+        // ==========================================
 
         return redirect()
             ->back()
@@ -322,7 +600,11 @@ public function porFechas(Request $request)
                 'success',
                 $planificacion->es_plantilla
                     ? 'Plantilla guardada correctamente.'
-                    : 'Planificación guardada correctamente.'
+                    : (
+                        $finalizar
+                            ? 'Planificación guardada correctamente.'
+                            : 'Borrador guardado correctamente.'
+                    )
             );
     }
 
@@ -331,11 +613,19 @@ public function porFechas(Request $request)
     // ACTUALIZAR PLANIFICACIÓN
     // ==========================================
 
-    public function update(Request $request, $id)
-    {
+    public function update(
+        Request $request,
+        $id
+    ) {
+
+        // ==========================================
+        // BUSCAR PLANIFICACIÓN DEL USUARIO
+        // ==========================================
+
         $planificacion = Auth::user()
             ->planificaciones()
             ->find($id);
+
 
         if (!$planificacion) {
 
@@ -346,6 +636,18 @@ public function porFechas(Request $request)
             ], 404);
         }
 
+
+        // ==========================================
+        // SABER SI ES GUARDADO DEFINITIVO
+        // ==========================================
+
+        $finalizar =
+            $request->boolean('finalizar');
+
+
+        // ==========================================
+        // ACTUALIZAR DATOS PRINCIPALES
+        // ==========================================
 
         $planificacion->update([
 
@@ -400,6 +702,15 @@ public function porFechas(Request $request)
                     8
                 ),
 
+            // ==========================================
+            // BORRADOR / FINALIZADA
+            // ==========================================
+
+            'estado' =>
+                $finalizar
+                    ? 'finalizada'
+                    : 'borrador',
+
             'progreso' =>
                 $request->input(
                     'progreso',
@@ -426,7 +737,10 @@ public function porFechas(Request $request)
             []
         );
 
-        foreach ($part1 as $index => $actividad) {
+        foreach (
+            $part1
+            as $index => $actividad
+        ) {
 
             Actividad::create([
 
@@ -446,13 +760,17 @@ public function porFechas(Request $request)
                     $actividad['destreza'] ?? null,
 
                 'estrategias_metologicas' =>
-                    $actividad['estrategias_metologicas'] ?? null,
+                    $actividad[
+                        'estrategias_metologicas'
+                    ] ?? null,
 
                 'recursos' =>
                     $actividad['recursos'] ?? null,
 
                 'indicadores_logro' =>
-                    $actividad['indicadores_logro'] ?? null,
+                    $actividad[
+                        'indicadores_logro'
+                    ] ?? null,
             ]);
         }
 
@@ -466,7 +784,10 @@ public function porFechas(Request $request)
             []
         );
 
-        foreach ($part2 as $index => $actividad) {
+        foreach (
+            $part2
+            as $index => $actividad
+        ) {
 
             Actividad::create([
 
@@ -486,13 +807,60 @@ public function porFechas(Request $request)
                     $actividad['destreza'] ?? null,
 
                 'estrategias_metologicas' =>
-                    $actividad['estrategias_metologicas'] ?? null,
+                    $actividad[
+                        'estrategias_metologicas'
+                    ] ?? null,
 
                 'recursos' =>
                     $actividad['recursos'] ?? null,
 
                 'indicadores_logro' =>
-                    $actividad['indicadores_logro'] ?? null,
+                    $actividad[
+                        'indicadores_logro'
+                    ] ?? null,
+            ]);
+        }
+
+
+        // ==========================================
+        // MANEJAR BORRADOR EN SESIÓN
+        // ==========================================
+
+        if ($finalizar) {
+
+            /*
+            -----------------------------------------------------
+            PLANIFICACIÓN FINALIZADA
+            -----------------------------------------------------
+            */
+
+            session()->forget([
+                'planificacion_borrador_id',
+                'planificacion_borrador_plantilla_id'
+            ]);
+
+        } else {
+
+            /*
+            -----------------------------------------------------
+            SIGUE SIENDO BORRADOR
+            -----------------------------------------------------
+            */
+
+            session([
+                'planificacion_borrador_id' =>
+                    $planificacion->id,
+
+                /*
+                -------------------------------------------------
+                Mantener el origen de plantilla si ya existe.
+                -------------------------------------------------
+                */
+
+                'planificacion_borrador_plantilla_id' =>
+                    session(
+                        'planificacion_borrador_plantilla_id'
+                    )
             ]);
         }
 
@@ -502,13 +870,20 @@ public function porFechas(Request $request)
         // ==========================================
 
         return response()->json([
-            'success' => true,
+
+            'success' =>
+                true,
 
             'message' =>
-                'Planificación actualizada correctamente.',
+                $finalizar
+                    ? 'Planificación guardada correctamente.'
+                    : 'Borrador guardado correctamente.',
 
             'planificacion_id' =>
                 $planificacion->id,
+
+            'estado' =>
+                $planificacion->estado,
         ]);
     }
 
@@ -538,6 +913,23 @@ public function porFechas(Request $request)
         ]);
 
 
+        // ==========================================
+        // SI ERA EL BORRADOR ACTIVO,
+        // QUITARLO DE LA SESIÓN
+        // ==========================================
+
+        if (
+            session('planificacion_borrador_id')
+            == $planificacion->id
+        ) {
+
+            session()->forget([
+                'planificacion_borrador_id',
+                'planificacion_borrador_plantilla_id'
+            ]);
+        }
+
+
         return response()->json([
             'success' => true,
             'message' =>
@@ -565,6 +957,27 @@ public function porFechas(Request $request)
             ], 404);
         }
 
+
+        // ==========================================
+        // SI ES EL BORRADOR ACTIVO,
+        // QUITARLO DE LA SESIÓN
+        // ==========================================
+
+        if (
+            session('planificacion_borrador_id')
+            == $planificacion->id
+        ) {
+
+            session()->forget([
+                'planificacion_borrador_id',
+                'planificacion_borrador_plantilla_id'
+            ]);
+        }
+
+
+        // ==========================================
+        // ELIMINAR PLANIFICACIÓN
+        // ==========================================
 
         $planificacion->delete();
 
