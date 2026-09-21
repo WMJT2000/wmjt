@@ -126,182 +126,214 @@ class PlanificacionController extends Controller
     // MOSTRAR FORMULARIO DE CREACIÓN / EDICIÓN
     // ==========================================
 
-    public function create(Request $request)
-    {
-        $idUrl = $request->query('id');
+  // ==========================================
+// MOSTRAR FORMULARIO DE CREACIÓN / EDICIÓN
+// ==========================================
 
-        $usandoPlantilla =
-            $request->query('plantilla') == 1;
+public function create(Request $request)
+{
+    $idUrl = $request->query('id');
 
-        $planificacionId = null;
-        $plantillaId = null;
-        $recuperandoBorrador = false;
+    $usandoPlantilla =
+        $request->query('plantilla') == 1;
 
-
-        // =====================================================
-        // CREAR UNA NUEVA PLANIFICACIÓN DESDE UNA PLANTILLA
-        // =====================================================
-
-        if ($usandoPlantilla && $idUrl) {
-
-            /*
-            -----------------------------------------------------
-            PRIMERO BUSCAMOS SI YA EXISTE UN BORRADOR CREADO
-            DESDE ESTA MISMA PLANTILLA.
-            -----------------------------------------------------
-            */
-
-            $borradorId =
-                session('planificacion_borrador_id');
-
-            $borradorPlantillaId =
-                session('planificacion_borrador_plantilla_id');
+    $planificacionId = null;
+    $plantillaId = null;
+    $recuperandoBorrador = false;
 
 
-            /*
-            -----------------------------------------------------
-            COMPROBAR QUE EL BORRADOR CORRESPONDA A ESTA
-            PLANTILLA.
-            -----------------------------------------------------
-            */
+    // =====================================================
+    // CASO 1
+    // CREAR NUEVA PLANIFICACIÓN DESDE UNA PLANTILLA
+    // =====================================================
 
-            if (
-                $borradorId &&
-                $borradorPlantillaId &&
-                (string) $borradorPlantillaId ===
-                    (string) $idUrl
-            ) {
+    if ($usandoPlantilla && $idUrl) {
 
-                $borrador = Auth::user()
-                    ->planificaciones()
-                    ->where('id', $borradorId)
-                    ->where('estado', 'borrador')
-                    ->where('es_plantilla', false)
-                    ->first();
+        /*
+        -----------------------------------------------------
+        BUSCAR SI YA EXISTE UN BORRADOR CREADO DESDE
+        ESTA MISMA PLANTILLA
+        -----------------------------------------------------
+        */
 
-                if ($borrador) {
+        $borradorId =
+            session('planificacion_borrador_id');
 
-                    /*
-                    -------------------------------------------------
-                    IMPORTANTE:
-
-                    Aquí NO usamos el ID de la plantilla.
-
-                    Usamos el ID de la NUEVA planificación.
-                    -------------------------------------------------
-                    */
-
-                    $planificacionId =
-                        $borrador->id;
-
-                    $recuperandoBorrador =
-                        true;
-                }
-            }
+        $borradorPlantillaId =
+            session('planificacion_borrador_plantilla_id');
 
 
-            /*
-            -----------------------------------------------------
-            SI NO EXISTE BORRADOR:
+        /*
+        -----------------------------------------------------
+        COMPROBAR SI EL BORRADOR PERTENECE A ESTA PLANTILLA
+        -----------------------------------------------------
+        */
 
-            Ahora sí cargamos la plantilla original.
-            -----------------------------------------------------
-            */
+        if (
+            $borradorId &&
+            $borradorPlantillaId &&
+            (string) $borradorPlantillaId ===
+                (string) $idUrl
+        ) {
 
-            if (!$recuperandoBorrador) {
+            $borrador = Auth::user()
+                ->planificaciones()
+                ->where('id', $borradorId)
+                ->where('estado', 'borrador')
+                ->where('es_plantilla', false)
+                ->first();
 
-                $plantilla = Auth::user()
-                    ->planificaciones()
-                    ->where('id', $idUrl)
-                    ->where('es_plantilla', true)
-                    ->firstOrFail();
+            if ($borrador) {
 
-                $plantillaId =
-                    $plantilla->id;
+                /*
+                -------------------------------------------------
+                IMPORTANTE:
+
+                Aquí usamos el ID de la planificación nueva,
+                NO el ID de la plantilla.
+                -------------------------------------------------
+                */
+
+                $planificacionId =
+                    $borrador->id;
+
+                $recuperandoBorrador =
+                    true;
             }
         }
 
 
-        // =====================================================
-        // EDITAR PLANIFICACIÓN EXISTENTE
-        // =====================================================
+        /*
+        -----------------------------------------------------
+        SI NO HAY BORRADOR:
 
-        elseif ($idUrl) {
+        CARGAMOS LA PLANTILLA COMO ORIGEN.
+        -----------------------------------------------------
+        */
 
-            $planificacion = Auth::user()
+        if (!$recuperandoBorrador) {
+
+            $plantilla = Auth::user()
                 ->planificaciones()
                 ->where('id', $idUrl)
-                ->where('es_plantilla', false)
+                ->where('es_plantilla', true)
                 ->firstOrFail();
 
-            $planificacionId =
-                $planificacion->id;
+            $plantillaId =
+                $plantilla->id;
         }
+    }
 
 
-        // =====================================================
-        // NUEVA PLANIFICACIÓN / RECUPERAR BORRADOR
-        // =====================================================
+    // =====================================================
+    // CASO 2
+    // EDITAR PLANIFICACIÓN O PLANTILLA EXISTENTE
+    // =====================================================
 
-        else {
+    elseif ($idUrl) {
 
-            $borradorId =
-                session('planificacion_borrador_id');
+        /*
+        -----------------------------------------------------
+        AQUÍ NO FILTRAMOS es_plantilla = false.
 
-            if ($borradorId) {
+        Primero buscamos cualquier registro del usuario.
 
-                $borrador = Auth::user()
-                    ->planificaciones()
-                    ->where('id', $borradorId)
-                    ->where('estado', 'borrador')
-                    ->where('es_plantilla', false)
-                    ->first();
+        Esto permite:
 
-                if ($borrador) {
+        /planificaciones/crear?id=25
+        -> editar planificación normal
 
-                    $planificacionId =
-                        $borrador->id;
+        /planificaciones/crear?id=1
+        -> editar plantilla
+        -----------------------------------------------------
+        */
 
-                    $recuperandoBorrador =
-                        true;
+        $registro = Auth::user()
+            ->planificaciones()
+            ->where('id', $idUrl)
+            ->firstOrFail();
 
-                } else {
 
-                    /*
-                    ---------------------------------------------
-                    El borrador ya no existe.
+        /*
+        -----------------------------------------------------
+        TANTO LA PLANIFICACIÓN NORMAL COMO LA PLANTILLA
+        SE ENVÍAN COMO planificacionId.
 
-                    Limpiamos ambas variables de sesión.
-                    ---------------------------------------------
-                    */
+        El JS será quien determine si es plantilla.
+        -----------------------------------------------------
+        */
 
-                    session()->forget([
-                        'planificacion_borrador_id',
-                        'planificacion_borrador_plantilla_id'
-                    ]);
-                }
+        $planificacionId =
+            $registro->id;
+    }
+
+
+    // =====================================================
+    // CASO 3
+    // NUEVA PLANIFICACIÓN / RECUPERAR BORRADOR
+    // =====================================================
+
+    else {
+
+        $borradorId =
+            session('planificacion_borrador_id');
+
+
+        if ($borradorId) {
+
+            $borrador = Auth::user()
+                ->planificaciones()
+                ->where('id', $borradorId)
+                ->where('estado', 'borrador')
+                ->where('es_plantilla', false)
+                ->first();
+
+
+            if ($borrador) {
+
+                $planificacionId =
+                    $borrador->id;
+
+                $recuperandoBorrador =
+                    true;
+
+            } else {
+
+                /*
+                ---------------------------------------------
+                EL BORRADOR YA NO EXISTE.
+
+                LIMPIAMOS LA SESIÓN.
+                ---------------------------------------------
+                */
+
+                session()->forget([
+                    'planificacion_borrador_id',
+                    'planificacion_borrador_plantilla_id'
+                ]);
             }
         }
-
-
-        // =====================================================
-        // ENVIAR DATOS A LA VISTA
-        // =====================================================
-
-        return view(
-            'gestion.planificacion-crear',
-            [
-                'planificacionId' =>
-                    $planificacionId,
-
-                'plantillaId' =>
-                    $plantillaId,
-
-                'recuperandoBorrador' =>
-                    $recuperandoBorrador,
-            ]
-        );
     }
+
+
+    // =====================================================
+    // ENVIAR DATOS A LA VISTA
+    // =====================================================
+
+    return view(
+        'gestion.planificacion-crear',
+        [
+            'planificacionId' =>
+                $planificacionId,
+
+            'plantillaId' =>
+                $plantillaId,
+
+            'recuperandoBorrador' =>
+                $recuperandoBorrador,
+        ]
+    );
+}
 
 
     // ==========================================
