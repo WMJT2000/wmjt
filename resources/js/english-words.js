@@ -537,6 +537,19 @@ document.addEventListener(
                 }
 
 
+                const pronunciacion =
+    formulario.querySelector(
+        '[name="pronunciation_guide"]'
+    );
+
+if (pronunciacion) {
+
+    pronunciacion.value =
+        palabra.pronunciation_guide ?? '';
+
+}
+
+
                 const ejemplo =
                     formulario.querySelector(
                         '[name="example"]'
