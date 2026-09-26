@@ -1,33 +1,29 @@
-
 @extends('layouts.app')
 
-@section('title', 'Categorías')
+@section('title', 'Categorías de ' . $technology->name)
 
 @section('content')
 
 <div class="gestion-container">
 
-
-    {{-- 
-    |--------------------------------------------------------------------------
-    | HEADER
-    |--------------------------------------------------------------------------
-    --}}
+    <div
+        id="technologyContext"
+        data-technology-id="{{ $technology->id }}"
+    ></div>
 
     <div class="gestion-header">
 
         <div>
 
             <h1>
-                Categorías
+                Categorías de {{ $technology->name }}
             </h1>
 
             <p>
-                Administrar categorías
+                Administrar categorías de esta tecnología
             </p>
 
         </div>
-
 
         <button
             type="button"
@@ -38,14 +34,6 @@
         </button>
 
     </div>
-
-
-
-    {{-- 
-    |--------------------------------------------------------------------------
-    | FORMULARIO
-    |--------------------------------------------------------------------------
-    --}}
 
     <div
         id="categoryFormContainer"
@@ -65,21 +53,6 @@
             'buttonText' => 'Guardar',
 
             'fields' => [
-
-                [
-                    'name' => 'technology_id',
-
-                    'label' => 'Tecnología',
-
-                    'type' => 'select',
-
-                    'placeholder' =>
-                        'Seleccione una tecnología',
-
-                    'required' => true,
-
-                    'options' => []
-                ],
 
                 [
                     'name' => 'name',
@@ -115,25 +88,6 @@
 
     </div>
 
-
-
-    {{-- 
-    |--------------------------------------------------------------------------
-    | TABLA GESTIÓN
-    |--------------------------------------------------------------------------
-    |
-    | La tabla es reutilizable.
-    |
-    | categories.js solamente proporciona:
-    |
-    | - datos
-    | - columnas
-    | - acciones
-    |
-    | TablaGestion se encarga del renderizado.
-    |
-    --}}
-
     @include('components.tabla-gestion', [
 
         'id' => 'categoriesTable',
@@ -144,12 +98,6 @@
                 'key' => 'id',
 
                 'label' => 'ID'
-            ],
-
-            [
-                'key' => 'technology.name',
-
-                'label' => 'Tecnología'
             ],
 
             [
@@ -170,14 +118,14 @@
 
             'edit' => true,
 
+            'concepts' => true,
+
             'delete' => true
 
         ]
 
     ])
 
-
 </div>
 
 @endsection
-

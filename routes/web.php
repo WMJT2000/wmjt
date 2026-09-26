@@ -294,6 +294,11 @@ Route::middleware('auth')->group(function () {
         [CategoryController::class, 'page']
     )->name('categories.index');
 
+    Route::get(
+    '/gestion/technologies/{technologyId}/categories',
+    [CategoryController::class, 'categories']
+)->name('technologies.categories');
+
 
     // Conceptos
     Route::get(
@@ -301,7 +306,10 @@ Route::middleware('auth')->group(function () {
         [ConceptController::class, 'page']
     )->name('concepts.index');
 
-
+Route::get(
+    '/gestion/categories/{categoryId}/concepts',
+    [ConceptController::class, 'concepts']
+)->name('categories.concepts');
     // Gestión de planificaciones
     Route::get(
         '/gestion/planificaciones',

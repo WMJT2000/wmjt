@@ -3,26 +3,42 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Technology;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    // GET /api/categories
-
     public function page()
-{
-    $categories = Category::with('technology')
-        ->orderBy('id', 'asc')
-        ->get();
-
-    return view('gestion.categories', compact('categories'));
-}
-
-    public function index()
     {
         $categories = Category::with('technology')
             ->orderBy('id', 'asc')
             ->get();
+
+        return view('gestion.categories', compact('categories'));
+    }
+
+    public function categories(int $technologyId)
+    {
+        $technology = Technology::findOrFail($technologyId);
+
+        return view('gestion.categories', [
+            'technology' => $technology
+        ]);
+    }
+
+    public function index(Request $request)
+    {
+        $query = Category::with('technology')
+            ->orderBy('id', 'asc');
+
+        if ($request->filled('technology_id')) {
+            $query->where(
+                'technology_id',
+                $request->integer('technology_id')
+            );
+        }
+
+        $categories = $query->get();
 
         return response()->json([
             'success' => true,
@@ -30,8 +46,6 @@ class CategoryController extends Controller
         ]);
     }
 
-
-    // GET /api/categories/{id}
     public function show($id)
     {
         $category = Category::with('technology')
@@ -50,8 +64,6 @@ class CategoryController extends Controller
         ]);
     }
 
-
-    // POST /api/categories
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -69,8 +81,6 @@ class CategoryController extends Controller
         ], 201);
     }
 
-
-    // PUT /api/categories/{id}
     public function update(Request $request, $id)
     {
         $category = Category::find($id);
@@ -97,8 +107,6 @@ class CategoryController extends Controller
         ]);
     }
 
-
-    // DELETE /api/categories/{id}
     public function destroy($id)
     {
         $category = Category::find($id);
@@ -118,8 +126,6 @@ class CategoryController extends Controller
         ]);
     }
 
-
-    // GET /api/categories/{id}/concepts
     public function concepts($id)
     {
         $category = Category::find($id);

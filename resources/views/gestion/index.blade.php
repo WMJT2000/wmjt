@@ -88,7 +88,7 @@
 
                     {{-- CONOCIMIENTO TÉCNICO --}}
 
-                    <a href="{{ route('gestion.knowledge.index') }}" class="management-card">
+                    <a href="{{ route('technologies.index') }}" class="management-card">
 
                         <div class="management-icon">
                             🔎

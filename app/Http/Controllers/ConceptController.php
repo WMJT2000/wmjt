@@ -3,31 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Models\Concept;
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class ConceptController extends Controller
 {
-
-public function page()
-{
-    $concepts = Concept::with([
-        'category',
-        'category.technology'
-    ])
-    ->orderBy('id', 'asc')
-    ->get();
-
-    return view('gestion.concepts', compact('concepts'));
-}
-    // GET /api/concepts
-    public function index()
+    public function page()
     {
         $concepts = Concept::with([
-                'category',
-                'category.technology'
-            ])
+            'category',
+            'category.technology'
+        ])
             ->orderBy('id', 'asc')
             ->get();
+
+        return view('gestion.concepts', compact('concepts'));
+    }
+
+    public function concepts(int $categoryId)
+    {
+        $category = Category::findOrFail($categoryId);
+
+        return view('gestion.concepts', [
+            'category' => $category
+        ]);
+    }
+
+    public function index(Request $request)
+    {
+        $query = Concept::with([
+            'category',
+            'category.technology'
+        ])
+            ->orderBy('id', 'asc');
+
+        if ($request->filled('category_id')) {
+            $query->where(
+                'category_id',
+                $request->integer('category_id')
+            );
+        }
+
+        $concepts = $query->get();
 
         return response()->json([
             'success' => true,
@@ -35,18 +52,15 @@ public function page()
         ]);
     }
 
-
-    // GET /api/concepts/{id}
     public function show($id)
     {
         $concept = Concept::with([
-                'category',
-                'category.technology'
-            ])
+            'category',
+            'category.technology'
+        ])
             ->find($id);
 
         if (!$concept) {
-
             return response()->json([
                 'success' => false,
                 'message' => 'Concepto no encontrado'
@@ -57,59 +71,43 @@ public function page()
             'success' => true,
             'data' => [
                 'id' => $concept->id,
-
                 'category_id' =>
-                    $concept->category_id,
-
+                $concept->category_id,
                 'technology_id' =>
-                    $concept->category->technology_id,
-
+                $concept->category->technology_id,
                 'name' =>
-                    $concept->name,
-
+                $concept->name,
                 'slug' =>
-                    $concept->slug,
-
+                $concept->slug,
                 'type' =>
-                    $concept->type,
-
+                $concept->type,
                 'description' =>
-                    $concept->description,
-
+                $concept->description,
                 'how_to_use' =>
-                    $concept->how_to_use,
-
+                $concept->how_to_use,
                 'example' =>
-                    $concept->example,
+                $concept->example,
             ]
         ]);
     }
 
-
-    // POST /api/concepts
     public function store(Request $request)
     {
         $validated = $request->validate([
             'category_id' =>
-                'required|integer|exists:categories,id',
-
+            'required|integer|exists:categories,id',
             'name' =>
-                'required|string|max:150',
-
+            'required|string|max:150',
             'slug' =>
-                'required|string|max:150',
-
+            'required|string|max:150',
             'type' =>
-                'required|string|max:50',
-
+            'required|string|max:50',
             'description' =>
-                'nullable|string',
-
+            'nullable|string',
             'how_to_use' =>
-                'nullable|string',
-
+            'nullable|string',
             'example' =>
-                'nullable|string',
+            'nullable|string',
         ]);
 
         $concept = Concept::create($validated);
@@ -121,14 +119,11 @@ public function page()
         ], 201);
     }
 
-
-    // PUT /api/concepts/{id}
     public function update(Request $request, $id)
     {
         $concept = Concept::find($id);
 
         if (!$concept) {
-
             return response()->json([
                 'success' => false,
                 'message' => 'Concepto no encontrado'
@@ -137,25 +132,19 @@ public function page()
 
         $validated = $request->validate([
             'category_id' =>
-                'sometimes|required|integer|exists:categories,id',
-
+            'sometimes|required|integer|exists:categories,id',
             'name' =>
-                'sometimes|required|string|max:150',
-
+            'sometimes|required|string|max:150',
             'slug' =>
-                'sometimes|required|string|max:150',
-
+            'sometimes|required|string|max:150',
             'type' =>
-                'sometimes|required|string|max:50',
-
+            'sometimes|required|string|max:50',
             'description' =>
-                'nullable|string',
-
+            'nullable|string',
             'how_to_use' =>
-                'nullable|string',
-
+            'nullable|string',
             'example' =>
-                'nullable|string',
+            'nullable|string',
         ]);
 
         $concept->update($validated);
@@ -167,14 +156,11 @@ public function page()
         ]);
     }
 
-
-    // DELETE /api/concepts/{id}
     public function destroy($id)
     {
         $concept = Concept::find($id);
 
         if (!$concept) {
-
             return response()->json([
                 'success' => false,
                 'message' => 'Concepto no encontrado'

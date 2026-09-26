@@ -1,32 +1,30 @@
 @extends('layouts.app')
 
-@section('title', 'Conceptos')
+@section('title', 'Conceptos de ' . $category->name)
 
 @section('content')
 
 <div class="gestion-container">
 
-
-    {{-- 
-    |--------------------------------------------------------------------------
-    | HEADER
-    |--------------------------------------------------------------------------
-    --}}
+    <div
+        id="categoryContext"
+        data-category-id="{{ $category->id }}"
+        data-technology-id="{{ $category->technology_id }}"
+    ></div>
 
     <div class="gestion-header">
 
         <div>
 
             <h1>
-                Conceptos
+                Conceptos de {{ $category->name }}
             </h1>
 
             <p>
-                Administrar conceptos técnicos
+                Administrar conceptos técnicos de esta categoría
             </p>
 
         </div>
-
 
         <button
             type="button"
@@ -37,14 +35,6 @@
         </button>
 
     </div>
-
-
-
-    {{-- 
-    |--------------------------------------------------------------------------
-    | FORMULARIO
-    |--------------------------------------------------------------------------
-    --}}
 
     <div
         id="conceptFormContainer"
@@ -64,29 +54,6 @@
             'buttonText' => 'Guardar',
 
             'fields' => [
-                [
-    'name' => 'technology_id',
-    'label' => 'Tecnología',
-    'type' => 'select',
-    'placeholder' => 'Seleccione una tecnología',
-    'required' => true,
-    'options' => []
-],
-
-                [
-                    'name' => 'category_id',
-
-                    'label' => 'Categoría',
-
-                    'type' => 'select',
-
-                    'placeholder' =>
-                        'Seleccione una categoría',
-
-                    'required' => true,
-
-                    'options' => []
-                ],
 
                 [
                     'name' => 'name',
@@ -178,20 +145,6 @@
 
     </div>
 
-
-
-    {{-- 
-    |--------------------------------------------------------------------------
-    | TABLA GESTIÓN
-    |--------------------------------------------------------------------------
-    |
-    | Utilizamos exactamente el mismo componente
-    | reutilizable que utiliza Tecnologías.
-    |
-    | La tabla NO conoce la lógica de conceptos.
-    |
-    --}}
-
     @include('components.tabla-gestion', [
 
         'id' => 'conceptsTable',
@@ -208,12 +161,6 @@
                 'key' => 'name',
 
                 'label' => 'Nombre'
-            ],
-
-            [
-                'key' => 'category.name',
-
-                'label' => 'Categoría'
             ],
 
             [
@@ -240,8 +187,6 @@
 
     ])
 
-
 </div>
 
 @endsection
-
