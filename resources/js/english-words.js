@@ -1,54 +1,51 @@
 import { TablaGestion } from './tabla-gestion.js';
 
-
 document.addEventListener(
     'DOMContentLoaded',
     () => {
-
 
         const botonNueva =
             document.getElementById(
                 'btnNuevaEnglishWord'
             );
 
-
         const formularioContainer =
             document.getElementById(
                 'englishWordFormContainer'
             );
-
 
         const formulario =
             document.getElementById(
                 'englishWordForm'
             );
 
-
         const tablaContainer =
             document.getElementById(
                 'englishWordsTable'
             );
 
+        const categoryContext =
+            document.getElementById(
+                'englishCategoryContext'
+            );
+
+        const categoryId =
+            categoryContext
+                ? categoryContext.dataset.categoryId
+                : null;
 
         if (
             !botonNueva ||
             !formularioContainer ||
             !formulario ||
-            !tablaContainer
+            !tablaContainer ||
+            !categoryId
         ) {
-
             return;
-
         }
-
 
         const API_URL =
             '/api/english/words';
-
-
-        const CATEGORIES_URL =
-            '/api/english/words/categories';
-
 
         const tabla =
             new TablaGestion({
@@ -91,11 +88,9 @@ document.addEventListener(
                 ],
 
                 actions: {
-
                     edit: true,
-
+                    meanings: true,
                     delete: true
-
                 },
 
                 emptyMessage:
@@ -109,113 +104,29 @@ document.addEventListener(
 
             });
 
+        let campoCategoria =
+            formulario.querySelector(
+                '[name="english_category_id"]'
+            );
 
-        /*
-        |----------------------------------------------------------------------
-        | CARGAR CATEGORÍAS
-        |----------------------------------------------------------------------
-        */
+        if (!campoCategoria) {
 
-        async function cargarCategorias() {
+            campoCategoria =
+                document.createElement('input');
 
-            try {
+            campoCategoria.type =
+                'hidden';
 
-                const response =
-                    await fetch(
-                        CATEGORIES_URL,
-                        {
-                            method: 'GET',
+            campoCategoria.name =
+                'english_category_id';
 
-                            credentials:
-                                'same-origin',
-
-                            headers: {
-                                'Accept':
-                                    'application/json'
-                            }
-                        }
-                    );
-
-
-                const data =
-                    await response.json();
-
-
-                if (!response.ok) {
-
-                    throw new Error(
-                        data.message ||
-                        `HTTP ${response.status}`
-                    );
-
-                }
-
-
-                const categorias =
-                    Array.isArray(data)
-                        ? data
-                        : data.data ?? [];
-
-
-                const select =
-                    formulario.querySelector(
-                        '[name="english_category_id"]'
-                    );
-
-
-                if (!select) {
-
-                    return;
-
-                }
-
-
-                select.innerHTML =
-                    '<option value="">Selecciona una categoría</option>';
-
-
-                categorias.forEach(
-                    categoria => {
-
-                        const option =
-                            document.createElement(
-                                'option'
-                            );
-
-
-                        option.value =
-                            categoria.id;
-
-
-                        option.textContent =
-                            categoria.name;
-
-
-                        select.appendChild(
-                            option
-                        );
-
-                    }
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    'Error cargando categorías:',
-                    error
-                );
-
-            }
-
+            formulario.appendChild(
+                campoCategoria
+            );
         }
 
-
-        /*
-        |----------------------------------------------------------------------
-        | EDITAR
-        |----------------------------------------------------------------------
-        */
+        campoCategoria.value =
+            categoryId;
 
         tablaContainer.addEventListener(
             'tabla-gestion:edit',
@@ -224,13 +135,9 @@ document.addEventListener(
                 const palabra =
                     event.detail;
 
-
                 if (!palabra) {
-
                     return;
-
                 }
-
 
                 await editarPalabra(
                     palabra.id
@@ -239,12 +146,22 @@ document.addEventListener(
             }
         );
 
+        tablaContainer.addEventListener(
+            'tabla-gestion:meanings',
+            event => {
 
-        /*
-        |----------------------------------------------------------------------
-        | ELIMINAR
-        |----------------------------------------------------------------------
-        */
+                const palabra =
+                    event.detail;
+
+                if (!palabra) {
+                    return;
+                }
+
+                window.location.href =
+                    `/gestion/english/words/${palabra.id}/meanings`;
+
+            }
+        );
 
         tablaContainer.addEventListener(
             'tabla-gestion:delete',
@@ -253,26 +170,18 @@ document.addEventListener(
                 const palabra =
                     event.detail;
 
-
                 if (!palabra) {
-
                     return;
-
                 }
-
 
                 const confirmar =
                     confirm(
                         `¿Seguro que deseas eliminar la palabra "${palabra.word}"?`
                     );
 
-
                 if (!confirmar) {
-
                     return;
-
                 }
-
 
                 await eliminarPalabra(
                     palabra.id
@@ -281,48 +190,38 @@ document.addEventListener(
             }
         );
 
-
-        /*
-        |----------------------------------------------------------------------
-        | NUEVA / CERRAR
-        |----------------------------------------------------------------------
-        */
-
         botonNueva.addEventListener(
             'click',
-            async () => {
+            () => {
 
                 const cerrado =
                     formularioContainer.style.display === 'none' ||
                     formularioContainer.style.display === '';
-
 
                 if (cerrado) {
 
                     formularioContainer.style.display =
                         'block';
 
-
                     formulario.reset();
 
+                    campoCategoria.value =
+                        categoryId;
 
                     formulario.setAttribute(
                         'action',
                         API_URL
                     );
 
-
                     formulario.setAttribute(
                         'method',
                         'POST'
                     );
 
-
                     const titulo =
                         formularioContainer.querySelector(
                             'h2'
                         );
-
 
                     if (titulo) {
 
@@ -331,12 +230,10 @@ document.addEventListener(
 
                     }
 
-
                     const boton =
                         formulario.querySelector(
                             '.form-button'
                         );
-
 
                     if (boton) {
 
@@ -345,18 +242,13 @@ document.addEventListener(
 
                     }
 
-
                     botonNueva.textContent =
                         '− Cerrar formulario';
-
-
-                    await cargarCategorias();
 
                 } else {
 
                     formularioContainer.style.display =
                         'none';
-
 
                     botonNueva.textContent =
                         '+ Nueva palabra';
@@ -366,23 +258,18 @@ document.addEventListener(
             }
         );
 
-
-        /*
-        |----------------------------------------------------------------------
-        | CARGAR PALABRAS
-        |----------------------------------------------------------------------
-        */
-
         async function cargarPalabras() {
 
             tabla.mostrarCargando();
 
-
             try {
+
+                const url =
+                    `${API_URL}?english_category_id=${categoryId}`;
 
                 const response =
                     await fetch(
-                        API_URL,
+                        url,
                         {
                             method: 'GET',
 
@@ -396,12 +283,8 @@ document.addEventListener(
                         }
                     );
 
-
                 const data =
                     await response.json();
-
-
-
 
                 if (!response.ok) {
 
@@ -412,17 +295,14 @@ document.addEventListener(
 
                 }
 
-
                 const palabras =
                     Array.isArray(data)
                         ? data
                         : data.data ?? [];
 
-
                 tabla.establecerDatos(
                     palabras
                 );
-
 
             } catch (error) {
 
@@ -430,7 +310,6 @@ document.addEventListener(
                     'Error cargando palabras:',
                     error
                 );
-
 
                 tabla.mostrarError(
                     `Error cargando palabras: ${error.message}`
@@ -440,19 +319,9 @@ document.addEventListener(
 
         }
 
-
-        /*
-        |----------------------------------------------------------------------
-        | EDITAR PALABRA
-        |----------------------------------------------------------------------
-        */
-
         async function editarPalabra(id) {
 
             try {
-
-                await cargarCategorias();
-
 
                 const response =
                     await fetch(
@@ -470,10 +339,8 @@ document.addEventListener(
                         }
                     );
 
-
                 const data =
                     await response.json();
-
 
                 if (!response.ok) {
 
@@ -484,50 +351,33 @@ document.addEventListener(
 
                 }
 
-
                 const palabra =
                     data.data ?? data;
-
 
                 formularioContainer.style.display =
                     'block';
 
-
                 botonNueva.textContent =
                     '− Cerrar formulario';
-
 
                 formulario.setAttribute(
                     'action',
                     `${API_URL}/${id}`
                 );
 
-
                 formulario.setAttribute(
                     'method',
                     'PUT'
                 );
 
-
-                const categoria =
-                    formulario.querySelector(
-                        '[name="english_category_id"]'
-                    );
-
-
-                if (categoria) {
-
-                    categoria.value =
-                        palabra.english_category_id ?? '';
-
-                }
-
+                campoCategoria.value =
+                    palabra.english_category_id ??
+                    categoryId;
 
                 const campoPalabra =
                     formulario.querySelector(
                         '[name="word"]'
                     );
-
 
                 if (campoPalabra) {
 
@@ -536,25 +386,22 @@ document.addEventListener(
 
                 }
 
-
                 const pronunciacion =
-    formulario.querySelector(
-        '[name="pronunciation_guide"]'
-    );
+                    formulario.querySelector(
+                        '[name="pronunciation_guide"]'
+                    );
 
-if (pronunciacion) {
+                if (pronunciacion) {
 
-    pronunciacion.value =
-        palabra.pronunciation_guide ?? '';
+                    pronunciacion.value =
+                        palabra.pronunciation_guide ?? '';
 
-}
-
+                }
 
                 const ejemplo =
                     formulario.querySelector(
                         '[name="example"]'
                     );
-
 
                 if (ejemplo) {
 
@@ -563,12 +410,10 @@ if (pronunciacion) {
 
                 }
 
-
                 const traduccion =
                     formulario.querySelector(
                         '[name="example_translation"]'
                     );
-
 
                 if (traduccion) {
 
@@ -577,12 +422,10 @@ if (pronunciacion) {
 
                 }
 
-
                 const titulo =
                     formularioContainer.querySelector(
                         'h2'
                     );
-
 
                 if (titulo) {
 
@@ -591,12 +434,10 @@ if (pronunciacion) {
 
                 }
 
-
                 const boton =
                     formulario.querySelector(
                         '.form-button'
                     );
-
 
                 if (boton) {
 
@@ -605,14 +446,12 @@ if (pronunciacion) {
 
                 }
 
-
             } catch (error) {
 
                 console.error(
                     'Error obteniendo palabra:',
                     error
                 );
-
 
                 alert(
                     error.message
@@ -621,13 +460,6 @@ if (pronunciacion) {
             }
 
         }
-
-
-        /*
-        |----------------------------------------------------------------------
-        | ELIMINAR
-        |----------------------------------------------------------------------
-        */
 
         async function eliminarPalabra(id) {
 
@@ -649,10 +481,8 @@ if (pronunciacion) {
                         }
                     );
 
-
                 const data =
                     await response.json();
-
 
                 if (!response.ok) {
 
@@ -663,9 +493,7 @@ if (pronunciacion) {
 
                 }
 
-
                 await cargarPalabras();
-
 
             } catch (error) {
 
@@ -673,7 +501,6 @@ if (pronunciacion) {
                     'Error eliminando:',
                     error
                 );
-
 
                 alert(
                     error.message
@@ -683,40 +510,31 @@ if (pronunciacion) {
 
         }
 
-
-        /*
-        |----------------------------------------------------------------------
-        | FORM.JS
-        |----------------------------------------------------------------------
-        */
-
         formulario.addEventListener(
             'form:success',
             async () => {
 
                 await cargarPalabras();
 
-
                 formulario.reset();
 
+                campoCategoria.value =
+                    categoryId;
 
                 formulario.setAttribute(
                     'action',
                     API_URL
                 );
 
-
                 formulario.setAttribute(
                     'method',
                     'POST'
                 );
 
-
                 const titulo =
                     formularioContainer.querySelector(
                         'h2'
                     );
-
 
                 if (titulo) {
 
@@ -725,12 +543,10 @@ if (pronunciacion) {
 
                 }
 
-
                 const boton =
                     formulario.querySelector(
                         '.form-button'
                     );
-
 
                 if (boton) {
 
@@ -741,9 +557,6 @@ if (pronunciacion) {
 
             }
         );
-
-
-        cargarCategorias();
 
         cargarPalabras();
 

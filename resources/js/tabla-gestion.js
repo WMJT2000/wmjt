@@ -54,6 +54,8 @@ export class TablaGestion {
         this.actions =
             config.actions ?? {
                 edit: true,
+                words: false,
+                meanings: false,
                 sections: false,
                 steps: false,
                 template: false,
@@ -343,6 +345,7 @@ export class TablaGestion {
 
                 if (
                     this.actions.edit ||
+                    this.actions.words ||
                     this.actions.sections ||
                     this.actions.steps ||
                     this.actions.template ||
@@ -436,6 +439,66 @@ export class TablaGestion {
                             botonEditar
                         );
 
+                    }
+
+
+                    /*
+|--------------------------------------------------------------------------
+| PALABRAS
+|--------------------------------------------------------------------------
+*/
+
+                    if (
+                        this.actions.words
+                    ) {
+
+                        const botonPalabras =
+                            document.createElement('button');
+
+
+                        botonPalabras.type =
+                            'button';
+
+
+                        botonPalabras.className =
+                            'tabla-gestion-btn tabla-gestion-btn-words';
+
+
+                        botonPalabras.dataset.action =
+                            'words';
+
+
+                        botonPalabras.dataset.id =
+                            registro.id;
+
+
+                        botonPalabras.textContent =
+                            'Ver palabras';
+
+
+                        celdaAcciones.appendChild(
+                            botonPalabras
+                        );
+
+                    }
+
+
+
+                    if (this.actions.meanings) {
+                        const botonSignificados = document.createElement('button');
+
+                        botonSignificados.type = 'button';
+
+                        botonSignificados.className =
+                            'tabla-gestion-btn tabla-gestion-btn-meanings';
+
+                        botonSignificados.dataset.action = 'meanings';
+
+                        botonSignificados.dataset.id = registro.id;
+
+                        botonSignificados.textContent = 'Ver significados';
+
+                        celdaAcciones.appendChild(botonSignificados);
                     }
 
 
@@ -730,6 +793,7 @@ export class TablaGestion {
 
         if (
             this.actions.edit ||
+            this.actions.words ||
             this.actions.sections ||
             this.actions.steps ||
             this.actions.template ||
@@ -824,6 +888,53 @@ export class TablaGestion {
 
                     return;
 
+                }
+
+
+                /*
+|--------------------------------------------------------------------------
+| PALABRAS
+|--------------------------------------------------------------------------
+*/
+
+                const botonPalabras =
+                    event.target.closest(
+                        '[data-action="words"]'
+                    );
+
+
+                if (botonPalabras) {
+
+                    const id =
+                        botonPalabras.dataset.id;
+
+
+                    const registro =
+                        this.obtenerRegistroPorId(
+                            id
+                        );
+
+
+                    this.emitir(
+                        'words',
+                        registro
+                    );
+
+
+                    return;
+
+                }
+
+
+
+                const botonSignificados =
+                    event.target.closest('[data-action="meanings"]');
+
+                if (botonSignificados) {
+                    const id = botonSignificados.dataset.id;
+                    const registro = this.obtenerRegistroPorId(id);
+                    this.emitir('meanings', registro);
+                    return;
                 }
 
 

@@ -28,14 +28,22 @@ class EnglishMeaningController extends Controller
     |--------------------------------------------------------------------------
     */
 
-    public function index()
+    public function index(Request $request)
     {
-        $meanings = EnglishMeaning::with([
-                'word',
-                'word.category'
-            ])
-            ->orderBy('id', 'asc')
-            ->get();
+        $query = EnglishMeaning::with([
+            'word',
+            'word.category'
+        ])
+            ->orderBy('id', 'asc');
+
+        if ($request->filled('english_word_id')) {
+            $query->where(
+                'english_word_id',
+                $request->integer('english_word_id')
+            );
+        }
+
+        $meanings = $query->get();
 
         return response()->json([
             'success' => true,
@@ -53,9 +61,9 @@ class EnglishMeaningController extends Controller
     public function show($id)
     {
         $meaning = EnglishMeaning::with([
-                'word',
-                'word.category'
-            ])
+            'word',
+            'word.category'
+        ])
             ->find($id);
 
         if (!$meaning) {
@@ -72,16 +80,16 @@ class EnglishMeaningController extends Controller
             'data' => [
 
                 'id' =>
-                    $meaning->id,
+                $meaning->id,
 
                 'english_category_id' =>
-                    $meaning->word->english_category_id,
+                $meaning->word->english_category_id,
 
                 'english_word_id' =>
-                    $meaning->english_word_id,
+                $meaning->english_word_id,
 
                 'meaning' =>
-                    $meaning->meaning,
+                $meaning->meaning,
 
             ]
         ]);
@@ -117,9 +125,9 @@ class EnglishMeaningController extends Controller
     public function wordsByCategory($categoryId)
     {
         $words = EnglishWord::where(
-                'english_category_id',
-                $categoryId
-            )
+            'english_category_id',
+            $categoryId
+        )
             ->orderBy('word', 'asc')
             ->get();
 
@@ -141,10 +149,10 @@ class EnglishMeaningController extends Controller
         $validated = $request->validate([
 
             'english_word_id' =>
-                'required|integer|exists:english_words,id',
+            'required|integer|exists:english_words,id',
 
             'meaning' =>
-                'required|string|max:150',
+            'required|string|max:150',
 
         ]);
 
@@ -157,10 +165,10 @@ class EnglishMeaningController extends Controller
             'success' => true,
 
             'message' =>
-                'Significado creado correctamente',
+            'Significado creado correctamente',
 
             'data' =>
-                $meaning
+            $meaning
 
         ], 201);
     }
@@ -187,7 +195,7 @@ class EnglishMeaningController extends Controller
                 'success' => false,
 
                 'message' =>
-                    'Significado no encontrado'
+                'Significado no encontrado'
 
             ], 404);
         }
@@ -195,10 +203,10 @@ class EnglishMeaningController extends Controller
         $validated = $request->validate([
 
             'english_word_id' =>
-                'sometimes|required|integer|exists:english_words,id',
+            'sometimes|required|integer|exists:english_words,id',
 
             'meaning' =>
-                'sometimes|required|string|max:150',
+            'sometimes|required|string|max:150',
 
         ]);
 
@@ -211,10 +219,10 @@ class EnglishMeaningController extends Controller
             'success' => true,
 
             'message' =>
-                'Significado actualizado correctamente',
+            'Significado actualizado correctamente',
 
             'data' =>
-                $meaning
+            $meaning
 
         ]);
     }
@@ -238,7 +246,7 @@ class EnglishMeaningController extends Controller
                 'success' => false,
 
                 'message' =>
-                    'Significado no encontrado'
+                'Significado no encontrado'
 
             ], 404);
         }
@@ -250,7 +258,7 @@ class EnglishMeaningController extends Controller
             'success' => true,
 
             'message' =>
-                'Significado eliminado correctamente'
+            'Significado eliminado correctamente'
 
         ]);
     }

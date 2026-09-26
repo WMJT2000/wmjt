@@ -75,6 +75,8 @@ document.addEventListener(
 
                     edit: true,
 
+                    words: true,
+
                     delete: true
 
                 },
@@ -115,6 +117,31 @@ document.addEventListener(
                 await editarCategoria(
                     categoria.id
                 );
+
+            }
+        );
+
+        /*
+|--------------------------------------------------------------------------
+| VER PALABRAS
+|--------------------------------------------------------------------------
+*/
+
+        tablaContainer.addEventListener(
+            'tabla-gestion:words',
+            event => {
+
+                const categoria =
+                    event.detail;
+
+                if (!categoria) {
+
+                    return;
+
+                }
+
+                window.location.href =
+                    `/gestion/english/categories/${categoria.id}/words`;
 
             }
         );

@@ -14,6 +14,20 @@ class EnglishCategoryController extends Controller
         return view('gestion.english-categories');
     }
 
+public function words(int $id): View
+{
+    $category = EnglishCategory::findOrFail($id);
+
+    $words = $category->words()
+        ->with('category')
+        ->orderBy('id', 'desc')
+        ->get();
+
+    return view('gestion.english-words', [
+        'category' => $category,
+        'words' => $words,
+    ]);
+}
     public function index(): JsonResponse
     {
         return response()->json(

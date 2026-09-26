@@ -1,21 +1,26 @@
 @extends('layouts.app')
 
-@section('title', 'Significados de inglés')
+@section('title', 'Significados de ' . $word->word)
 
 @section('content')
 
 <div class="gestion-container">
+
+    <div
+        id="englishWordContext"
+        data-word-id="{{ $word->id }}"
+    ></div>
 
     <div class="gestion-header">
 
         <div>
 
             <h1>
-                Significados de inglés
+                Significados de {{ $word->word }}
             </h1>
 
             <p>
-                Administrar significados de palabras en inglés
+                Administrar significados de esta palabra
             </p>
 
         </div>
@@ -29,9 +34,6 @@
         </button>
 
     </div>
-
-
-    {{-- FORMULARIO --}}
 
     <div
         id="englishMeaningFormContainer"
@@ -53,47 +55,11 @@
             'fields' => [
 
                 [
-                    'name' => 'english_category_id',
-
-                    'label' => 'Categoría',
-
-                    'type' => 'select',
-
-                    'placeholder' =>
-                        'Seleccione una categoría',
-
-                    'required' => true,
-
-                    'options' => []
-                ],
-
-                [
-                    'name' => 'english_word_id',
-
-                    'label' => 'Palabra',
-
-                    'type' => 'select',
-
-                    'placeholder' =>
-                        'Seleccione primero una categoría',
-
-                    'required' => true,
-
-                    'options' => []
-                ],
-
-                [
                     'name' => 'meaning',
-
                     'label' => 'Significado',
-
                     'type' => 'text',
-
-                    'placeholder' =>
-                        'Ej: rápido, veloz',
-
+                    'placeholder' => 'Ej: rápido, veloz',
                     'required' => true,
-
                     'maxlength' => 150
                 ]
 
@@ -102,9 +68,6 @@
         ])
 
     </div>
-
-
-    {{-- TABLA --}}
 
     @include('components.tabla-gestion', [
 

@@ -15,15 +15,32 @@ class EnglishWordController extends Controller
         return view('gestion.english-words');
     }
 
-    public function index(): JsonResponse
+
+    public function meanings(int $id): View
     {
-        $words = EnglishWord::with('category')
-            ->orderBy('id', 'desc')
-            ->get();
+        $word = EnglishWord::findOrFail($id);
+
+        return view('gestion.english-meanings', [
+            'word' => $word,
+        ]);
+    }
+
+    public function index(Request $request): JsonResponse
+    {
+        $query = EnglishWord::with('category')
+            ->orderBy('id', 'desc');
+
+        if ($request->filled('english_category_id')) {
+            $query->where(
+                'english_category_id',
+                $request->integer('english_category_id')
+            );
+        }
+
+        $words = $query->get();
 
         return response()->json($words);
     }
-
     public function show(int $id): JsonResponse
     {
         $word = EnglishWord::with('category')
@@ -47,7 +64,7 @@ class EnglishWordController extends Controller
                 'max:100',
             ],
 
-                 'pronunciation_guide' => [
+            'pronunciation_guide' => [
                 'required',
                 'string',
                 'max:100',
@@ -94,7 +111,7 @@ class EnglishWordController extends Controller
                 'max:100',
             ],
 
-              'pronunciation_guide' => [
+            'pronunciation_guide' => [
                 'required',
                 'string',
                 'max:100',

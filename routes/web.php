@@ -259,6 +259,13 @@ Route::middleware('auth')->group(function () {
         [EnglishCategoryController::class, 'page']
     )->name('english.categories.index');
 
+    Route::get('/gestion/english/categories/{id}/words', [EnglishCategoryController::class, 'words'])
+    ->name('english.categories.words');
+
+
+    Route::get('/gestion/english/words/{id}/meanings', [EnglishWordController::class, 'meanings'])
+    ->name('english.words.meanings');
+
 
     // Palabras de inglés
     Route::get(

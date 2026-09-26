@@ -142,8 +142,7 @@
 
                     {{-- INGLÉS --}}
 
-                    <a href="{{ route('gestion.english.index') }}" class="management-card">
-
+                    <a href="{{ route('english.categories.index') }}" class="management-card">
                         <div class="management-icon">
                             🇬🇧
                         </div>

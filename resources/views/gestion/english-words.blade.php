@@ -1,10 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Palabras de inglés')
+@section('title', 'Palabras de ' . $category->name)
 
 @section('content')
 
 <div class="gestion-container">
+
+    {{-- CONTEXTO DE CATEGORÍA --}}
+
+    <div
+        id="englishCategoryContext"
+        data-category-id="{{ $category->id }}"
+    ></div>
+
 
     {{-- HEADER --}}
 
@@ -13,11 +21,11 @@
         <div>
 
             <h1>
-                Palabras de inglés
+                Palabras de {{ $category->name }}
             </h1>
 
             <p>
-                Administrar palabras de inglés
+                Administrar palabras de esta categoría
             </p>
 
         </div>
@@ -56,15 +64,6 @@
             'fields' => [
 
                 [
-                    'name' => 'english_category_id',
-                    'label' => 'Categoría',
-                    'type' => 'select',
-                    'placeholder' => 'Selecciona una categoría',
-                    'required' => true,
-                    'options' => []
-                ],
-
-                [
                     'name' => 'word',
                     'label' => 'Palabra',
                     'type' => 'text',
@@ -72,7 +71,6 @@
                     'required' => true,
                     'maxlength' => 100
                 ],
-
 
                 [
                     'name' => 'pronunciation_guide',
@@ -150,12 +148,13 @@
 
             'edit' => true,
 
+            'meanings' => true,
+
             'delete' => true
 
         ]
 
     ])
-
 
 </div>
 
