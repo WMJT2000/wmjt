@@ -153,8 +153,13 @@ if (study) {
 
                 if (pronunciationText) {
 
+                    const ipa = word.pronunciation_guide;
+
+                    const guia = convertirPronunciacion(ipa)
+                        .replace(/^\/|\/$/g, '');
+
                     pronunciationText.textContent =
-                        word.pronunciation_guide;
+                        `${ipa} | ${guia}`;
 
                 }
 
@@ -448,6 +453,132 @@ if (study) {
     |--------------------------------------------------------------------------
     */
 
+
+
+    /* 
+|--------------------------------------------------------------------------
+| CONVERTIR IPA A GUÍA DE PRONUNCIACIÓN
+|--------------------------------------------------------------------------
+*/
+
+    function convertirPronunciacion(ipa) {
+
+        if (!ipa) {
+            return '';
+        }
+
+        const equivalencias = {
+
+            // =========================================================
+            // 3 O MÁS CARACTERES
+            // =========================================================
+
+            // Agrega aquí combinaciones de 3 o más si las tienes
+
+
+            // =========================================================
+            // 2 CARACTERES
+            // =========================================================
+
+            'ɑː': 'aa',
+            'iː': 'ii',
+            'uː': 'uu',
+            'ɔː': 'oo',
+            'ɜː': 'er',
+
+            'eɪ': 'ey',
+
+            'tʃ': 'ch',
+            'dʒ': 'jh',
+
+            'əl': 'ol',
+
+
+            // =========================================================
+            // 1 CARÁCTER
+            // =========================================================
+
+            'j': 'y',
+            'ʌ': 'o',
+            'ŋ': 'nj',
+            'ʊ': 'uo',
+            'ɪ': 'ie',
+            'æ': 'a',
+            'ə': 'a',
+            'θ': 'dh',
+            'ð': 'dh',
+            'ʃ': 'sh',
+            'ɚ': 'er',
+            'ʒ': 'zzh'
+
+        };
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CLAVES MÁS LARGAS PRIMERO
+        |--------------------------------------------------------------------------
+        */
+
+        const simbolos = Object.keys(equivalencias)
+            .sort((a, b) => b.length - a.length);
+
+
+        let resultado = '';
+        let i = 0;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BUSCAR COINCIDENCIAS COMPLETAS
+        |--------------------------------------------------------------------------
+        */
+
+        while (i < ipa.length) {
+
+            let reemplazado = false;
+
+
+            for (const simbolo of simbolos) {
+
+                /*
+                |--------------------------------------------------------------
+                | ¿Desde esta posición comienza EXACTAMENTE este símbolo?
+                |--------------------------------------------------------------
+                */
+
+                if (ipa.startsWith(simbolo, i)) {
+
+                    resultado += equivalencias[simbolo];
+
+                    i += simbolo.length;
+
+                    reemplazado = true;
+
+                    break;
+                }
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | SI NO ENCUENTRA NINGÚN SÍMBOLO, DEJA EL CARÁCTER IGUAL
+            |--------------------------------------------------------------------------
+            */
+
+            if (!reemplazado) {
+
+                resultado += ipa[i];
+
+                i++;
+
+            }
+
+        }
+
+
+        return resultado;
+    }
     renderWord();
 
 }

@@ -22,6 +22,10 @@ import '../css/manuals-mio.css';
 import '../css/hellad.css';
 import '../css/planificacion-crear.css';
 import '../css/planificaciones.css';
+import '../css/grammar.css';
+import '../css/grammar-category.css';
+import '../css/grammar-topic.css';
+import '../css/grammar-lesson.css';
 // JavaScript
 import './form.js';
 import './technologies.js';
@@ -44,4 +48,5 @@ import './manual-execution.js';
 import './planificaciones.js';
 import './planificacion-crear.js';
 import './english-pronunciation.js';
+import './grammar-lesson.js';
 

@@ -20,6 +20,8 @@ use App\Http\Controllers\ManualStepController;
 use App\Http\Controllers\ManualExecutionController;
 use App\Http\Controllers\WordController;
 use App\Http\Controllers\PlanificacionController;
+use App\Http\Controllers\GrammarController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +51,30 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
 
 
+    Route::prefix('grammar')->group(function () {
+
+        Route::get('/', [
+            GrammarController::class,
+            'index'
+        ])->name('grammar.index');
+
+        Route::get('/category/{id}', [
+            GrammarController::class,
+            'category'
+        ])->name('grammar.category');
+
+        Route::get('/topic/{id}', [
+            GrammarController::class,
+            'topic'
+        ])->name('grammar.topic');
+
+        Route::get('/topic/{id}/lesson', [
+            GrammarController::class,
+            'lesson'
+        ])->name('grammar.lesson');
+    });
+
+
     // ==========================================================
     // PLANIFICACIONES
     // ==========================================================
@@ -73,17 +99,17 @@ Route::middleware('auth')->group(function () {
     // API - PLANIFICACIONES
     // ==========================================================
 
-Route::get(
-    '/api/planificaciones/por-fechas',
-    [PlanificacionController::class, 'porFechas']
-)->name('planificaciones.porFechas');
+    Route::get(
+        '/api/planificaciones/por-fechas',
+        [PlanificacionController::class, 'porFechas']
+    )->name('planificaciones.porFechas');
 
-Route::get('/api/planificaciones', [PlanificacionController::class, 'apiIndex'])
-    ->name('planificaciones.api.index');
+    Route::get('/api/planificaciones', [PlanificacionController::class, 'apiIndex'])
+        ->name('planificaciones.api.index');
 
-Route::get('/api/planificaciones/{id}', [PlanificacionController::class, 'apiShow'])
-    ->whereNumber('id')
-    ->name('planificaciones.api.show');
+    Route::get('/api/planificaciones/{id}', [PlanificacionController::class, 'apiShow'])
+        ->whereNumber('id')
+        ->name('planificaciones.api.show');
 
     // ==========================================================
     // API - PLANTILLAS
@@ -115,7 +141,7 @@ Route::get('/api/planificaciones/{id}', [PlanificacionController::class, 'apiSho
         [WordController::class, 'generarMultiples']
     )->name('planificaciones.generarMultiples');
 
-   
+
 
 
 
@@ -260,11 +286,11 @@ Route::middleware('auth')->group(function () {
     )->name('english.categories.index');
 
     Route::get('/gestion/english/categories/{id}/words', [EnglishCategoryController::class, 'words'])
-    ->name('english.categories.words');
+        ->name('english.categories.words');
 
 
     Route::get('/gestion/english/words/{id}/meanings', [EnglishWordController::class, 'meanings'])
-    ->name('english.words.meanings');
+        ->name('english.words.meanings');
 
 
     // Palabras de inglés
@@ -295,9 +321,9 @@ Route::middleware('auth')->group(function () {
     )->name('categories.index');
 
     Route::get(
-    '/gestion/technologies/{technologyId}/categories',
-    [CategoryController::class, 'categories']
-)->name('technologies.categories');
+        '/gestion/technologies/{technologyId}/categories',
+        [CategoryController::class, 'categories']
+    )->name('technologies.categories');
 
 
     // Conceptos
@@ -306,10 +332,10 @@ Route::middleware('auth')->group(function () {
         [ConceptController::class, 'page']
     )->name('concepts.index');
 
-Route::get(
-    '/gestion/categories/{categoryId}/concepts',
-    [ConceptController::class, 'concepts']
-)->name('categories.concepts');
+    Route::get(
+        '/gestion/categories/{categoryId}/concepts',
+        [ConceptController::class, 'concepts']
+    )->name('categories.concepts');
     // Gestión de planificaciones
     Route::get(
         '/gestion/planificaciones',
