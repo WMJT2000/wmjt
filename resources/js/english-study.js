@@ -461,6 +461,9 @@ if (study) {
 |--------------------------------------------------------------------------
 */
 
+
+
+
     function convertirPronunciacion(ipa) {
 
         if (!ipa) {
@@ -477,6 +480,16 @@ if (study) {
 
 
             // =========================================================
+            // COMBINACIONES CON DIACRÍTICOS
+            // =========================================================
+
+            't̬': 'd',
+            'd̥': 't',
+            's̬': 'z',
+            'z̥': 's',
+
+
+            // =========================================================
             // 2 CARACTERES
             // =========================================================
 
@@ -485,6 +498,7 @@ if (study) {
             'uː': 'uu',
             'ɔː': 'oo',
             'ɜː': 'er',
+            'ɝː': 'er',
 
             'eɪ': 'ey',
 
@@ -492,12 +506,17 @@ if (study) {
             'dʒ': 'jh',
 
             'əl': 'ol',
+            'ɔɪ': 'oy',
+
+            // ɪt solamente cuando la T es final de palabra
+            'ɪt': 'et',
 
 
             // =========================================================
             // 1 CARÁCTER
             // =========================================================
 
+            'ɛ': 'e',
             'j': 'y',
             'ʌ': 'o',
             'ŋ': 'nj',
@@ -510,15 +529,66 @@ if (study) {
             'ʃ': 'sh',
             'ɚ': 'er',
             'ʒ': 'zzh'
-
         };
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CLAVES MÁS LARGAS PRIMERO
-        |--------------------------------------------------------------------------
-        */
+        // =============================================================
+        // DIACRÍTICOS COMBINABLES
+        // =============================================================
+
+        const diacriticos = new Set([
+            '\u0300', // grave
+            '\u0301', // acute
+            '\u0302', // circumflex
+            '\u0303', // tilde
+            '\u0304', // macron
+            '\u0306', // breve
+            '\u0307', // dot above
+            '\u0308', // diaeresis
+            '\u030A', // ring above
+            '\u030C', // caron
+            '\u0310', // candrabindu
+            '\u0311', // inverted breve
+            '\u0312', // turned comma above
+            '\u0313', // comma above
+            '\u0314', // reversed comma above
+            '\u0315', // comma above right
+            '\u031B', // horn
+            '\u0323', // dot below
+            '\u0324', // diaeresis below
+            '\u0325', // ring below
+            '\u0329', // vertical line below
+            '\u032A', // bridge below
+            '\u032B', // arch below
+            '\u032C', // inverted breve below
+            '\u032D', // circumflex below
+            '\u032E', // breve below
+            '\u032F', // inverted breve below
+            '\u0330', // tilde below
+            '\u0331', // macron below
+            '\u0332', // low line
+            '\u0333'  // double low line
+        ]);
+
+
+        // =============================================================
+        // CARACTERES QUE INDICAN FINAL DE PALABRA
+        // =============================================================
+
+        const finalesPalabra = new Set([
+            '/',
+            '.',
+            '-',
+            ' ',
+            '\t',
+            '\n',
+            '\r'
+        ]);
+
+
+        // =============================================================
+        // CLAVES MÁS LARGAS PRIMERO
+        // =============================================================
 
         const simbolos = Object.keys(equivalencias)
             .sort((a, b) => b.length - a.length);
@@ -528,11 +598,9 @@ if (study) {
         let i = 0;
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | BUSCAR COINCIDENCIAS COMPLETAS
-        |--------------------------------------------------------------------------
-        */
+        // =============================================================
+        // BUSCAR COINCIDENCIAS
+        // =============================================================
 
         while (i < ipa.length) {
 
@@ -541,44 +609,82 @@ if (study) {
 
             for (const simbolo of simbolos) {
 
-                /*
-                |--------------------------------------------------------------
-                | ¿Desde esta posición comienza EXACTAMENTE este símbolo?
-                |--------------------------------------------------------------
-                */
-
-                if (ipa.startsWith(simbolo, i)) {
-
-                    resultado += equivalencias[simbolo];
-
-                    i += simbolo.length;
-
-                    reemplazado = true;
-
-                    break;
+                if (!ipa.startsWith(simbolo, i)) {
+                    continue;
                 }
+
+
+                const siguiente = i + simbolo.length;
+
+
+                // =====================================================
+                // ɪt SOLO SI LA T ES FINAL DE PALABRA
+                // =====================================================
+
+                if (simbolo === 'ɪt') {
+
+                    // Si hay algo después de la T...
+                    if (siguiente < ipa.length) {
+
+                        const caracterSiguiente = ipa[siguiente];
+
+                        // Si lo siguiente es un diacrítico,
+                        // NO aplicar ɪt.
+                        if (diacriticos.has(caracterSiguiente)) {
+                            continue;
+                        }
+
+                        // Si lo siguiente no indica final de palabra,
+                        // NO aplicar ɪt.
+                        if (!finalesPalabra.has(caracterSiguiente)) {
+                            continue;
+                        }
+                    }
+                }
+
+
+                // =====================================================
+                // EVITAR COINCIDENCIAS PARCIALES ANTES DE UN DIACRÍTICO
+                // =====================================================
+
+                if (
+                    siguiente < ipa.length &&
+                    diacriticos.has(ipa[siguiente])
+                ) {
+                    continue;
+                }
+
+
+                // =====================================================
+                // REEMPLAZAR
+                // =====================================================
+
+                resultado += equivalencias[simbolo];
+
+                i += simbolo.length;
+
+                reemplazado = true;
+
+                break;
             }
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | SI NO ENCUENTRA NINGÚN SÍMBOLO, DEJA EL CARÁCTER IGUAL
-            |--------------------------------------------------------------------------
-            */
+            // =========================================================
+            // SI NO ENCUENTRA NINGUNA EQUIVALENCIA
+            // =========================================================
 
             if (!reemplazado) {
 
                 resultado += ipa[i];
 
                 i++;
-
             }
-
         }
 
 
         return resultado;
     }
+
     renderWord();
 
 }
