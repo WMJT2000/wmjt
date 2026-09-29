@@ -501,6 +501,7 @@ function convertirPronunciacion(palabra, ipa) {
         'ɝː': 'er',
 
         'eɪ': 'ey',
+        'aɪ': 'ai',
 
         'tʃ': 'ch',
         'dʒ': 'jh',
@@ -508,8 +509,20 @@ function convertirPronunciacion(palabra, ipa) {
         'əl': 'ol',
         'ɔɪ': 'oy',
 
+        // ət solamente cuando la T es final de palabra
+        'ət': 'et',
+
         // ɪt solamente cuando la T es final de palabra
         'ɪt': 'et',
+
+        'ən': 'en',
+        'oʊ': 'ou',
+        'aʊ': 'au',
+        'ɪŋ': 'ing',
+        'ɪk': 'ik',
+        'æn': 'en',
+        
+
 
 
         // =========================================================
@@ -685,23 +698,23 @@ function convertirPronunciacion(palabra, ipa) {
 
 
             // =====================================================
-            // ɪt SOLO SI LA T ES FINAL DE PALABRA
+            // ɪt Y ət SOLO SI LA T ES FINAL DE PALABRA
             // =====================================================
 
-            if (simbolo === 'ɪt') {
+            if (simbolo === 'ɪt' || simbolo === 'ət') {
 
                 if (siguiente < ipa.length) {
 
                     const caracterSiguiente = ipa[siguiente];
 
                     // Si lo siguiente es un diacrítico,
-                    // NO aplicar ɪt.
+                    // NO aplicar ɪt ni ət.
                     if (diacriticos.has(caracterSiguiente)) {
                         continue;
                     }
 
                     // Si lo siguiente no indica final de palabra,
-                    // NO aplicar ɪt.
+                    // NO aplicar ɪt ni ət.
                     if (!finalesPalabra.has(caracterSiguiente)) {
                         continue;
                     }
