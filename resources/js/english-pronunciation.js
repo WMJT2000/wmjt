@@ -1,11 +1,6 @@
 let vozIngles = null;
 
 
-/*
-|--------------------------------------------------------------------------
-| CARGAR VOZ
-|--------------------------------------------------------------------------
-*/
 
 function cargarVoz() {
 
@@ -27,11 +22,6 @@ function cargarVoz() {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| CARGAR VOCES DEL NAVEGADOR
-|--------------------------------------------------------------------------
-*/
 
 window.speechSynthesis.addEventListener(
     'voiceschanged',
@@ -41,11 +31,6 @@ window.speechSynthesis.addEventListener(
 cargarVoz();
 
 
-/*
-|--------------------------------------------------------------------------
-| REPRODUCIR PRONUNCIACIÓN
-|--------------------------------------------------------------------------
-*/
 
 function reproducirPronunciacion(texto) {
 
@@ -90,21 +75,11 @@ function reproducirPronunciacion(texto) {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| HACER LA FUNCIÓN DISPONIBLE GLOBALMENTE
-|--------------------------------------------------------------------------
-*/
 
 window.reproducirPronunciacion =
     reproducirPronunciacion;
 
 
-/*
-|--------------------------------------------------------------------------
-| BOTONES DE ENGLISH STUDY
-|--------------------------------------------------------------------------
-*/
 
 document.addEventListener(
     'click',

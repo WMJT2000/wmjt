@@ -10,24 +10,14 @@ use Illuminate\Http\Request;
 class EnglishMeaningController extends Controller
 {
 
-    /*
-    |--------------------------------------------------------------------------
-    | PÁGINA
-    |--------------------------------------------------------------------------
-    */
-
+    
     public function page()
     {
         return view('gestion.english-meanings');
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | GET /api/english/meanings
-    |--------------------------------------------------------------------------
-    */
-
+    
     public function index(Request $request)
     {
         $query = EnglishMeaning::with([
@@ -52,12 +42,7 @@ class EnglishMeaningController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | GET /api/english/meanings/{id}
-    |--------------------------------------------------------------------------
-    */
-
+    
     public function show($id)
     {
         $meaning = EnglishMeaning::with([
@@ -96,12 +81,7 @@ class EnglishMeaningController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | GET /api/english/meanings/categories
-    |--------------------------------------------------------------------------
-    */
-
+    
     public function categories()
     {
         $categories = EnglishCategory::orderBy(
@@ -116,12 +96,7 @@ class EnglishMeaningController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | GET /api/english/meanings/words/{categoryId}
-    |--------------------------------------------------------------------------
-    */
-
+    
     public function wordsByCategory($categoryId)
     {
         $words = EnglishWord::where(
@@ -138,12 +113,7 @@ class EnglishMeaningController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | POST /api/english/meanings
-    |--------------------------------------------------------------------------
-    */
-
+    
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -174,12 +144,7 @@ class EnglishMeaningController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | PUT /api/english/meanings/{id}
-    |--------------------------------------------------------------------------
-    */
-
+    
     public function update(
         Request $request,
         $id
@@ -228,12 +193,7 @@ class EnglishMeaningController extends Controller
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | DELETE /api/english/meanings/{id}
-    |--------------------------------------------------------------------------
-    */
-
+    
     public function destroy($id)
     {
         $meaning =

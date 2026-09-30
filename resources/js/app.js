@@ -1,3 +1,5 @@
+
+import './utils.js';
 import './bootstrap';
 ////este como tal sera el conflicto que  que hay ahora en main esta esto 
 // CSS
@@ -27,6 +29,7 @@ import '../css/grammar-category.css';
 import '../css/grammar-topic.css';
 import '../css/grammar-lesson.css';
 // JavaScript
+
 import './form.js';
 import './technologies.js';
 import './concepts.js';
@@ -49,4 +52,8 @@ import './planificaciones.js';
 import './planificacion-crear.js';
 import './english-pronunciation.js';
 import './grammar-lesson.js';
+
+
+
+
 

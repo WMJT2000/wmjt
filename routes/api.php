@@ -34,12 +34,7 @@ Route::get('/planificaciones/{id}', [
     Route::post('/english/pronunciation', [EnglishPronunciationController::class, 'pronounce']);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | TECHNOLOGIES
-    |--------------------------------------------------------------------------
-    */
-
+    
     Route::get('/technologies', [
         TechnologyController::class,
         'index'
@@ -76,12 +71,7 @@ Route::get('/planificaciones/{id}', [
     ]);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | CATEGORIES
-    |--------------------------------------------------------------------------
-    */
-
+    
     Route::get('/categories', [
         CategoryController::class,
         'index'
@@ -113,12 +103,7 @@ Route::get('/planificaciones/{id}', [
     ]);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | CONCEPTS
-    |--------------------------------------------------------------------------
-    */
-
+    
     Route::get('/concepts', [
         ConceptController::class,
         'index'
@@ -145,12 +130,7 @@ Route::get('/planificaciones/{id}', [
     ]);
 
 
-    /*
- |--------------------------------------------------------------------------
- | MANUALES
- |--------------------------------------------------------------------------
- */
-
+    
     Route::get('/manuals', [
         ManualController::class,
         'index'
@@ -187,12 +167,7 @@ Route::get('/planificaciones/{id}', [
     ]);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | SECCIONES DE MANUALES
-    |--------------------------------------------------------------------------
-    */
-
+    
 
     Route::get(
         '/manual-sections/manual/{manualId}',
@@ -230,12 +205,7 @@ Route::get('/planificaciones/{id}', [
     ]);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | PASOS DE MANUALES
-    |--------------------------------------------------------------------------
-    */
-
+    
     Route::get(
         '/manual-steps/section/{sectionId}',
         [ManualStepController::class, 'bySection']

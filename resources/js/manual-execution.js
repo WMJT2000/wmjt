@@ -12,12 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let execution = null;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Elementos
-    |--------------------------------------------------------------------------
-    */
-
+    
     const progressBar = document.getElementById(
         'progressBar'
     );
@@ -45,12 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentStepIndex = 0;
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cargar ejecución existente
-    |--------------------------------------------------------------------------
-    */
-
+    
     async function cargarEjecucion() {
 
         try {
@@ -161,12 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Iniciar ejecución
-    |--------------------------------------------------------------------------
-    */
-
+    
     async function iniciarEjecucion() {
 
         const response = await fetch(
@@ -283,12 +268,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Obtener progreso de un paso
-    |--------------------------------------------------------------------------
-    */
-
+    
     function obtenerProgreso(stepId) {
 
         if (
@@ -309,12 +289,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-|--------------------------------------------------------------------------
-| Cargar nota del paso
-|--------------------------------------------------------------------------
-*/
-
+    
     function cargarNotaPaso(stepElement) {
 
         const stepId =
@@ -337,12 +312,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Buscar primer paso pendiente
-    |--------------------------------------------------------------------------
-    */
-
+    
     function encontrarPrimerPasoPendiente() {
 
         for (
@@ -378,12 +348,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Actualizar interfaz
-    |--------------------------------------------------------------------------
-    */
-
+    
     function actualizarInterfaz() {
 
         if (!execution) {
@@ -462,12 +427,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Calcular porcentaje
-        |--------------------------------------------------------------------------
-        */
-
+        
         const percentage =
             total > 0
                 ? Math.round(
@@ -476,12 +436,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 : 0;
 
 
-        /*
-|--------------------------------------------------------------------------
-| Resumen de manual completado
-|--------------------------------------------------------------------------
-*/
-
+        
         actualizarResumenCompletado(
             completed,
             total,
@@ -489,12 +444,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Barra de progreso
-        |--------------------------------------------------------------------------
-        */
-
+        
         if (progressBar) {
 
             progressBar.style.width =
@@ -502,12 +452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Texto de progreso
-        |--------------------------------------------------------------------------
-        */
-
+        
         if (progressText) {
 
             if (
@@ -531,12 +476,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-|--------------------------------------------------------------------------
-| Actualizar resumen de manual completado
-|--------------------------------------------------------------------------
-*/
-
+    
     function actualizarResumenCompletado(completed, total, percentage) {
 
         const summary =
@@ -636,12 +576,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Mostrar paso actual
-    |--------------------------------------------------------------------------
-    */
-
+    
     async function mostrarPasoActual() {
 
         if (steps.length === 0) {
@@ -715,12 +650,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
 
-        /*
-|--------------------------------------------------------------------------
-| Mostrar / ocultar botón siguiente
-|--------------------------------------------------------------------------
-*/
-
+        
         const currentStep =
             steps[currentStepIndex];
 
@@ -750,12 +680,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
 
-        /*
-|--------------------------------------------------------------------------
-| Mostrar / ocultar botón siguiente
-|--------------------------------------------------------------------------
-*/
-
+        
         const nextButton = document.querySelector(
             '.btn-next-step'
         );
@@ -811,12 +736,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Ir a un paso
-    |--------------------------------------------------------------------------
-    */
-
+    
     function irAlPaso(index) {
 
         if (
@@ -834,12 +754,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Paso anterior
-    |--------------------------------------------------------------------------
-    */
-
+    
     function pasoAnterior() {
 
         if (
@@ -856,12 +771,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Paso siguiente
-    |--------------------------------------------------------------------------
-    */
-
+    
     function pasoSiguiente() {
 
         if (
@@ -879,12 +789,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Completar / descompletar paso
-    |--------------------------------------------------------------------------
-    */
-
+    
     async function cambiarEstadoPaso(
         stepId,
         completar
@@ -1012,12 +917,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    /*
-|--------------------------------------------------------------------------
-| Guardar nota de un paso
-|--------------------------------------------------------------------------
-*/
-
+    
     async function guardarNotaPaso(stepElement) {
 
         if (!execution) {
@@ -1152,12 +1052,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
-    /*
-|--------------------------------------------------------------------------
-| Selector de pasos
-|--------------------------------------------------------------------------
-*/
-
+    
     if (manualStepSelector) {
 
         manualStepSelector.addEventListener(
@@ -1177,12 +1072,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Clicks
-    |--------------------------------------------------------------------------
-    */
-
+    
     container.addEventListener(
         'click',
         event => {
@@ -1300,12 +1190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Inicializar
-    |--------------------------------------------------------------------------
-    */
-
+    
     await cargarEjecucion();
 
 });

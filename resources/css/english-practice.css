@@ -2341,3 +2341,45 @@
     }
 
 }
+
+
+.english-practice-question-word {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.english-practice-pronunciation-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.english-practice-pronunciation-button,
+.english-practice-pronunciation-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+}
+
+.english-practice-pronunciation-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.english-practice-pronunciation-toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 20px;
+}
+
+.english-practice-pronunciation-guide {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 1rem;
+}

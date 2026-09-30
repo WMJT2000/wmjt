@@ -18,12 +18,7 @@ class EnglishLearningController extends Controller
             ->withCount('words')
             ->orderBy('name', 'asc')
             ->get();
-        /*
-        |--------------------------------------------------------------------------
-        | PROGRESO POR CATEGORÍA
-        |--------------------------------------------------------------------------
-        */
-
+        
         $progressByCategory = [];
 
         foreach ($categories as $category) {
@@ -66,12 +61,7 @@ class EnglishLearningController extends Controller
 
 
 
-        /*
-    |--------------------------------------------------------------------------
-    | DOMINIO DE PALABRAS
-    |--------------------------------------------------------------------------
-    */
-
+        
         $practiceResults = EnglishPracticeResult::where(
             'user_id',
             auth()->id()
@@ -166,12 +156,7 @@ class EnglishLearningController extends Controller
 
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | ÚLTIMAS PRÁCTICAS
-        |--------------------------------------------------------------------------
-        */
-
+        
         $latestPractices = EnglishPracticeSession::with('category')
             ->where(
                 'user_id',
@@ -196,12 +181,7 @@ class EnglishLearningController extends Controller
 
     public function statistics(): View
     {
-        /*
-        |--------------------------------------------------------------------------
-        | ESTADÍSTICAS GENERALES
-        |--------------------------------------------------------------------------
-        */
-
+        
         $totalQuestions = EnglishPracticeResult::where(
             'user_id',
             auth()->id()
@@ -227,12 +207,7 @@ class EnglishLearningController extends Controller
             )
             : 0;
 
-        /*
-        |--------------------------------------------------------------------------
-        | PRÁCTICAS COMPLETADAS
-        |--------------------------------------------------------------------------
-        */
-
+        
         $totalPractices = EnglishPracticeSession::where(
             'user_id',
             auth()->id()
@@ -240,12 +215,7 @@ class EnglishLearningController extends Controller
             ->whereNotNull('completed_at')
             ->count();
 
-        /*
-        |--------------------------------------------------------------------------
-        | MEJOR PUNTUACIÓN
-        |--------------------------------------------------------------------------
-        */
-
+        
         $bestScore = EnglishPracticeSession::where(
             'user_id',
             auth()->id()
@@ -253,12 +223,7 @@ class EnglishLearningController extends Controller
             ->whereNotNull('completed_at')
             ->max('score') ?? 0;
 
-        /*
-        |--------------------------------------------------------------------------
-        | PALABRAS INCORRECTAS
-        |--------------------------------------------------------------------------
-        */
-
+        
         $incorrectWords = EnglishPracticeResult::where(
             'user_id',
             auth()->id()
@@ -267,12 +232,7 @@ class EnglishLearningController extends Controller
             ->distinct('english_word_id')
             ->count('english_word_id');
 
-        /*
-        |--------------------------------------------------------------------------
-        | ESTADÍSTICAS POR CATEGORÍA
-        |--------------------------------------------------------------------------
-        */
-
+        
         $categoryStatistics = EnglishPracticeResult::where(
             'user_id',
             auth()->id()
@@ -306,12 +266,7 @@ class EnglishLearningController extends Controller
             ->values();
 
 
-        /*
-|--------------------------------------------------------------------------
-| RACHA DE ESTUDIO
-|--------------------------------------------------------------------------
-*/
-
+        
         $studyDates = EnglishPracticeSession::where(
             'user_id',
             auth()->id()
@@ -326,12 +281,7 @@ class EnglishLearningController extends Controller
             ->values();
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | RACHA ACTUAL
-        |--------------------------------------------------------------------------
-        */
-
+        
         $currentStreak = 0;
 
         $today = now()->startOfDay();
@@ -370,12 +320,7 @@ class EnglishLearningController extends Controller
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | MEJOR RACHA
-        |--------------------------------------------------------------------------
-        */
-
+        
         $bestStreak = 0;
         $streak = 0;
         $previousDate = null;
@@ -408,12 +353,7 @@ class EnglishLearningController extends Controller
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | DÍAS ESTUDIADOS
-        |--------------------------------------------------------------------------
-        */
-
+        
         $totalStudyDays = $studyDates->count();
 
         return view('english.statistics', compact(
@@ -468,23 +408,13 @@ class EnglishLearningController extends Controller
     }
     public function practice(EnglishCategory $category): View
     {
-        /*
-        |--------------------------------------------------------------------------
-        | TODAS LAS PALABRAS DE LA CATEGORÍA
-        |--------------------------------------------------------------------------
-        */
-
+        
         $words = $category->words()
             ->with('meanings')
             ->orderBy('id', 'asc')
             ->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | RESULTADOS DEL USUARIO EN ESTA CATEGORÍA
-        |--------------------------------------------------------------------------
-        */
-
+        
         $practiceResults = EnglishPracticeResult::where(
             'user_id',
             auth()->id()
@@ -522,12 +452,7 @@ class EnglishLearningController extends Controller
             ];
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | FILTRO DE PRÁCTICA SEGÚN DOMINIO
-        |--------------------------------------------------------------------------
-        */
-
+        
         $focus = request()->query('focus');
 
         if (
@@ -555,12 +480,7 @@ class EnglishLearningController extends Controller
                     )
                     : 0;
 
-                /*
-                |--------------------------------------------------------------------------
-                | DETERMINAR NIVEL
-                |--------------------------------------------------------------------------
-                */
-
+                
                 if ($total === 0) {
 
                     $level = 'not_started';
@@ -614,12 +534,7 @@ class EnglishLearningController extends Controller
             }
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | PALABRAS QUE EL USUARIO HA FALLADO
-        |--------------------------------------------------------------------------
-        */
-
+        
         $incorrectWordIds = $practiceResults
             ->where('is_correct', false)
             ->pluck('english_word_id')
@@ -638,23 +553,13 @@ class EnglishLearningController extends Controller
 
     public function mastery(EnglishCategory $category): View
     {
-        /*
-        |--------------------------------------------------------------------------
-        | PALABRAS DE LA CATEGORÍA
-        |--------------------------------------------------------------------------
-        */
-
+        
         $words = $category->words()
             ->with('meanings')
             ->orderBy('id', 'asc')
             ->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | RESULTADOS DEL USUARIO
-        |--------------------------------------------------------------------------
-        */
-
+        
         $results = EnglishPracticeResult::where(
             'user_id',
             auth()->id()
@@ -665,12 +570,7 @@ class EnglishLearningController extends Controller
             )
             ->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | CALCULAR DOMINIO DE CADA PALABRA
-        |--------------------------------------------------------------------------
-        */
-
+        
         $wordMastery = [];
 
         foreach ($words as $word) {
@@ -696,12 +596,7 @@ class EnglishLearningController extends Controller
                 )
                 : 0;
 
-            /*
-            |--------------------------------------------------------------------------
-            | ESTADO DE LA PALABRA
-            |--------------------------------------------------------------------------
-            */
-
+            
             if ($total === 0) {
 
                 $level = 'not_started';

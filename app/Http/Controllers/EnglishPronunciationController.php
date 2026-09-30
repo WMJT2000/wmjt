@@ -78,12 +78,7 @@ class EnglishPronunciationController extends Controller
             ], 500);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Convertir PCM/L16 a WAV
-        |--------------------------------------------------------------------------
-        */
-
+        
         $pcmData = base64_decode($audioData);
 
         if ($pcmData === false) {

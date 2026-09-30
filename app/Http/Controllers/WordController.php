@@ -122,12 +122,7 @@ class WordController extends Controller
             []
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Obtener los archivos de imagen
-        |--------------------------------------------------------------------------
-        */
-
+        
         $archivosPart1 = $request->file(
             'part1',
             []
@@ -138,23 +133,13 @@ class WordController extends Controller
             []
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Tamaño de letra
-        |--------------------------------------------------------------------------
-        */
-
+        
         $tamanoLetraActividades = (int) $request->input(
             'tamano_letra_actividades',
             8
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Plantilla
-        |--------------------------------------------------------------------------
-        */
-
+        
         $plantilla = storage_path(
             'app/plantillas/planificacion.docx'
         );
@@ -165,12 +150,7 @@ class WordController extends Controller
             );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Archivo temporal
-        |--------------------------------------------------------------------------
-        */
-
+        
         $temporal = $tmpDir .
             '/temporal_planificacion_' .
             uniqid('', true) .
@@ -193,12 +173,7 @@ class WordController extends Controller
 
         try {
 
-            /*
-            |--------------------------------------------------------------------------
-            | Abrir Word como ZIP
-            |--------------------------------------------------------------------------
-            */
-
+            
             $zip = new ZipArchive();
 
             if ($zip->open($temporal) !== true) {
@@ -207,12 +182,7 @@ class WordController extends Controller
                 );
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Obtener document.xml
-            |--------------------------------------------------------------------------
-            */
-
+            
             $xml = $zip->getFromName(
                 'word/document.xml'
             );
@@ -225,12 +195,7 @@ class WordController extends Controller
                 );
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Cargar XML
-            |--------------------------------------------------------------------------
-            */
-
+            
             $dom = new DOMDocument();
 
             $dom->preserveWhiteSpace = true;
@@ -250,12 +215,7 @@ class WordController extends Controller
                 );
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | XPath
-            |--------------------------------------------------------------------------
-            */
-
+            
             $xpath = new DOMXPath($dom);
 
             $xpath->registerNamespace(
@@ -263,22 +223,12 @@ class WordController extends Controller
                 self::WORD_NS
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Preparar lista
-            |--------------------------------------------------------------------------
-            */
-
+            
             $numIdLista = $this->prepararListaWord(
                 $zip
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Buscar fila de actividad
-            |--------------------------------------------------------------------------
-            */
-
+            
             $filaActividad = $this->buscarFilaActividad(
                 $xpath
             );
@@ -291,52 +241,27 @@ class WordController extends Controller
                 );
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Buscar fila de snack
-            |--------------------------------------------------------------------------
-            */
-
+            
             $filaSnack = $this->buscarFilaSnack(
                 $xpath
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Padre de la fila
-            |--------------------------------------------------------------------------
-            */
-
+            
             $padre = $filaActividad->parentNode;
 
-            /*
-            |--------------------------------------------------------------------------
-            | ACTIVIDADES PARTE 1
-            |--------------------------------------------------------------------------
-            */
-
+            
             foreach ($part1 as $indice => $actividad) {
 
                 $fila = $this->clonarFila(
                     $filaActividad
                 );
 
-                /*
-                |--------------------------------------------------------------------------
-                | Macro único para la imagen
-                |--------------------------------------------------------------------------
-                */
-
+                
                 $macroImagen =
                     'estrategias_imagen_part1_' .
                     $indice;
 
-                /*
-                |--------------------------------------------------------------------------
-                | Obtener imagen nueva
-                |--------------------------------------------------------------------------
-                */
-
+                
                 $imagenNueva = null;
 
                 if (
@@ -353,12 +278,7 @@ class WordController extends Controller
                         ];
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | Guardar imagen
-                |--------------------------------------------------------------------------
-                */
-
+                
                 if (
                     $imagenNueva instanceof
                     \Illuminate\Http\UploadedFile
@@ -372,24 +292,14 @@ class WordController extends Controller
 
                 } else {
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Si no hay imagen nueva, utilizar la existente
-                    |--------------------------------------------------------------------------
-                    */
-
+                    
                     $imagenesEstrategias[$macroImagen] =
                         $actividad[
                             'estrategias_metologicas_imagen_existente'
                         ] ?? '';
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | Rellenar actividad
-                |--------------------------------------------------------------------------
-                */
-
+                
                 $this->rellenarActividad(
                     $dom,
                     $xpath,
@@ -400,24 +310,14 @@ class WordController extends Controller
                     $macroImagen
                 );
 
-                /*
-                |--------------------------------------------------------------------------
-                | Insertar actividad
-                |--------------------------------------------------------------------------
-                */
-
+                
                 $padre->insertBefore(
                     $fila,
                     $filaActividad
                 );
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | FILA SNACK
-            |--------------------------------------------------------------------------
-            */
-
+            
             if ($filaSnack === null) {
 
                 $filaSnack = $this->clonarFila(
@@ -437,34 +337,19 @@ class WordController extends Controller
                 );
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | ACTIVIDADES PARTE 2
-            |--------------------------------------------------------------------------
-            */
-
+            
             foreach ($part2 as $indice => $actividad) {
 
                 $fila = $this->clonarFila(
                     $filaActividad
                 );
 
-                /*
-                |--------------------------------------------------------------------------
-                | Macro único para la imagen
-                |--------------------------------------------------------------------------
-                */
-
+                
                 $macroImagen =
                     'estrategias_imagen_part2_' .
                     $indice;
 
-                /*
-                |--------------------------------------------------------------------------
-                | Obtener imagen nueva
-                |--------------------------------------------------------------------------
-                */
-
+                
                 $imagenNueva = null;
 
                 if (
@@ -481,12 +366,7 @@ class WordController extends Controller
                         ];
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | Guardar imagen
-                |--------------------------------------------------------------------------
-                */
-
+                
                 if (
                     $imagenNueva instanceof
                     \Illuminate\Http\UploadedFile
@@ -500,24 +380,14 @@ class WordController extends Controller
 
                 } else {
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | Si no hay imagen nueva, utilizar la existente
-                    |--------------------------------------------------------------------------
-                    */
-
+                    
                     $imagenesEstrategias[$macroImagen] =
                         $actividad[
                             'estrategias_metologicas_imagen_existente'
                         ] ?? '';
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | Rellenar actividad
-                |--------------------------------------------------------------------------
-                */
-
+                
                 $this->rellenarActividad(
                     $dom,
                     $xpath,
@@ -528,12 +398,7 @@ class WordController extends Controller
                     $macroImagen
                 );
 
-                /*
-                |--------------------------------------------------------------------------
-                | Insertar después de la actividad anterior
-                |--------------------------------------------------------------------------
-                */
-
+                
                 $this->insertarDespues(
                     $filaSnack,
                     $fila
@@ -542,22 +407,12 @@ class WordController extends Controller
                 $filaSnack = $fila;
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Eliminar fila original
-            |--------------------------------------------------------------------------
-            */
-
+            
             $padre->removeChild(
                 $filaActividad
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Guardar document.xml modificado
-            |--------------------------------------------------------------------------
-            */
-
+            
             $zip->addFromString(
                 'word/document.xml',
                 $dom->saveXML()
@@ -565,22 +420,12 @@ class WordController extends Controller
 
             $zip->close();
 
-            /*
-            |--------------------------------------------------------------------------
-            | TemplateProcessor
-            |--------------------------------------------------------------------------
-            */
-
+            
             $template = new TemplateProcessor(
                 $temporal
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Datos generales
-            |--------------------------------------------------------------------------
-            */
-
+            
             $template->setValue(
                 '1_experiencia_prendizaje',
                 $request->input(
@@ -609,12 +454,7 @@ class WordController extends Controller
                 )
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Fecha
-            |--------------------------------------------------------------------------
-            */
-
+            
             $fecha = $request->input(
                 '5_fecha'
             );
@@ -631,12 +471,7 @@ class WordController extends Controller
                 ucfirst($fechaFormateada)
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Resto de datos generales
-            |--------------------------------------------------------------------------
-            */
-
+            
             $template->setValue(
                 '6_nivel_educativo',
                 $request->input(
@@ -665,57 +500,32 @@ class WordController extends Controller
                 )
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | INSERTAR IMÁGENES
-            |--------------------------------------------------------------------------
-            */
-
+            
             $this->aplicarImagenesEstrategias(
                 $template,
                 $imagenesEstrategias
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Archivo final
-            |--------------------------------------------------------------------------
-            */
-
+            
             $archivo = $tmpDir .
                 '/planificacion_generada_' .
                 uniqid('', true) .
                 '.docx';
 
-            /*
-            |--------------------------------------------------------------------------
-            | Guardar Word
-            |--------------------------------------------------------------------------
-            */
-
+            
             $template->saveAs(
                 $archivo
             );
 
             unset($template);
 
-            /*
-            |--------------------------------------------------------------------------
-            | Aplicar formato global
-            |--------------------------------------------------------------------------
-            */
-
+            
             $this->aplicarFormatoGlobal(
                 $archivo,
                 $numIdLista
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Nombre de descarga
-            |--------------------------------------------------------------------------
-            */
-
+            
             $nombreDescarga =
                 'planificacion_' .
                 date('Y-m-d_H-i-s') .
@@ -723,12 +533,7 @@ class WordController extends Controller
                 uniqid() .
                 '.docx';
 
-            /*
-            |--------------------------------------------------------------------------
-            | Descargar
-            |--------------------------------------------------------------------------
-            */
-
+            
             return response()
                 ->download(
                     $archivo,
@@ -742,12 +547,7 @@ class WordController extends Controller
                 unset($template);
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Eliminar archivo temporal
-            |--------------------------------------------------------------------------
-            */
-
+            
             $this->eliminarTemporal(
                 $temporal
             );
@@ -2958,12 +2758,7 @@ class WordController extends Controller
 
         try {
 
-            /*
-            |--------------------------------------------------------------------------
-            | DOCUMENT.XML PRINCIPAL
-            |--------------------------------------------------------------------------
-            */
-
+            
             $xmlPrincipal = $zipFinal->getFromName(
                 'word/document.xml'
             );
@@ -3016,12 +2811,7 @@ class WordController extends Controller
                 )->item(0);
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | RELACIONES DEL DOCUMENTO PRINCIPAL
-            |--------------------------------------------------------------------------
-            */
-
+            
             $relsPrincipalXml =
                 $zipFinal->getFromName(
                     'word/_rels/document.xml.rels'
@@ -3064,12 +2854,7 @@ class WordController extends Controller
                 $domRelsPrincipal->documentElement;
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | PROCESAR CADA DOCUMENTO SECUNDARIO
-            |--------------------------------------------------------------------------
-            */
-
+            
             for (
                 $i = 1;
                 $i < count($archivos);
@@ -3094,12 +2879,7 @@ class WordController extends Controller
 
                 try {
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | DOCUMENT.XML SECUNDARIO
-                    |--------------------------------------------------------------------------
-                    */
-
+                    
                     $xmlSecundario =
                         $zipSecundario->getFromName(
                             'word/document.xml'
@@ -3155,12 +2935,7 @@ class WordController extends Controller
                     }
 
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | RELACIONES SECUNDARIAS
-                    |--------------------------------------------------------------------------
-                    */
-
+                    
                     $relsSecundarioXml =
                         $zipSecundario->getFromName(
                             'word/_rels/document.xml.rels'
@@ -3202,12 +2977,7 @@ class WordController extends Controller
                             );
 
 
-                        /*
-                        |--------------------------------------------------------------------------
-                        | MAPA DE RID
-                        |--------------------------------------------------------------------------
-                        */
-
+                        
                         $mapaRids = [];
 
                         foreach (
@@ -3229,12 +2999,7 @@ class WordController extends Controller
                                     'Target'
                                 );
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | SOLO PROCESAR IMÁGENES
-                            |--------------------------------------------------------------------------
-                            */
-
+                            
                             $esImagen =
                                 str_contains(
                                     $tipo,
@@ -3245,12 +3010,7 @@ class WordController extends Controller
                                 continue;
                             }
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | NOMBRE NUEVO PARA LA IMAGEN
-                            |--------------------------------------------------------------------------
-                            */
-
+                            
                             $nombreOriginal =
                                 basename(
                                     $target
@@ -3281,12 +3041,7 @@ class WordController extends Controller
                                     $extension
                                 );
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | RUTA DE LA IMAGEN SECUNDARIA
-                            |--------------------------------------------------------------------------
-                            */
-
+                            
                             $rutaImagen =
                                 'word/media/' .
                                 $nombreOriginal;
@@ -3333,12 +3088,7 @@ class WordController extends Controller
                                 continue;
                             }
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | COPIAR IMAGEN AL DOCUMENTO FINAL
-                            |--------------------------------------------------------------------------
-                            */
-
+                            
                             $zipFinal->addFromString(
                                 'word/media/' .
                                 $nombreImagenNuevo,
@@ -3346,12 +3096,7 @@ class WordController extends Controller
                             );
 
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | CREAR RID NUEVO
-                            |--------------------------------------------------------------------------
-                            */
-
+                            
                             $ridNuevo =
                                 'rId' .
                                 (
@@ -3363,12 +3108,7 @@ class WordController extends Controller
                                     1
                                 );
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | ASEGURAR QUE EL RID NO EXISTA
-                            |--------------------------------------------------------------------------
-                            */
-
+                            
                             while (
                                 $xpathRelsPrincipal->query(
                                     '/rel:Relationships/rel:Relationship[@Id="' .
@@ -3393,12 +3133,7 @@ class WordController extends Controller
                             ] = $ridNuevo;
 
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | CREAR RELACIÓN NUEVA
-                            |--------------------------------------------------------------------------
-                            */
-
+                            
                             $nuevaRelacion =
                                 $domRelsPrincipal->createElementNS(
                                     'http://schemas.openxmlformats.org/package/2006/relationships',
@@ -3427,12 +3162,7 @@ class WordController extends Controller
                         }
 
 
-                        /*
-                        |--------------------------------------------------------------------------
-                        | CAMBIAR LOS rId DEL DOCUMENT.XML SECUNDARIO
-                        |--------------------------------------------------------------------------
-                        */
-
+                        
                         if (!empty($mapaRids)) {
 
                             $elementosConRid =
@@ -3489,12 +3219,7 @@ class WordController extends Controller
                     }
 
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | SALTO DE PÁGINA
-                    |--------------------------------------------------------------------------
-                    */
-
+                    
                     $parrafoSalto =
                         $domPrincipal->createElementNS(
                             self::WORD_NS,
@@ -3542,12 +3267,7 @@ class WordController extends Controller
                     }
 
 
-                    /*
-                    |--------------------------------------------------------------------------
-                    | COPIAR CONTENIDO DEL SEGUNDO DOCUMENTO
-                    |--------------------------------------------------------------------------
-                    */
-
+                    
                     foreach (
                         $bodySecundario->childNodes as $nodo
                     ) {
@@ -3589,12 +3309,7 @@ class WordController extends Controller
             }
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | GUARDAR DOCUMENT.XML FINAL
-            |--------------------------------------------------------------------------
-            */
-
+            
             $xmlFinal =
                 $domPrincipal->saveXML();
 
@@ -3604,24 +3319,14 @@ class WordController extends Controller
             );
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | GUARDAR document.xml.rels FINAL
-            |--------------------------------------------------------------------------
-            */
-
+            
             $zipFinal->addFromString(
                 'word/_rels/document.xml.rels',
                 $domRelsPrincipal->saveXML()
             );
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | CERRAR DOCUMENTO FINAL
-            |--------------------------------------------------------------------------
-            */
-
+            
             $zipFinal->close();
 
         } catch (\Throwable $e) {

@@ -23,11 +23,6 @@ use App\Http\Controllers\PlanificacionController;
 use App\Http\Controllers\GrammarController;
 
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
 
 Route::get('/logout-test', function () {
     Auth::logout();
