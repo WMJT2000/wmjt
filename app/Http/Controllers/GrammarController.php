@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GrammarCategory;
 use App\Models\GrammarTopic;
+use App\Models\GrammarLesson;
 use Illuminate\Http\Request;
 
 class GrammarController extends Controller
@@ -35,6 +36,7 @@ class GrammarController extends Controller
         );
     }
 
+
     /**
      * Muestra los Topics de una categoría.
      */
@@ -45,14 +47,12 @@ class GrammarController extends Controller
             ->where('status', 1)
             ->firstOrFail();
 
-        /*
-         * IMPORTANTE:
-         * Aquí filtramos por category_id.
-         * Así NO aparecen los topics de otras categorías.
-         */
         $topics = GrammarTopic::query()
             ->where('category_id', $category->id)
             ->where('status', 1)
+            ->withCount([
+                'lessons'
+            ])
             ->orderBy('sort_order')
             ->get();
 
@@ -65,6 +65,7 @@ class GrammarController extends Controller
         );
     }
 
+
     /**
      * Muestra la información de un Topic.
      */
@@ -73,7 +74,10 @@ class GrammarController extends Controller
         $topic = GrammarTopic::query()
             ->where('id', $id)
             ->where('status', 1)
-            ->with('category')
+            ->with([
+                'category',
+                'lessons'
+            ])
             ->firstOrFail();
 
         return view(
@@ -82,17 +86,16 @@ class GrammarController extends Controller
         );
     }
 
+
     /**
-     * Muestra la Lesson completa.
+     * Muestra una Lesson completa.
      */
     public function lesson($id)
     {
-        $topic = GrammarTopic::query()
+        $lesson = GrammarLesson::query()
             ->where('id', $id)
-            ->where('status', 1)
             ->with([
-                'category',
-                'lesson',
+                'topic.category',
                 'rules',
                 'examples'
             ])
@@ -100,7 +103,7 @@ class GrammarController extends Controller
 
         return view(
             'grammar.lesson',
-            compact('topic')
+            compact('lesson')
         );
     }
 }

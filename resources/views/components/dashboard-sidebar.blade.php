@@ -77,6 +77,8 @@
             INGLÉS
         </div>
 
+        {{-- INGLÉS --}}
+
         <a
             href="{{ route('english.index') }}"
             class="dashboard-nav-item {{ request()->routeIs('english.*') ? 'active' : '' }}"
@@ -86,6 +88,21 @@
 
             <span class="sidebar-text">
                 Inglés
+            </span>
+        </a>
+
+
+        {{-- GRAMMAR --}}
+
+        <a
+            href="{{ route('grammar.index') }}"
+            class="dashboard-nav-item {{ request()->routeIs('grammar.*') ? 'active' : '' }}"
+            title="Grammar"
+        >
+            <span>📖</span>
+
+            <span class="sidebar-text">
+                Grammar
             </span>
         </a>
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GrammarLesson extends Model
 {
@@ -20,6 +21,7 @@ class GrammarLesson extends Model
         'short_answers',
         'common_mistakes',
         'summary',
+        'sort_order',
     ];
 
     public function topic(): BelongsTo
@@ -28,5 +30,21 @@ class GrammarLesson extends Model
             GrammarTopic::class,
             'topic_id'
         );
+    }
+
+    public function rules(): HasMany
+    {
+        return $this->hasMany(
+            GrammarRule::class,
+            'lesson_id'
+        )->orderBy('sort_order');
+    }
+
+    public function examples(): HasMany
+    {
+        return $this->hasMany(
+            GrammarExample::class,
+            'lesson_id'
+        )->orderBy('sort_order');
     }
 }

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class GrammarTopic extends Model
@@ -28,26 +27,10 @@ class GrammarTopic extends Model
         );
     }
 
-    public function lesson(): HasOne
+    public function lessons(): HasMany
     {
-        return $this->hasOne(
+        return $this->hasMany(
             GrammarLesson::class,
-            'topic_id'
-        );
-    }
-
-    public function rules(): HasMany
-    {
-        return $this->hasMany(
-            GrammarRule::class,
-            'topic_id'
-        )->orderBy('sort_order');
-    }
-
-    public function examples(): HasMany
-    {
-        return $this->hasMany(
-            GrammarExample::class,
             'topic_id'
         )->orderBy('sort_order');
     }

@@ -345,7 +345,11 @@
 
                 <span>
 
-                    Aprender
+                    {{ $topic->lessons_count }}
+
+                    {{ $topic->lessons_count === 1
+                        ? 'lección'
+                        : 'lecciones' }}
 
                 </span>
 

@@ -21,7 +21,7 @@ use App\Http\Controllers\ManualExecutionController;
 use App\Http\Controllers\WordController;
 use App\Http\Controllers\PlanificacionController;
 use App\Http\Controllers\GrammarController;
-
+use App\Http\Controllers\Admin\GrammarImportController;
 
 
 Route::get('/logout-test', function () {
@@ -44,6 +44,15 @@ Route::get('/', function () {
 // Aprendizaje de inglés
 // Aprendizaje de inglés
 Route::middleware('auth')->group(function () {
+
+
+Route::prefix('admin/grammar')->group(function () {
+    Route::get('/import', [GrammarImportController::class, 'index'])
+        ->name('admin.grammar.import');
+
+    Route::post('/import', [GrammarImportController::class, 'store'])
+        ->name('admin.grammar.import.store');
+});
 
 
     Route::prefix('grammar')->group(function () {

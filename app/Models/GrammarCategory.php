@@ -22,6 +22,6 @@ class GrammarCategory extends Model
         return $this->hasMany(
             GrammarTopic::class,
             'category_id'
-        );
+        )->orderBy('sort_order');
     }
 }

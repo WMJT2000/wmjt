@@ -9,16 +9,7 @@
     | FORMATEADOR DE TEXTO
     |--------------------------------------------------------------------------
     |
-    | El carácter "|" representa SIEMPRE un salto de línea.
-    |
-    | Ejemplo:
-    |
-    | SUBJECT + BE + POSSESSIVE PRONOUN.|
-    | This book is mine.|
-    | That car is yours.|
-    | The house is ours.
-    |
-    | Cada parte será mostrada como un bloque independiente.
+    | El carácter "|" representa siempre un salto de línea.
     |
     */
 
@@ -44,8 +35,7 @@
         $parts = explode('|', $text);
 
         /*
-        | Eliminamos espacios innecesarios al principio
-        | y al final de cada línea.
+        | Eliminamos espacios innecesarios.
         */
         $parts = array_map(
             'trim',
@@ -53,7 +43,7 @@
         );
 
         /*
-        | Eliminamos únicamente líneas completamente vacías.
+        | Eliminamos únicamente líneas vacías.
         */
         $parts = array_filter(
             $parts,
@@ -99,7 +89,10 @@
     >
 
         <a
-            href="{{ route('grammar.index', ['level' => $topic->level]) }}"
+            href="{{ route(
+                'grammar.index',
+                ['level' => $lesson->topic->category->level]
+            ) }}"
         >
             Gramática
         </a>
@@ -107,23 +100,31 @@
         <span>›</span>
 
         <a
-            href="{{ route('grammar.category', $topic->category->id) }}"
+            href="{{ route(
+                'grammar.category',
+                $lesson->topic->category->id
+            ) }}"
         >
-            {{ $topic->category->name }}
+            {{ $lesson->topic->category->name }}
         </a>
 
         <span>›</span>
 
         <a
-            href="{{ route('grammar.topic', $topic->id) }}"
+            href="{{ route(
+                'grammar.topic',
+                $lesson->topic->id
+            ) }}"
         >
-            {{ $topic->name }}
+            {{ $lesson->topic->name }}
         </a>
 
         <span>›</span>
 
         <span class="grammar-breadcrumb-current">
+
             Lección
+
         </span>
 
     </nav>
@@ -139,18 +140,22 @@
 
                 <span></span>
 
-                NIVEL {{ $topic->level }}
+                NIVEL {{ $lesson->topic->level }}
 
             </div>
 
 
             <h1>
-                {{ $topic->lesson->title ?? $topic->name }}
+
+                {{ $lesson->title }}
+
             </h1>
 
 
             <p>
-                {{ $topic->name }}
+
+                {{ $lesson->topic->name }}
+
             </p>
 
         </div>
@@ -159,7 +164,9 @@
         <div class="grammar-lesson-heading-mark">
 
             <span>
+
                 Aa
+
             </span>
 
         </div>
@@ -188,14 +195,18 @@
             <div class="grammar-lesson-sidebar-header">
 
                 <span>
+
                     CONTENIDO DE LA LECCIÓN
+
                 </span>
 
             </div>
 
 
             @php
+
                 $sectionNumber = 1;
+
             @endphp
 
 
@@ -220,12 +231,16 @@
 
 
                 <span class="grammar-nav-icon">
+
                     ✦
+
                 </span>
 
 
                 <span class="grammar-nav-label">
+
                     Introducción
+
                 </span>
 
             </button>
@@ -233,7 +248,7 @@
 
             {{-- USOS --}}
 
-            @if($topic->lesson && $topic->lesson->uses)
+            @if($lesson->uses)
 
                 <button
                     type="button"
@@ -254,12 +269,16 @@
 
 
                     <span class="grammar-nav-icon">
+
                         ?
+
                     </span>
 
 
                     <span class="grammar-nav-label">
+
                         Usos
+
                     </span>
 
                 </button>
@@ -270,13 +289,10 @@
             {{-- ESTRUCTURA --}}
 
             @if(
-                $topic->lesson &&
-                (
-                    $topic->lesson->affirmative_structure ||
-                    $topic->lesson->negative_structure ||
-                    $topic->lesson->question_structure ||
-                    $topic->lesson->short_answers
-                )
+                $lesson->affirmative_structure ||
+                $lesson->negative_structure ||
+                $lesson->question_structure ||
+                $lesson->short_answers
             )
 
                 <button
@@ -298,12 +314,16 @@
 
 
                     <span class="grammar-nav-icon">
+
                         ≡
+
                     </span>
 
 
                     <span class="grammar-nav-label">
+
                         Estructura
+
                     </span>
 
                 </button>
@@ -313,7 +333,7 @@
 
             {{-- REGLAS --}}
 
-            @if($topic->rules->count() > 0)
+            @if($lesson->rules->count() > 0)
 
                 <button
                     type="button"
@@ -334,17 +354,23 @@
 
 
                     <span class="grammar-nav-icon">
+
                         ✓
+
                     </span>
 
 
                     <span class="grammar-nav-label">
+
                         Reglas
+
                     </span>
 
 
                     <span class="grammar-nav-count">
-                        {{ $topic->rules->count() }}
+
+                        {{ $lesson->rules->count() }}
+
                     </span>
 
                 </button>
@@ -354,7 +380,7 @@
 
             {{-- EJEMPLOS --}}
 
-            @if($topic->examples->count() > 0)
+            @if($lesson->examples->count() > 0)
 
                 <button
                     type="button"
@@ -375,17 +401,23 @@
 
 
                     <span class="grammar-nav-icon">
+
                         Aa
+
                     </span>
 
 
                     <span class="grammar-nav-label">
+
                         Ejemplos
+
                     </span>
 
 
                     <span class="grammar-nav-count">
-                        {{ $topic->examples->count() }}
+
+                        {{ $lesson->examples->count() }}
+
                     </span>
 
                 </button>
@@ -395,7 +427,7 @@
 
             {{-- ERRORES COMUNES --}}
 
-            @if($topic->lesson && $topic->lesson->common_mistakes)
+            @if($lesson->common_mistakes)
 
                 <button
                     type="button"
@@ -416,12 +448,16 @@
 
 
                     <span class="grammar-nav-icon">
+
                         !
+
                     </span>
 
 
                     <span class="grammar-nav-label">
+
                         Errores comunes
+
                     </span>
 
                 </button>
@@ -431,7 +467,7 @@
 
             {{-- RESUMEN --}}
 
-            @if($topic->lesson && $topic->lesson->summary)
+            @if($lesson->summary)
 
                 <button
                     type="button"
@@ -452,12 +488,16 @@
 
 
                     <span class="grammar-nav-icon">
+
                         ✓
+
                     </span>
 
 
                     <span class="grammar-nav-label">
+
                         Resumen
+
                     </span>
 
                 </button>
@@ -488,30 +528,36 @@
             <div class="grammar-section-heading">
 
                 <span class="grammar-section-label">
+
                     01 · INTRODUCCIÓN
+
                 </span>
 
 
                 <h2>
+
                     Introducción
+
                 </h2>
 
             </div>
 
 
-            @if($topic->lesson && $topic->lesson->introduction)
+            @if($lesson->introduction)
 
                 <div class="grammar-introduction-card">
 
                     <div class="grammar-introduction-icon">
+
                         ✦
+
                     </div>
 
 
                     <div class="grammar-text">
 
                         {!! $formatGrammarText(
-                            $topic->lesson->introduction
+                            $lesson->introduction
                         ) !!}
 
                     </div>
@@ -535,7 +581,7 @@
              USOS
              ================================================= --}}
 
-        @if($topic->lesson && $topic->lesson->uses)
+        @if($lesson->uses)
 
             <section
                 id="section-uses"
@@ -545,12 +591,16 @@
                 <div class="grammar-section-heading">
 
                     <span class="grammar-section-label">
+
                         USOS
+
                     </span>
 
 
                     <h2>
+
                         ¿Cuándo se utiliza?
+
                     </h2>
 
                 </div>
@@ -559,14 +609,16 @@
                 <div class="grammar-use-card">
 
                     <div class="grammar-use-icon">
+
                         ?
+
                     </div>
 
 
                     <div class="grammar-text">
 
                         {!! $formatGrammarText(
-                            $topic->lesson->uses
+                            $lesson->uses
                         ) !!}
 
                     </div>
@@ -583,13 +635,10 @@
              ================================================= --}}
 
         @if(
-            $topic->lesson &&
-            (
-                $topic->lesson->affirmative_structure ||
-                $topic->lesson->negative_structure ||
-                $topic->lesson->question_structure ||
-                $topic->lesson->short_answers
-            )
+            $lesson->affirmative_structure ||
+            $lesson->negative_structure ||
+            $lesson->question_structure ||
+            $lesson->short_answers
         )
 
             <section
@@ -600,12 +649,16 @@
                 <div class="grammar-section-heading">
 
                     <span class="grammar-section-label">
+
                         ESTRUCTURA
+
                     </span>
 
 
                     <h2>
+
                         Estructura de las oraciones
+
                     </h2>
 
                 </div>
@@ -616,7 +669,7 @@
 
                     {{-- AFIRMATIVA --}}
 
-                    @if($topic->lesson->affirmative_structure)
+                    @if($lesson->affirmative_structure)
 
                         <article
                             class="grammar-structure-card structure-affirmative"
@@ -625,12 +678,16 @@
                             <div class="grammar-structure-header">
 
                                 <span class="grammar-structure-icon">
+
                                     +
+
                                 </span>
 
 
                                 <h3>
+
                                     Afirmativa
+
                                 </h3>
 
                             </div>
@@ -639,7 +696,7 @@
                             <div class="grammar-structure-text">
 
                                 {!! $formatGrammarText(
-                                    $topic->lesson->affirmative_structure
+                                    $lesson->affirmative_structure
                                 ) !!}
 
                             </div>
@@ -651,7 +708,7 @@
 
                     {{-- NEGATIVA --}}
 
-                    @if($topic->lesson->negative_structure)
+                    @if($lesson->negative_structure)
 
                         <article
                             class="grammar-structure-card structure-negative"
@@ -660,12 +717,16 @@
                             <div class="grammar-structure-header">
 
                                 <span class="grammar-structure-icon">
+
                                     −
+
                                 </span>
 
 
                                 <h3>
+
                                     Negativa
+
                                 </h3>
 
                             </div>
@@ -674,7 +735,7 @@
                             <div class="grammar-structure-text">
 
                                 {!! $formatGrammarText(
-                                    $topic->lesson->negative_structure
+                                    $lesson->negative_structure
                                 ) !!}
 
                             </div>
@@ -686,7 +747,7 @@
 
                     {{-- PREGUNTAS --}}
 
-                    @if($topic->lesson->question_structure)
+                    @if($lesson->question_structure)
 
                         <article
                             class="grammar-structure-card structure-question"
@@ -695,12 +756,16 @@
                             <div class="grammar-structure-header">
 
                                 <span class="grammar-structure-icon">
+
                                     ?
+
                                 </span>
 
 
                                 <h3>
+
                                     Preguntas
+
                                 </h3>
 
                             </div>
@@ -709,7 +774,7 @@
                             <div class="grammar-structure-text">
 
                                 {!! $formatGrammarText(
-                                    $topic->lesson->question_structure
+                                    $lesson->question_structure
                                 ) !!}
 
                             </div>
@@ -721,7 +786,7 @@
 
                     {{-- RESPUESTAS CORTAS --}}
 
-                    @if($topic->lesson->short_answers)
+                    @if($lesson->short_answers)
 
                         <article
                             class="grammar-structure-card structure-answer"
@@ -730,12 +795,16 @@
                             <div class="grammar-structure-header">
 
                                 <span class="grammar-structure-icon">
+
                                     ✓
+
                                 </span>
 
 
                                 <h3>
+
                                     Respuestas cortas
+
                                 </h3>
 
                             </div>
@@ -744,7 +813,7 @@
                             <div class="grammar-structure-text">
 
                                 {!! $formatGrammarText(
-                                    $topic->lesson->short_answers
+                                    $lesson->short_answers
                                 ) !!}
 
                             </div>
@@ -764,7 +833,7 @@
              REGLAS
              ================================================= --}}
 
-        @if($topic->rules->count() > 0)
+        @if($lesson->rules->count() > 0)
 
             <section
                 id="section-rules"
@@ -774,12 +843,16 @@
                 <div class="grammar-section-heading">
 
                     <span class="grammar-section-label">
-                        REGLAS · {{ $topic->rules->count() }}
+
+                        REGLAS · {{ $lesson->rules->count() }}
+
                     </span>
 
 
                     <h2>
+
                         Reglas gramaticales
+
                     </h2>
 
                 </div>
@@ -787,7 +860,7 @@
 
                 <div class="grammar-rules">
 
-                    @foreach($topic->rules as $index => $rule)
+                    @foreach($lesson->rules as $index => $rule)
 
                         <article class="grammar-rule-card">
 
@@ -807,7 +880,9 @@
 
 
                                 <h3>
+
                                     {{ $rule->title }}
+
                                 </h3>
 
 
@@ -829,7 +904,9 @@
                                     <div class="grammar-rule-examples">
 
                                         <div class="grammar-rule-examples-label">
+
                                             EJEMPLOS
+
                                         </div>
 
 
@@ -862,7 +939,7 @@
              EJEMPLOS
              ================================================= --}}
 
-        @if($topic->examples->count() > 0)
+        @if($lesson->examples->count() > 0)
 
             <section
                 id="section-examples"
@@ -872,12 +949,16 @@
                 <div class="grammar-section-heading">
 
                     <span class="grammar-section-label">
-                        EJEMPLOS · {{ $topic->examples->count() }}
+
+                        EJEMPLOS · {{ $lesson->examples->count() }}
+
                     </span>
 
 
                     <h2>
+
                         Ejemplos
+
                     </h2>
 
                 </div>
@@ -885,7 +966,7 @@
 
                 <div class="grammar-examples">
 
-                    @foreach($topic->examples as $index => $example)
+                    @foreach($lesson->examples as $index => $example)
 
                         <article class="grammar-example-card">
 
@@ -978,7 +1059,7 @@
              ERRORES COMUNES
              ================================================= --}}
 
-        @if($topic->lesson && $topic->lesson->common_mistakes)
+        @if($lesson->common_mistakes)
 
             <section
                 id="section-mistakes"
@@ -988,12 +1069,16 @@
                 <div class="grammar-section-heading">
 
                     <span class="grammar-section-label">
+
                         ATENCIÓN
+
                     </span>
 
 
                     <h2>
+
                         Errores comunes
+
                     </h2>
 
                 </div>
@@ -1002,14 +1087,16 @@
                 <div class="grammar-mistakes-card">
 
                     <div class="grammar-mistakes-icon">
+
                         !
+
                     </div>
 
 
                     <div class="grammar-text">
 
                         {!! $formatGrammarText(
-                            $topic->lesson->common_mistakes
+                            $lesson->common_mistakes
                         ) !!}
 
                     </div>
@@ -1025,7 +1112,7 @@
              RESUMEN
              ================================================= --}}
 
-        @if($topic->lesson && $topic->lesson->summary)
+        @if($lesson->summary)
 
             <section
                 id="section-summary"
@@ -1035,12 +1122,16 @@
                 <div class="grammar-section-heading">
 
                     <span class="grammar-section-label">
+
                         REPASO FINAL
+
                     </span>
 
 
                     <h2>
+
                         Resumen
+
                     </h2>
 
                 </div>
@@ -1049,14 +1140,16 @@
                 <div class="grammar-summary-card">
 
                     <div class="grammar-summary-icon">
+
                         ✓
+
                     </div>
 
 
                     <div class="grammar-text">
 
                         {!! $formatGrammarText(
-                            $topic->lesson->summary
+                            $lesson->summary
                         ) !!}
 
                     </div>
@@ -1067,20 +1160,26 @@
                 <div class="grammar-lesson-complete">
 
                     <div class="grammar-complete-icon">
+
                         ✓
+
                     </div>
 
 
                     <div>
 
                         <h3>
+
                             Lección completada
+
                         </h3>
 
 
                         <p>
+
                             Has terminado de aprender
-                            {{ $topic->name }}.
+                            {{ $lesson->title }}.
+
                         </p>
 
                     </div>
@@ -1103,15 +1202,20 @@
 <div class="grammar-lesson-bottom">
 
     <a
-        href="{{ route('grammar.topic', $topic->id) }}"
+        href="{{ route(
+            'grammar.topic',
+            $lesson->topic->id
+        ) }}"
         class="grammar-back-button"
     >
 
         <span>
+
             ←
+
         </span>
 
-        Volver a {{ $topic->name }}
+        Volver a {{ $lesson->topic->name }}
 
     </a>
 

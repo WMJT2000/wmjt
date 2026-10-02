@@ -10,7 +10,7 @@ class GrammarExample extends Model
     protected $table = 'grammar_examples';
 
     protected $fillable = [
-        'topic_id',
+        'lesson_id',
         'type',
         'english',
         'spanish',
@@ -18,11 +18,11 @@ class GrammarExample extends Model
         'sort_order',
     ];
 
-    public function topic(): BelongsTo
+    public function lesson(): BelongsTo
     {
         return $this->belongsTo(
-            GrammarTopic::class,
-            'topic_id'
+            GrammarLesson::class,
+            'lesson_id'
         );
     }
 }

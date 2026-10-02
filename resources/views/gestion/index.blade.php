@@ -88,7 +88,10 @@
 
                     {{-- CONOCIMIENTO TÉCNICO --}}
 
-                    <a href="{{ route('technologies.index') }}" class="management-card">
+                    <a
+                        href="{{ route('technologies.index') }}"
+                        class="management-card"
+                    >
 
                         <div class="management-icon">
                             🔎
@@ -115,7 +118,10 @@
 
                     {{-- MANUALES --}}
 
-                    <a href="{{ route('gestion.manuals') }}" class="management-card">
+                    <a
+                        href="{{ route('gestion.manuals') }}"
+                        class="management-card"
+                    >
 
                         <div class="management-icon">
                             📚
@@ -142,7 +148,11 @@
 
                     {{-- INGLÉS --}}
 
-                    <a href="{{ route('english.categories.index') }}" class="management-card">
+                    <a
+                        href="{{ route('english.categories.index') }}"
+                        class="management-card"
+                    >
+
                         <div class="management-icon">
                             🇬🇧
                         </div>
@@ -168,7 +178,10 @@
 
                     {{-- PLANIFICACIONES --}}
 
-                    <a href="{{ route('gestion.planificacion.index') }}" class="management-card">
+                    <a
+                        href="{{ route('gestion.planificacion.index') }}"
+                        class="management-card"
+                    >
 
                         <div class="management-icon">
                             📋
@@ -182,6 +195,36 @@
 
                             <span>
                                 Gestiona las planificaciones y sus configuraciones
+                            </span>
+
+                        </div>
+
+                        <b>
+                            →
+                        </b>
+
+                    </a>
+
+
+                    {{-- IMPORTAR GRAMMAR JSON --}}
+
+                    <a
+                        href="{{ route('admin.grammar.import') }}"
+                        class="management-card"
+                    >
+
+                        <div class="management-icon">
+                            📥
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Importar Grammar
+                            </strong>
+
+                            <span>
+                                Importa categorías, topics, lessons, reglas y ejemplos desde JSON
                             </span>
 
                         </div>
