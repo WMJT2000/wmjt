@@ -1,0 +1,133 @@
+.english-import-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.english-import-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 20px;
+}
+
+.english-import-card .card-header h4 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #212529;
+}
+
+.english-import-card .card-body {
+    padding: 24px;
+}
+
+.english-import-card .form-label {
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 7px;
+}
+
+.english-import-card .form-select,
+.english-import-card .form-control {
+    min-height: 42px;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.english-import-card .form-select:focus,
+.english-import-card .form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+.english-import-card .form-select:disabled,
+.english-import-card .form-control:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+.english-import-card .form-text {
+    margin-top: 6px;
+    color: #6c757d;
+    font-size: 13px;
+}
+
+#parentGroup {
+    padding: 16px;
+    background-color: #f8f9fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+#parentGroup .form-label {
+    margin-bottom: 7px;
+}
+
+#validateBtn,
+#importBtn {
+    min-width: 130px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+#validateBtn:hover:not(:disabled),
+#importBtn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+#validateBtn:disabled,
+#importBtn:disabled {
+    cursor: not-allowed;
+}
+
+#preview {
+    border-radius: 8px;
+}
+
+#preview .alert {
+    margin-bottom: 0;
+    border-radius: 8px;
+}
+
+#preview .alert h5 {
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+#preview .alert p {
+    margin-bottom: 6px;
+}
+
+#preview .alert p:last-child {
+    margin-bottom: 0;
+}
+
+#preview .alert strong {
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .english-import-card .card-body {
+        padding: 18px;
+    }
+
+    .english-import-card .card-header {
+        padding: 14px 18px;
+    }
+
+    .english-import-card .card-header h4 {
+        font-size: 18px;
+    }
+
+    #validateBtn,
+    #importBtn {
+        width: 100%;
+    }
+
+    .english-import-card .d-flex.gap-2 {
+        flex-direction: column;
+    }
+}

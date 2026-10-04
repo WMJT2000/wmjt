@@ -22,7 +22,7 @@ use App\Http\Controllers\WordController;
 use App\Http\Controllers\PlanificacionController;
 use App\Http\Controllers\GrammarController;
 use App\Http\Controllers\Admin\GrammarImportController;
-
+use App\Http\Controllers\Admin\EnglishImportController;
 
 Route::get('/logout-test', function () {
     Auth::logout();
@@ -44,6 +44,29 @@ Route::get('/', function () {
 // Aprendizaje de inglés
 // Aprendizaje de inglés
 Route::middleware('auth')->group(function () {
+
+
+
+Route::prefix('admin/english')->middleware(['auth'])->group(function () {
+
+    Route::get('/import-word', [EnglishImportController::class, 'index'])
+        ->name('admin.english.import-word');
+
+    Route::get('/categories/{category}/words', [EnglishImportController::class, 'getWords'])
+        ->name('admin.english.categories.words');
+
+    Route::post('/import', [EnglishImportController::class, 'importComplete'])
+        ->name('admin.english.import');
+
+    Route::post('/categories/{category}/words/import', [EnglishImportController::class, 'importWords'])
+        ->name('admin.english.categories.words.import');
+
+    Route::post('/categories/{category}/word/import', [EnglishImportController::class, 'importWord'])
+        ->name('admin.english.categories.word.import');
+
+    Route::post('/words/{word}/meanings/import', [EnglishImportController::class, 'importMeanings'])
+        ->name('admin.english.words.meanings.import');
+});
 
 Route::prefix('admin/grammar')->group(function () {
 

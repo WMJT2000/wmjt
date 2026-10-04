@@ -235,6 +235,33 @@
 
                     </a>
 
+                    <a
+    href="{{ route('admin.english.import-word') }}"
+    class="management-card"
+>
+
+    <div class="management-icon">
+        📥
+    </div>
+
+    <div>
+
+        <strong>
+            Importar palabras
+        </strong>
+
+        <span>
+            Importa categorías, palabras, significados y ejemplos desde JSON
+        </span>
+
+    </div>
+
+    <b>
+        →
+    </b>
+
+</a>
+
 
                 </div>
 
