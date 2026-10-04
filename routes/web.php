@@ -45,13 +45,123 @@ Route::get('/', function () {
 // Aprendizaje de inglés
 Route::middleware('auth')->group(function () {
 
-
 Route::prefix('admin/grammar')->group(function () {
-    Route::get('/import', [GrammarImportController::class, 'index'])
-        ->name('admin.grammar.import');
 
-    Route::post('/import', [GrammarImportController::class, 'store'])
-        ->name('admin.grammar.import.store');
+    /*
+    |--------------------------------------------------------------------------
+    | PANTALLA DE IMPORTACIÓN
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/import', [
+        GrammarImportController::class,
+        'index'
+    ])->name('admin.grammar.import');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DATOS PARA SELECTORES
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/categories/{category}/topics', [
+        GrammarImportController::class,
+        'topicsList'
+    ])->name('admin.grammar.categories.topics');
+
+
+    Route::get('/categories/{category}/lessons', [
+        GrammarImportController::class,
+        'lessonsList'
+    ])->name('admin.grammar.categories.lessons');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTACIÓN COMPLETA
+    |--------------------------------------------------------------------------
+    |
+    | Crea:
+    | Category
+    | └── Topics
+    |     └── Lessons
+    |         ├── Rules
+    |         └── Examples
+    |
+    */
+
+    Route::post('/import', [
+        GrammarImportController::class,
+        'store'
+    ])->name('admin.grammar.import.store');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR TOPICS EN UNA CATEGORÍA
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/categories/{category}/topics/import', [
+        GrammarImportController::class,
+        'topics'
+    ])->name('admin.grammar.topics.import');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR LESSONS EN UN TOPIC
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/topics/{topic}/lessons/import', [
+        GrammarImportController::class,
+        'lessons'
+    ])->name('admin.grammar.lessons.import');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR UNA LESSON COMPLETA
+    |--------------------------------------------------------------------------
+    |
+    | El JSON contiene:
+    | lesson
+    | rules
+    | examples
+    |
+    */
+
+    Route::post('/topics/{topic}/lesson/import', [
+        GrammarImportController::class,
+        'lesson'
+    ])->name('admin.grammar.lesson.import');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR RULES EN UNA LESSON
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/lessons/{lesson}/rules/import', [
+        GrammarImportController::class,
+        'rules'
+    ])->name('admin.grammar.rules.import');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR EXAMPLES EN UNA LESSON
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post('/lessons/{lesson}/examples/import', [
+        GrammarImportController::class,
+        'examples'
+    ])->name('admin.grammar.examples.import');
+
 });
 
 
