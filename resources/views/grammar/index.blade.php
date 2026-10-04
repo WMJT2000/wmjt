@@ -4,6 +4,10 @@
 
 <div class="grammar-page">
 
+    <a href="{{ route('dashboard') }}" class="english-dashboard-button">
+        🏠 Dashboard
+    </a>
+
     {{-- =====================================================
          HERO
          ===================================================== --}}
