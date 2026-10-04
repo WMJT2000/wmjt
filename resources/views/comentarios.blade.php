@@ -15,7 +15,7 @@
             font-family: Arial, sans-serif;
             background: #f5f5f5;
             margin: 0;
-            padding: 40px;
+    
         }
 
         .container {

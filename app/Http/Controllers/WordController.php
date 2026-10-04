@@ -3,12 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use PhpOffice\PhpWord\TemplateProcessor;
 use PhpOffice\PhpWord\Settings;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-
 use ZipArchive;
 use DOMDocument;
 use DOMXPath;
@@ -16,11 +14,8 @@ use DOMElement;
 
 class WordController extends Controller
 {
-    private const WORD_NS =
-        'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
-
-    private const XML_NS =
-        'http://www.w3.org/XML/1998/namespace';
+    private const WORD_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    private const XML_NS = 'http://www.w3.org/XML/1998/namespace';
 
     public function crear()
     {
@@ -36,17 +31,13 @@ class WordController extends Controller
         }
 
         if (!is_writable($tmpDir)) {
-            throw new \Exception(
-                'El directorio temporal no tiene permisos de escritura: ' . $tmpDir
-            );
+            throw new \Exception('El directorio temporal no tiene permisos de escritura: ' . $tmpDir);
         }
 
         Settings::setTempDir($tmpDir);
-
         putenv('TMPDIR=' . $tmpDir);
         putenv('TMP=' . $tmpDir);
         putenv('TEMP=' . $tmpDir);
-
         @ini_set('sys_temp_dir', $tmpDir);
 
         $request->validate([
@@ -59,247 +50,124 @@ class WordController extends Controller
             '7_objetivo_aprendizaje' => 'required',
             '8_elemento_integrador' => 'required',
             '9_nocion_dia' => 'required',
+            'tamano_letra_actividades' => 'nullable|integer|min:6|max:20',
+            'part1' => 'nullable|array|max:10',
+            'part2' => 'nullable|array|max:10',
 
-            'tamano_letra_actividades' =>
-                'nullable|integer|min:6|max:20',
+            'part1.*.ambito' => 'nullable|string',
+            'part1.*.destreza' => 'nullable|string',
+            'part1.*.estrategias_metologicas' => 'nullable|string',
+            'part1.*.estrategias_metologicas_imagen' => 'nullable|image|max:5120',
+            'part1.*.estrategias_metologicas_imagen_existente' => 'nullable|string',
+            'part1.*.recursos' => 'nullable|string',
+            'part1.*.indicadores_logro' => 'nullable|string',
+            'part1.*.subactividades' => 'nullable|array',
+            'part1.*.subactividades.*.destreza' => 'nullable|string',
+            'part1.*.subactividades.*.estrategias_metologicas' => 'nullable|string',
+            'part1.*.subactividades.*.recursos' => 'nullable|string',
+            'part1.*.subactividades.*.indicadores_logro' => 'nullable|string',
 
-            'part1' =>
-                'nullable|array|max:10',
-
-            'part2' =>
-                'nullable|array|max:10',
-
-            'part1.*.ambito' =>
-                'nullable|string',
-
-            'part1.*.destreza' =>
-                'nullable|string',
-
-            'part1.*.estrategias_metologicas' =>
-                'nullable|string',
-
-            'part1.*.estrategias_metologicas_imagen' =>
-                'nullable|image|max:5120',
-
-            'part1.*.estrategias_metologicas_imagen_existente' =>
-                'nullable|string',
-
-            'part1.*.recursos' =>
-                'nullable|string',
-
-            'part1.*.indicadores_logro' =>
-                'nullable|string',
-
-            'part2.*.ambito' =>
-                'nullable|string',
-
-            'part2.*.destreza' =>
-                'nullable|string',
-
-            'part2.*.estrategias_metologicas' =>
-                'nullable|string',
-
-            'part2.*.estrategias_metologicas_imagen' =>
-                'nullable|image|max:5120',
-
-            'part2.*.estrategias_metologicas_imagen_existente' =>
-                'nullable|string',
-
-            'part2.*.recursos' =>
-                'nullable|string',
-
-            'part2.*.indicadores_logro' =>
-                'nullable|string',
+            'part2.*.ambito' => 'nullable|string',
+            'part2.*.destreza' => 'nullable|string',
+            'part2.*.estrategias_metologicas' => 'nullable|string',
+            'part2.*.estrategias_metologicas_imagen' => 'nullable|image|max:5120',
+            'part2.*.estrategias_metologicas_imagen_existente' => 'nullable|string',
+            'part2.*.recursos' => 'nullable|string',
+            'part2.*.indicadores_logro' => 'nullable|string',
+            'part2.*.subactividades' => 'nullable|array',
+            'part2.*.subactividades.*.destreza' => 'nullable|string',
+            'part2.*.subactividades.*.estrategias_metologicas' => 'nullable|string',
+            'part2.*.subactividades.*.recursos' => 'nullable|string',
+            'part2.*.subactividades.*.indicadores_logro' => 'nullable|string',
         ]);
 
-        $part1 = $request->input(
-            'part1',
-            []
-        );
+        $part1 = $request->input('part1', []);
+        $part2 = $request->input('part2', []);
+        $archivosPart1 = $request->file('part1', []);
+        $archivosPart2 = $request->file('part2', []);
+        $tamanoLetraActividades = (int) $request->input('tamano_letra_actividades', 8);
 
-        $part2 = $request->input(
-            'part2',
-            []
-        );
-
-        
-        $archivosPart1 = $request->file(
-            'part1',
-            []
-        );
-
-        $archivosPart2 = $request->file(
-            'part2',
-            []
-        );
-
-        
-        $tamanoLetraActividades = (int) $request->input(
-            'tamano_letra_actividades',
-            8
-        );
-
-        
-        $plantilla = storage_path(
-            'app/plantillas/planificacion.docx'
-        );
+        $plantilla = storage_path('app/plantillas/planificacion.docx');
 
         if (!file_exists($plantilla)) {
-            throw new \Exception(
-                'No existe la plantilla Word.'
-            );
+            throw new \Exception('No existe la plantilla Word.');
         }
 
-        
-        $temporal = $tmpDir .
-            '/temporal_planificacion_' .
-            uniqid('', true) .
-            '.docx';
+        $temporal = $tmpDir . '/temporal_planificacion_' . uniqid('', true) . '.docx';
 
         if (!copy($plantilla, $temporal)) {
-            throw new \Exception(
-                'No se pudo crear el archivo temporal de Word.'
-            );
+            throw new \Exception('No se pudo crear el archivo temporal de Word.');
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Array donde guardaremos:
-        | macro => ruta de imagen
-        |--------------------------------------------------------------------------
-        */
 
         $imagenesEstrategias = [];
 
         try {
-
-            
             $zip = new ZipArchive();
 
             if ($zip->open($temporal) !== true) {
-                throw new \Exception(
-                    'No se pudo abrir la plantilla Word.'
-                );
+                throw new \Exception('No se pudo abrir la plantilla Word.');
             }
 
-            
-            $xml = $zip->getFromName(
-                'word/document.xml'
-            );
+            $xml = $zip->getFromName('word/document.xml');
 
             if ($xml === false) {
                 $zip->close();
-
-                throw new \Exception(
-                    'No se encontró word/document.xml.'
-                );
+                throw new \Exception('No se encontró word/document.xml.');
             }
 
-            
             $dom = new DOMDocument();
-
             $dom->preserveWhiteSpace = true;
             $dom->formatOutput = false;
 
             libxml_use_internal_errors(true);
-
             $resultado = $dom->loadXML($xml);
-
             libxml_clear_errors();
 
             if (!$resultado) {
                 $zip->close();
-
-                throw new \Exception(
-                    'No se pudo leer el XML del Word.'
-                );
+                throw new \Exception('No se pudo leer el XML del Word.');
             }
 
-            
             $xpath = new DOMXPath($dom);
+            $xpath->registerNamespace('w', self::WORD_NS);
 
-            $xpath->registerNamespace(
-                'w',
-                self::WORD_NS
-            );
+            $numIdLista = $this->prepararListaWord($zip);
 
-            
-            $numIdLista = $this->prepararListaWord(
-                $zip
-            );
-
-            
-            $filaActividad = $this->buscarFilaActividad(
-                $xpath
-            );
+            $filaActividad = $this->buscarFilaActividad($xpath);
+            $filaSubactividad = $this->buscarFilaSubactividad($xpath);
 
             if ($filaActividad === null) {
                 $zip->close();
-
-                throw new \Exception(
-                    'No se encontró la fila de actividades en el Word.'
-                );
+                throw new \Exception('No se encontró la fila de actividades en el Word.');
             }
 
-            
-            $filaSnack = $this->buscarFilaSnack(
-                $xpath
-            );
+            if ($filaSubactividad === null) {
+                $zip->close();
+                throw new \Exception('No se encontró la fila de subactividades en el Word.');
+            }
 
-            
+            $filaSnack = $this->buscarFilaSnack($xpath);
             $padre = $filaActividad->parentNode;
 
-            
             foreach ($part1 as $indice => $actividad) {
+                $fila = $this->clonarFila($filaActividad);
 
-                $fila = $this->clonarFila(
-                    $filaActividad
-                );
-
-                
-                $macroImagen =
-                    'estrategias_imagen_part1_' .
-                    $indice;
-
-                
+                $macroImagen = 'estrategias_imagen_part1_' . $indice;
                 $imagenNueva = null;
 
                 if (
                     isset($archivosPart1[$indice]) &&
-                    isset(
-                    $archivosPart1[$indice][
-                        'estrategias_metologicas_imagen'
-                    ]
-                )
+                    isset($archivosPart1[$indice]['estrategias_metologicas_imagen'])
                 ) {
-                    $imagenNueva =
-                        $archivosPart1[$indice][
-                            'estrategias_metologicas_imagen'
-                        ];
+                    $imagenNueva = $archivosPart1[$indice]['estrategias_metologicas_imagen'];
                 }
 
-                
-                if (
-                    $imagenNueva instanceof
-                    \Illuminate\Http\UploadedFile
-                ) {
-
-                    $imagenesEstrategias[$macroImagen] =
-                        $imagenNueva->store(
-                            'estrategias_metologicas',
-                            'public'
-                        );
-
+                if ($imagenNueva instanceof \Illuminate\Http\UploadedFile) {
+                    $imagenesEstrategias[$macroImagen] = $imagenNueva->store('estrategias_metologicas', 'public');
                 } else {
-
-                    
-                    $imagenesEstrategias[$macroImagen] =
-                        $actividad[
-                            'estrategias_metologicas_imagen_existente'
-                        ] ?? '';
+                    $imagenesEstrategias[$macroImagen] = $actividad['estrategias_metologicas_imagen_existente'] ?? '';
                 }
 
-                
                 $this->rellenarActividad(
                     $dom,
                     $xpath,
@@ -310,19 +178,45 @@ class WordController extends Controller
                     $macroImagen
                 );
 
-                
-                $padre->insertBefore(
+                $padre->insertBefore($fila, $filaActividad);
+                $ultimaFila = $fila;
+                $filasSubactividades = [];
+
+                $subactividades = $actividad['subactividades'] ?? [];
+
+                foreach ($subactividades as $subIndice => $subactividad) {
+                    $filaSub = $this->clonarFila($filaSubactividad);
+
+                    $this->rellenarSubactividad(
+                        $dom,
+                        $xpath,
+                        $filaSub,
+                        $subactividad,
+                        $actividad['ambito'] ?? '',
+                        $numIdLista,
+                        $tamanoLetraActividades
+                    );
+
+                    $this->insertarDespues(
+                        $ultimaFila,
+                        $filaSub
+                    );
+
+                    $ultimaFila = $filaSub;
+
+                    $filasSubactividades[] = $filaSub;
+                }
+
+                $this->combinarAmbitoVertical(
+                    $dom,
+                    $xpath,
                     $fila,
-                    $filaActividad
+                    $filasSubactividades
                 );
             }
 
-            
             if ($filaSnack === null) {
-
-                $filaSnack = $this->clonarFila(
-                    $filaActividad
-                );
+                $filaSnack = $this->clonarFila($filaActividad);
 
                 $this->rellenarSnack(
                     $dom,
@@ -331,63 +225,30 @@ class WordController extends Controller
                     $tamanoLetraActividades
                 );
 
-                $padre->insertBefore(
-                    $filaSnack,
-                    $filaActividad
-                );
+                $padre->insertBefore($filaSnack, $filaActividad);
             }
 
-            
+            $ultimaFilaPart2 = $filaSnack;
+
             foreach ($part2 as $indice => $actividad) {
+                $fila = $this->clonarFila($filaActividad);
 
-                $fila = $this->clonarFila(
-                    $filaActividad
-                );
-
-                
-                $macroImagen =
-                    'estrategias_imagen_part2_' .
-                    $indice;
-
-                
+                $macroImagen = 'estrategias_imagen_part2_' . $indice;
                 $imagenNueva = null;
 
                 if (
                     isset($archivosPart2[$indice]) &&
-                    isset(
-                    $archivosPart2[$indice][
-                        'estrategias_metologicas_imagen'
-                    ]
-                )
+                    isset($archivosPart2[$indice]['estrategias_metologicas_imagen'])
                 ) {
-                    $imagenNueva =
-                        $archivosPart2[$indice][
-                            'estrategias_metologicas_imagen'
-                        ];
+                    $imagenNueva = $archivosPart2[$indice]['estrategias_metologicas_imagen'];
                 }
 
-                
-                if (
-                    $imagenNueva instanceof
-                    \Illuminate\Http\UploadedFile
-                ) {
-
-                    $imagenesEstrategias[$macroImagen] =
-                        $imagenNueva->store(
-                            'estrategias_metologicas',
-                            'public'
-                        );
-
+                if ($imagenNueva instanceof \Illuminate\Http\UploadedFile) {
+                    $imagenesEstrategias[$macroImagen] = $imagenNueva->store('estrategias_metologicas', 'public');
                 } else {
-
-                    
-                    $imagenesEstrategias[$macroImagen] =
-                        $actividad[
-                            'estrategias_metologicas_imagen_existente'
-                        ] ?? '';
+                    $imagenesEstrategias[$macroImagen] = $actividad['estrategias_metologicas_imagen_existente'] ?? '';
                 }
 
-                
                 $this->rellenarActividad(
                     $dom,
                     $xpath,
@@ -398,467 +259,219 @@ class WordController extends Controller
                     $macroImagen
                 );
 
-                
-                $this->insertarDespues(
-                    $filaSnack,
-                    $fila
-                );
+                $this->insertarDespues($ultimaFilaPart2, $fila);
+                $ultimaFilaPart2 = $fila;
+                $filasSubactividades = [];
 
-                $filaSnack = $fila;
-            }
+                $subactividades = $actividad['subactividades'] ?? [];
 
-            
-            $padre->removeChild(
-                $filaActividad
-            );
+                foreach ($subactividades as $subIndice => $subactividad) {
+                    $filaSub = $this->clonarFila($filaSubactividad);
 
-            
-            $zip->addFromString(
-                'word/document.xml',
-                $dom->saveXML()
-            );
-
-            $zip->close();
-
-            
-            $template = new TemplateProcessor(
-                $temporal
-            );
-
-            
-            $template->setValue(
-                '1_experiencia_prendizaje',
-                $request->input(
-                    '1_experiencia_prendizaje'
-                )
-            );
-
-            $template->setValue(
-                '2_descripcion_general_experiencia',
-                $request->input(
-                    '2_descripcion_general_experiencia'
-                )
-            );
-
-            $template->setValue(
-                '3_nombre_maestra',
-                $request->input(
-                    '3_nombre_maestra'
-                )
-            );
-
-            $template->setValue(
-                '4_tiempo_estimado',
-                $request->input(
-                    '4_tiempo_estimado'
-                )
-            );
-
-            
-            $fecha = $request->input(
-                '5_fecha'
-            );
-
-            $fechaFormateada =
-                \Carbon\Carbon::parse($fecha)
-                    ->locale('es')
-                    ->translatedFormat(
-                        'l d \d\e F \d\e Y'
+                    $this->rellenarSubactividad(
+                        $dom,
+                        $xpath,
+                        $filaSub,
+                        $subactividad,
+                        $actividad['ambito'] ?? '',
+                        $numIdLista,
+                        $tamanoLetraActividades
                     );
 
-            $template->setValue(
-                '5_fecha',
-                ucfirst($fechaFormateada)
-            );
+                    $this->insertarDespues(
+                        $ultimaFilaPart2,
+                        $filaSub
+                    );
 
-            
-            $template->setValue(
-                '6_nivel_educativo',
-                $request->input(
-                    '6_nivel_educativo'
+                    $ultimaFilaPart2 = $filaSub;
+
+                    $filasSubactividades[] = $filaSub;
+                }
+
+                $this->combinarAmbitoVertical(
+                    $dom,
+                    $xpath,
+                    $fila,
+                    $filasSubactividades
+                );
+            }
+
+            if ($filaActividad->parentNode) {
+                $filaActividad->parentNode->removeChild($filaActividad);
+            }
+
+            if ($filaSubactividad->parentNode) {
+                $filaSubactividad->parentNode->removeChild($filaSubactividad);
+            }
+
+            $zip->addFromString('word/document.xml', $dom->saveXML());
+            $zip->close();
+
+            $template = new TemplateProcessor($temporal);
+
+            $template->setValue('1_experiencia_prendizaje', $request->input('1_experiencia_prendizaje'));
+            $template->setValue('2_descripcion_general_experiencia', $request->input('2_descripcion_general_experiencia'));
+            $template->setValue('3_nombre_maestra', $request->input('3_nombre_maestra'));
+            $template->setValue('4_tiempo_estimado', $request->input('4_tiempo_estimado'));
+
+            $fecha = $request->input('5_fecha');
+
+            $fechaFormateada = $fecha
+                ? ucfirst(
+                    \Carbon\Carbon::parse($fecha)
+                        ->locale('es')
+                        ->translatedFormat('l d \d\e F \d\e Y')
                 )
-            );
+                : '';
 
-            $template->setValue(
-                '7_objetivo_aprendizaje',
-                $request->input(
-                    '7_objetivo_aprendizaje'
-                )
-            );
+            $template->setValue('5_fecha', $fechaFormateada);
+            $template->setValue('6_nivel_educativo', $request->input('6_nivel_educativo'));
+            $template->setValue('7_objetivo_aprendizaje', $request->input('7_objetivo_aprendizaje'));
+            $template->setValue('8_elemento_integrador', $request->input('8_elemento_integrador'));
+            $template->setValue('9_nocion_dia', $request->input('9_nocion_dia'));
 
-            $template->setValue(
-                '8_elemento_integrador',
-                $request->input(
-                    '8_elemento_integrador'
-                )
-            );
+            $this->aplicarImagenesEstrategias($template, $imagenesEstrategias);
 
-            $template->setValue(
-                '9_nocion_dia',
-                $request->input(
-                    '9_nocion_dia'
-                )
-            );
+            $archivo = $tmpDir . '/planificacion_generada_' . uniqid('', true) . '.docx';
 
-            
-            $this->aplicarImagenesEstrategias(
-                $template,
-                $imagenesEstrategias
-            );
-
-            
-            $archivo = $tmpDir .
-                '/planificacion_generada_' .
-                uniqid('', true) .
-                '.docx';
-
-            
-            $template->saveAs(
-                $archivo
-            );
-
+            $template->saveAs($archivo);
             unset($template);
 
-            
-            $this->aplicarFormatoGlobal(
-                $archivo,
-                $numIdLista
-            );
+            $this->aplicarFormatoGlobal($archivo, $numIdLista);
 
-            
-            $nombreDescarga =
-                'planificacion_' .
-                date('Y-m-d_H-i-s') .
-                '_' .
-                uniqid() .
-                '.docx';
+            $nombreDescarga = 'planificacion_' . date('Y-m-d_H-i-s') . '_' . uniqid() . '.docx';
 
-            
             return response()
-                ->download(
-                    $archivo,
-                    $nombreDescarga
-                )
+                ->download($archivo, $nombreDescarga)
                 ->deleteFileAfterSend(true);
-
         } finally {
-
             if (isset($template)) {
                 unset($template);
             }
 
-            
-            $this->eliminarTemporal(
-                $temporal
-            );
+            $this->eliminarTemporal($temporal);
         }
     }
-    private function prepararListaWord(
-        ZipArchive $zip
-    ): int {
 
-        $numberingXml = $zip->getFromName(
-            'word/numbering.xml'
-        );
+    private function prepararListaWord(ZipArchive $zip): int
+    {
+        $numberingXml = $zip->getFromName('word/numbering.xml');
 
         if ($numberingXml === false) {
-
-            $numberingXml =
-                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
-                '<w:numbering xmlns:w="' .
-                self::WORD_NS .
-                '"></w:numbering>';
+            $numberingXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' .
+                '<w:numbering xmlns:w="' . self::WORD_NS . '"></w:numbering>';
         }
 
         $dom = new DOMDocument();
-
         $dom->preserveWhiteSpace = true;
         $dom->formatOutput = false;
 
         libxml_use_internal_errors(true);
-
-        $dom->loadXML(
-            $numberingXml
-        );
-
+        $dom->loadXML($numberingXml);
         libxml_clear_errors();
 
         $xpath = new DOMXPath($dom);
+        $xpath->registerNamespace('w', self::WORD_NS);
 
-        $xpath->registerNamespace(
-            'w',
-            self::WORD_NS
-        );
         $maxAbstractNumId = 0;
         $maxNumId = 0;
 
-        $abstractNums = $xpath->query(
-            '//w:abstractNum'
-        );
-
-        foreach ($abstractNums as $abstractNum) {
-
-            $id = $abstractNum->getAttributeNS(
-                self::WORD_NS,
-                'abstractNumId'
-            );
+        foreach ($xpath->query('//w:abstractNum') as $abstractNum) {
+            $id = $abstractNum->getAttributeNS(self::WORD_NS, 'abstractNumId');
 
             if (is_numeric($id)) {
-
-                $maxAbstractNumId = max(
-                    $maxAbstractNumId,
-                    (int) $id
-                );
+                $maxAbstractNumId = max($maxAbstractNumId, (int) $id);
             }
         }
 
-        $nums = $xpath->query(
-            '//w:num'
-        );
-
-        foreach ($nums as $num) {
-
-            $id = $num->getAttributeNS(
-                self::WORD_NS,
-                'numId'
-            );
+        foreach ($xpath->query('//w:num') as $num) {
+            $id = $num->getAttributeNS(self::WORD_NS, 'numId');
 
             if (is_numeric($id)) {
-
-                $maxNumId = max(
-                    $maxNumId,
-                    (int) $id
-                );
+                $maxNumId = max($maxNumId, (int) $id);
             }
         }
 
-        $abstractNumId =
-            $maxAbstractNumId + 1;
+        $abstractNumId = $maxAbstractNumId + 1;
+        $numId = $maxNumId + 1;
 
-        $numId =
-            $maxNumId + 1;
-        $abstractNum =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:abstractNum'
-            );
+        $abstractNum = $dom->createElementNS(self::WORD_NS, 'w:abstractNum');
+        $abstractNum->setAttributeNS(self::WORD_NS, 'w:abstractNumId', (string) $abstractNumId);
 
-        $abstractNum->setAttributeNS(
-            self::WORD_NS,
-            'w:abstractNumId',
-            (string) $abstractNumId
-        );
-        $nsid =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:nsid'
-            );
-
+        $nsid = $dom->createElementNS(self::WORD_NS, 'w:nsid');
         $nsid->setAttributeNS(
             self::WORD_NS,
             'w:val',
-            strtoupper(
-                substr(
-                    md5(
-                        uniqid('', true)
-                    ),
-                    0,
-                    8
-                )
-            )
+            strtoupper(substr(md5(uniqid('', true)), 0, 8))
         );
 
-        $abstractNum->appendChild(
-            $nsid
-        );
-        $multiLevelType =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:multiLevelType'
-            );
+        $abstractNum->appendChild($nsid);
 
-        $multiLevelType->setAttributeNS(
-            self::WORD_NS,
-            'w:val',
-            'hybridMultilevel'
-        );
+        $multiLevelType = $dom->createElementNS(self::WORD_NS, 'w:multiLevelType');
+        $multiLevelType->setAttributeNS(self::WORD_NS, 'w:val', 'hybridMultilevel');
+        $abstractNum->appendChild($multiLevelType);
 
-        $abstractNum->appendChild(
-            $multiLevelType
-        );
-        $lvl =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:lvl'
-            );
+        $lvl = $dom->createElementNS(self::WORD_NS, 'w:lvl');
+        $lvl->setAttributeNS(self::WORD_NS, 'w:ilvl', '0');
 
-        $lvl->setAttributeNS(
-            self::WORD_NS,
-            'w:ilvl',
-            '0'
-        );
-        $start =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:start'
-            );
+        $start = $dom->createElementNS(self::WORD_NS, 'w:start');
+        $start->setAttributeNS(self::WORD_NS, 'w:val', '1');
+        $lvl->appendChild($start);
 
-        $start->setAttributeNS(
-            self::WORD_NS,
-            'w:val',
-            '1'
-        );
+        $numFmt = $dom->createElementNS(self::WORD_NS, 'w:numFmt');
+        $numFmt->setAttributeNS(self::WORD_NS, 'w:val', 'bullet');
+        $lvl->appendChild($numFmt);
 
-        $lvl->appendChild(
-            $start
-        );
-        $numFmt =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:numFmt'
-            );
+        $lvlText = $dom->createElementNS(self::WORD_NS, 'w:lvlText');
+        $lvlText->setAttributeNS(self::WORD_NS, 'w:val', '•');
+        $lvl->appendChild($lvlText);
 
-        $numFmt->setAttributeNS(
-            self::WORD_NS,
-            'w:val',
-            'bullet'
-        );
+        $lvlJc = $dom->createElementNS(self::WORD_NS, 'w:lvlJc');
+        $lvlJc->setAttributeNS(self::WORD_NS, 'w:val', 'left');
+        $lvl->appendChild($lvlJc);
 
-        $lvl->appendChild(
-            $numFmt
-        );
-        $lvlText =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:lvlText'
-            );
+        $rPr = $dom->createElementNS(self::WORD_NS, 'w:rPr');
+        $rFonts = $dom->createElementNS(self::WORD_NS, 'w:rFonts');
 
-        $lvlText->setAttributeNS(
-            self::WORD_NS,
-            'w:val',
-            '•'
-        );
+        $rFonts->setAttributeNS(self::WORD_NS, 'w:ascii', 'Arial');
+        $rFonts->setAttributeNS(self::WORD_NS, 'w:hAnsi', 'Arial');
+        $rFonts->setAttributeNS(self::WORD_NS, 'w:hint', 'default');
 
-        $lvl->appendChild(
-            $lvlText
-        );
-        $lvlJc =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:lvlJc'
-            );
+        $rPr->appendChild($rFonts);
+        $lvl->appendChild($rPr);
+        $abstractNum->appendChild($lvl);
 
-        $lvlJc->setAttributeNS(
-            self::WORD_NS,
-            'w:val',
-            'left'
-        );
+        $numbering = $dom->documentElement;
+        $numbering->appendChild($abstractNum);
 
-        $lvl->appendChild(
-            $lvlJc
-        );
-        $rPr =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:rPr'
-            );
+        $num = $dom->createElementNS(self::WORD_NS, 'w:num');
+        $num->setAttributeNS(self::WORD_NS, 'w:numId', (string) $numId);
 
-        $rFonts =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:rFonts'
-            );
-
-        $rFonts->setAttributeNS(
-            self::WORD_NS,
-            'w:ascii',
-            'Arial'
-        );
-
-        $rFonts->setAttributeNS(
-            self::WORD_NS,
-            'w:hAnsi',
-            'Arial'
-        );
-
-        $rFonts->setAttributeNS(
-            self::WORD_NS,
-            'w:hint',
-            'default'
-        );
-
-        $rPr->appendChild(
-            $rFonts
-        );
-
-        $lvl->appendChild(
-            $rPr
-        );
-        $abstractNum->appendChild(
-            $lvl
-        );
-        $numbering =
-            $dom->documentElement;
-
-        $numbering->appendChild(
-            $abstractNum
-        );
-        $num =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:num'
-            );
-
-        $num->setAttributeNS(
-            self::WORD_NS,
-            'w:numId',
-            (string) $numId
-        );
-
-        $abstractNumIdNode =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:abstractNumId'
-            );
-
+        $abstractNumIdNode = $dom->createElementNS(self::WORD_NS, 'w:abstractNumId');
         $abstractNumIdNode->setAttributeNS(
             self::WORD_NS,
             'w:val',
             (string) $abstractNumId
         );
 
-        $num->appendChild(
-            $abstractNumIdNode
-        );
+        $num->appendChild($abstractNumIdNode);
+        $numbering->appendChild($num);
 
-        $numbering->appendChild(
-            $num
-        );
-        $zip->addFromString(
-            'word/numbering.xml',
-            $dom->saveXML()
-        );
+        $zip->addFromString('word/numbering.xml', $dom->saveXML());
 
         return $numId;
     }
-    private function buscarFilaActividad(
-        DOMXPath $xpath
-    ): ?DOMElement {
 
-        $filas = $xpath->query(
-            '//w:tr'
-        );
+    private function buscarFilaActividad(DOMXPath $xpath): ?DOMElement
+    {
+        $filas = $xpath->query('//w:tr');
 
         foreach ($filas as $fila) {
-
-            $texto = $this->obtenerTexto(
-                $xpath,
-                $fila
-            );
+            $texto = $this->obtenerTexto($xpath, $fila);
 
             if (
-                str_contains($texto, 'ambito') &&
-                str_contains($texto, 'destreza')
+                str_contains($texto, '${ambito}') &&
+                str_contains($texto, '${destreza}')
             ) {
                 return $fila;
             }
@@ -866,23 +479,17 @@ class WordController extends Controller
 
         return null;
     }
-    private function buscarFilaSnack(
-        DOMXPath $xpath
-    ): ?DOMElement {
 
-        $filas = $xpath->query(
-            '//w:tr'
-        );
+    private function buscarFilaSubactividad(DOMXPath $xpath): ?DOMElement
+    {
+        $filas = $xpath->query('//w:tr');
 
         foreach ($filas as $fila) {
-
-            $texto = $this->obtenerTexto(
-                $xpath,
-                $fila
-            );
+            $texto = $this->obtenerTexto($xpath, $fila);
 
             if (
-                stripos($texto, 'Snack') !== false
+                str_contains($texto, '${sub_ambito}') &&
+                str_contains($texto, '${sub_destreza}')
             ) {
                 return $fila;
             }
@@ -890,16 +497,25 @@ class WordController extends Controller
 
         return null;
     }
-    private function obtenerTexto(
-        DOMXPath $xpath,
-        DOMElement $elemento
-    ): string {
 
-        $nodos = $xpath->query(
-            './/w:t',
-            $elemento
-        );
+    private function buscarFilaSnack(DOMXPath $xpath): ?DOMElement
+    {
+        $filas = $xpath->query('//w:tr');
 
+        foreach ($filas as $fila) {
+            $texto = $this->obtenerTexto($xpath, $fila);
+
+            if (stripos($texto, 'Snack') !== false) {
+                return $fila;
+            }
+        }
+
+        return null;
+    }
+
+    private function obtenerTexto(DOMXPath $xpath, DOMElement $elemento): string
+    {
+        $nodos = $xpath->query('.//w:t', $elemento);
         $texto = '';
 
         foreach ($nodos as $nodo) {
@@ -908,23 +524,210 @@ class WordController extends Controller
 
         return $texto;
     }
-    private function clonarFila(
-        DOMElement $fila
-    ): DOMElement {
 
-        $clon = $fila->cloneNode(
-            true
-        );
+    private function clonarFila(DOMElement $fila): DOMElement
+    {
+        $clon = $fila->cloneNode(true);
 
         if (!$clon instanceof DOMElement) {
-
-            throw new \Exception(
-                'No se pudo clonar la fila.'
-            );
+            throw new \Exception('No se pudo clonar la fila.');
         }
 
         return $clon;
     }
+
+
+    private function combinarAmbitoVertical(
+        DOMDocument $dom,
+        DOMXPath $xpath,
+        DOMElement $filaActividad,
+        array $filasSubactividades
+    ): void {
+        if (empty($filasSubactividades)) {
+            return;
+        }
+
+        $filas = array_merge(
+            [$filaActividad],
+            $filasSubactividades
+        );
+
+        foreach ($filas as $indice => $fila) {
+            $celda = $xpath->query('./w:tc', $fila)->item(0);
+
+            if (!$celda instanceof DOMElement) {
+                continue;
+            }
+
+            /*
+         * ============================================================
+         * 1. CONFIGURAR LA CELDA DEL ÁMBITO
+         * ============================================================
+         */
+
+            $tcPr = $xpath->query('./w:tcPr', $celda)->item(0);
+
+            if (!$tcPr) {
+                $tcPr = $dom->createElementNS(
+                    self::WORD_NS,
+                    'w:tcPr'
+                );
+
+                $celda->insertBefore(
+                    $tcPr,
+                    $celda->firstChild
+                );
+            }
+
+            /*
+         * ============================================================
+         * CENTRADO VERTICAL
+         * ============================================================
+         */
+
+            $vAlign = $xpath->query('./w:vAlign', $tcPr)->item(0);
+
+            if (!$vAlign) {
+                $vAlign = $dom->createElementNS(
+                    self::WORD_NS,
+                    'w:vAlign'
+                );
+
+                $tcPr->appendChild($vAlign);
+            }
+
+            $vAlign->setAttributeNS(
+                self::WORD_NS,
+                'w:val',
+                'center'
+            );
+
+            /*
+         * ============================================================
+         * 2. COMBINACIÓN VERTICAL
+         * ============================================================
+         */
+
+            $vMerge = $xpath->query('./w:vMerge', $tcPr)->item(0);
+
+            if (!$vMerge) {
+                $vMerge = $dom->createElementNS(
+                    self::WORD_NS,
+                    'w:vMerge'
+                );
+
+                $tcPr->appendChild($vMerge);
+            }
+
+            if ($indice === 0) {
+                /*
+             * Primera fila:
+             * inicia la combinación.
+             */
+                $vMerge->setAttributeNS(
+                    self::WORD_NS,
+                    'w:val',
+                    'restart'
+                );
+            } else {
+                /*
+             * Filas siguientes:
+             * continúan la combinación.
+             */
+                $vMerge->setAttributeNS(
+                    self::WORD_NS,
+                    'w:val',
+                    'continue'
+                );
+
+                /*
+             * Eliminamos el contenido de la celda repetida
+             * porque el texto pertenece únicamente a la primera
+             * celda combinada.
+             */
+                foreach ($xpath->query('./w:p', $celda) as $parrafo) {
+                    $celda->removeChild($parrafo);
+                }
+
+                /*
+             * Word necesita que la celda tenga al menos
+             * un párrafo vacío.
+             */
+                $parrafoVacio = $dom->createElementNS(
+                    self::WORD_NS,
+                    'w:p'
+                );
+
+                $celda->appendChild($parrafoVacio);
+            }
+        }
+
+        /*
+     * ============================================================
+     * 3. CENTRAR HORIZONTALMENTE EL TEXTO DEL ÁMBITO
+     * ============================================================
+     *
+     * Solamente modificamos la primera fila porque ahí vive
+     * realmente el texto del ámbito.
+     */
+
+        $celdaAmbito = $xpath->query(
+            './w:tc',
+            $filaActividad
+        )->item(0);
+
+        if (!$celdaAmbito instanceof DOMElement) {
+            return;
+        }
+
+        $parrafos = $xpath->query(
+            './/w:p',
+            $celdaAmbito
+        );
+
+        foreach ($parrafos as $parrafo) {
+            $pPr = $xpath->query(
+                './w:pPr',
+                $parrafo
+            )->item(0);
+
+            if (!$pPr) {
+                $pPr = $dom->createElementNS(
+                    self::WORD_NS,
+                    'w:pPr'
+                );
+
+                $parrafo->insertBefore(
+                    $pPr,
+                    $parrafo->firstChild
+                );
+            }
+
+            /*
+         * Alineación horizontal del texto.
+         */
+            $jc = $xpath->query(
+                './w:jc',
+                $pPr
+            )->item(0);
+
+            if (!$jc) {
+                $jc = $dom->createElementNS(
+                    self::WORD_NS,
+                    'w:jc'
+                );
+
+                $pPr->appendChild($jc);
+            }
+
+            $jc->setAttributeNS(
+                self::WORD_NS,
+                'w:val',
+                'center'
+            );
+        }
+    }
+
     private function rellenarActividad(
         DOMDocument $dom,
         DOMXPath $xpath,
@@ -934,26 +737,15 @@ class WordController extends Controller
         int $tamanoLetraActividades,
         ?string $macroImagen = null
     ): void {
-
         $datos = [
-            '${ambito}' =>
-                $actividad['ambito'] ?? '',
-
-            '${destreza}' =>
-                $actividad['destreza'] ?? '',
-
-            '${estrategias_metologicas}' =>
-                $actividad['estrategias_metologicas'] ?? '',
-
-            '${recursos}' =>
-                $actividad['recursos'] ?? '',
-
-            '${indicadores_logro}' =>
-                $actividad['indicadores_logro'] ?? '',
+            '${ambito}' => $actividad['ambito'] ?? '',
+            '${destreza}' => $actividad['destreza'] ?? '',
+            '${estrategias_metologicas}' => $actividad['estrategias_metologicas'] ?? '',
+            '${recursos}' => $actividad['recursos'] ?? '',
+            '${indicadores_logro}' => $actividad['indicadores_logro'] ?? '',
         ];
 
         foreach ($datos as $placeholder => $valor) {
-
             $this->reemplazarPlaceholder(
                 $dom,
                 $xpath,
@@ -966,7 +758,6 @@ class WordController extends Controller
         }
 
         if ($macroImagen !== null) {
-
             $this->reemplazarPlaceholder(
                 $dom,
                 $xpath,
@@ -978,145 +769,95 @@ class WordController extends Controller
             );
         }
     }
+
+    private function rellenarSubactividad(
+        DOMDocument $dom,
+        DOMXPath $xpath,
+        DOMElement $fila,
+        array $subactividad,
+        string $ambitoActividad,
+        int $numIdLista,
+        int $tamanoLetraActividades
+    ): void {
+        $datos = [
+            '${sub_ambito}' =>
+            $ambitoActividad,
+
+            '${sub_destreza}' =>
+            $subactividad['destreza'] ?? '',
+
+            '${sub_estrategias_metologicas}' =>
+            $subactividad['estrategias_metologicas'] ?? '',
+
+            '${sub_recursos}' =>
+            $subactividad['recursos'] ?? '',
+
+            '${sub_indicadores_logro}' =>
+            $subactividad['indicadores_logro'] ?? '',
+        ];
+
+        foreach ($datos as $placeholder => $valor) {
+            $this->reemplazarPlaceholder(
+                $dom,
+                $xpath,
+                $fila,
+                $placeholder,
+                $valor,
+                $numIdLista,
+                $tamanoLetraActividades
+            );
+        }
+
+        $this->reemplazarPlaceholder(
+            $dom,
+            $xpath,
+            $fila,
+            '${sub_estrategias_metologicas_imagen}',
+            '',
+            null,
+            $tamanoLetraActividades
+        );
+    }
+
     private function rellenarSnack(
         DOMDocument $dom,
         DOMXPath $xpath,
         DOMElement $fila,
         ?int $tamanoLetraActividades = null
     ): void {
+        $this->reemplazarPlaceholder($dom, $xpath, $fila, '${ambito}', '(10:00 a 10:55)', null, $tamanoLetraActividades);
+        $this->reemplazarPlaceholder($dom, $xpath, $fila, '${destreza}', '', null, $tamanoLetraActividades);
+        $this->reemplazarPlaceholder($dom, $xpath, $fila, '${estrategias_metologicas}', '*Snack – momento de recreación*', null, $tamanoLetraActividades);
+        $this->reemplazarPlaceholder($dom, $xpath, $fila, '${recursos}', '', null, $tamanoLetraActividades);
+        $this->reemplazarPlaceholder($dom, $xpath, $fila, '${indicadores_logro}', '', null, $tamanoLetraActividades);
+        $this->reemplazarPlaceholder($dom, $xpath, $fila, '${estrategias_metologicas_imagen}', '', null, $tamanoLetraActividades);
 
-        $this->reemplazarPlaceholder(
-            $dom,
-            $xpath,
-            $fila,
-            '${ambito}',
-            '(10:00 a 10:55)',
-            null,
-            $tamanoLetraActividades
-        );
-
-        $this->reemplazarPlaceholder(
-            $dom,
-            $xpath,
-            $fila,
-            '${destreza}',
-            '',
-            null,
-            $tamanoLetraActividades
-        );
-
-        $this->reemplazarPlaceholder(
-            $dom,
-            $xpath,
-            $fila,
-            '${estrategias_metologicas}',
-            '*Snack – momento de recreación*',
-            null,
-            $tamanoLetraActividades
-        );
-
-        $this->reemplazarPlaceholder(
-            $dom,
-            $xpath,
-            $fila,
-            '${recursos}',
-            '',
-            null,
-            $tamanoLetraActividades
-        );
-
-        $this->reemplazarPlaceholder(
-            $dom,
-            $xpath,
-            $fila,
-            '${indicadores_logro}',
-            '',
-            null,
-            $tamanoLetraActividades
-        );
-
-        $this->reemplazarPlaceholder(
-            $dom,
-            $xpath,
-            $fila,
-            '${estrategias_metologicas_imagen}',
-            '',
-            null,
-            $tamanoLetraActividades
-        );
-
-
-        $celdas = $xpath->query(
-            './w:tc',
-            $fila
-        );
+        $celdas = $xpath->query('./w:tc', $fila);
 
         foreach ($celdas as $celda) {
-
-            $tcPr = $xpath->query(
-                './w:tcPr',
-                $celda
-            )->item(0);
+            $tcPr = $xpath->query('./w:tcPr', $celda)->item(0);
 
             if (!$tcPr) {
-
-                $tcPr = $dom->createElementNS(
-                    self::WORD_NS,
-                    'w:tcPr'
-                );
-
-                $celda->insertBefore(
-                    $tcPr,
-                    $celda->firstChild
-                );
+                $tcPr = $dom->createElementNS(self::WORD_NS, 'w:tcPr');
+                $celda->insertBefore($tcPr, $celda->firstChild);
             }
 
-            $shd = $xpath->query(
-                './w:shd',
-                $tcPr
-            )->item(0);
+            $shd = $xpath->query('./w:shd', $tcPr)->item(0);
 
             if (!$shd) {
-
-                $shd = $dom->createElementNS(
-                    self::WORD_NS,
-                    'w:shd'
-                );
-
-                $tcPr->appendChild(
-                    $shd
-                );
+                $shd = $dom->createElementNS(self::WORD_NS, 'w:shd');
+                $tcPr->appendChild($shd);
             }
 
-            $shd->setAttributeNS(
-                self::WORD_NS,
-                'w:fill',
-                '8DD873'
-            );
-
-            $shd->setAttributeNS(
-                self::WORD_NS,
-                'w:val',
-                'clear'
-            );
+            $shd->setAttributeNS(self::WORD_NS, 'w:fill', '8DD873');
+            $shd->setAttributeNS(self::WORD_NS, 'w:val', 'clear');
         }
-        $trPr = $xpath->query(
-            './w:trPr',
-            $fila
-        )->item(0);
+
+        $trPr = $xpath->query('./w:trPr', $fila)->item(0);
 
         if ($trPr) {
-
-            $alturas = $xpath->query(
-                './w:trHeight',
-                $trPr
-            );
-
-            foreach ($alturas as $altura) {
-
-                $trPr->removeChild(
-                    $altura
-                );
+            foreach ($xpath->query('./w:trHeight', $trPr) as $altura) {
+                $trPr->removeChild($altura);
             }
         }
     }
@@ -1130,32 +871,15 @@ class WordController extends Controller
         ?int $numIdLista = null,
         ?int $tamanoLetraActividades = null
     ): void {
-
-        $celdas = $xpath->query(
-            './w:tc',
-            $fila
-        );
+        $celdas = $xpath->query('./w:tc', $fila);
 
         foreach ($celdas as $celda) {
-
-            $parrafos = $xpath->query(
-                './/w:p',
-                $celda
-            );
+            $parrafos = $xpath->query('.//w:p', $celda);
 
             foreach ($parrafos as $parrafo) {
+                $texto = $this->obtenerTexto($xpath, $parrafo);
 
-                $texto = $this->obtenerTexto(
-                    $xpath,
-                    $parrafo
-                );
-
-                if (
-                    !str_contains(
-                        $texto,
-                        $placeholder
-                    )
-                ) {
+                if (!str_contains($texto, $placeholder)) {
                     continue;
                 }
 
@@ -1173,46 +897,39 @@ class WordController extends Controller
         }
     }
 
-
     private function ponerTextoEnParrafo(
-    DOMDocument $dom,
-    DOMXPath $xpath,
-    DOMElement $parrafo,
-    string $valor,
-    ?int $numIdLista = null,
-    ?int $tamanoLetraActividades = null
-): void {
+        DOMDocument $dom,
+        DOMXPath $xpath,
+        DOMElement $parrafo,
+        string $valor,
+        ?int $numIdLista = null,
+        ?int $tamanoLetraActividades = null
+    ): void {
+        $hijos = [];
 
-    $hijos = [];
-
-    foreach (
-        $parrafo->childNodes as $hijo
-    ) {
-        $hijos[] = $hijo;
-    }
-
-    foreach ($hijos as $hijo) {
-
-        if (
-            $hijo instanceof DOMElement &&
-            $hijo->localName === 'pPr'
-        ) {
-            continue;
+        foreach ($parrafo->childNodes as $hijo) {
+            $hijos[] = $hijo;
         }
 
-        $parrafo->removeChild(
-            $hijo
+        foreach ($hijos as $hijo) {
+            if (
+                $hijo instanceof DOMElement &&
+                $hijo->localName === 'pPr'
+            ) {
+                continue;
+            }
+
+            $parrafo->removeChild($hijo);
+        }
+
+        $this->crearContenidoFormateado(
+            $dom,
+            $parrafo,
+            $valor,
+            $numIdLista,
+            $tamanoLetraActividades
         );
     }
-
-    $this->crearContenidoFormateado(
-        $dom,
-        $parrafo,
-        $valor,
-        $numIdLista,
-        $tamanoLetraActividades
-    );
-}
 
     private function ponerTexto(
         DOMDocument $dom,
@@ -1222,46 +939,32 @@ class WordController extends Controller
         ?int $numIdLista = null,
         ?int $tamanoLetraActividades = null
     ): void {
-
-        $textos = $xpath->query(
-            './/w:t',
-            $celda
-        );
+        $textos = $xpath->query('.//w:t', $celda);
 
         if ($textos->length === 0) {
             return;
         }
 
-        $primerTexto =
-            $textos->item(0);
+        $primerTexto = $textos->item(0);
+        $runOriginal = $primerTexto->parentNode;
 
-        $runOriginal =
-            $primerTexto->parentNode;
-
-        if (
-            !$runOriginal instanceof DOMElement
-        ) {
+        if (!$runOriginal instanceof DOMElement) {
             return;
         }
 
-        $parrafo =
-            $runOriginal->parentNode;
+        $parrafo = $runOriginal->parentNode;
 
-        if (
-            !$parrafo instanceof DOMElement
-        ) {
+        if (!$parrafo instanceof DOMElement) {
             return;
         }
+
         $hijos = [];
 
-        foreach (
-            $parrafo->childNodes as $hijo
-        ) {
+        foreach ($parrafo->childNodes as $hijo) {
             $hijos[] = $hijo;
         }
 
         foreach ($hijos as $hijo) {
-
             if (
                 $hijo instanceof DOMElement &&
                 $hijo->localName === 'pPr'
@@ -1269,10 +972,9 @@ class WordController extends Controller
                 continue;
             }
 
-            $parrafo->removeChild(
-                $hijo
-            );
+            $parrafo->removeChild($hijo);
         }
+
         $this->crearContenidoFormateado(
             $dom,
             $parrafo,
@@ -1281,6 +983,7 @@ class WordController extends Controller
             $tamanoLetraActividades
         );
     }
+
     private function crearContenidoFormateado(
         DOMDocument $dom,
         DOMElement $parrafo,
@@ -1288,42 +991,18 @@ class WordController extends Controller
         ?int $numIdLista = null,
         ?int $tamanoLetraActividades = null
     ): void {
-
-        $valor = str_replace(
-            [
-                "\r\n",
-                "\n",
-                "\r",
-                "/n"
-            ],
-            "\n",
-            $valor
-        );
-
-        $lineas = preg_split(
-            "/\r\n|\r|\n/",
-            $valor
-        );
-
+        $valor = str_replace(["\r\n", "\n", "\r", "/n"], "\n", $valor);
+        $lineas = preg_split("/\r\n|\r|\n/", $valor);
         $tieneLista = false;
 
         foreach ($lineas as $linea) {
-
-            if (
-                preg_match(
-                    '/^\s*\+/',
-                    $linea
-                )
-            ) {
-
+            if (preg_match('/^\s*\+/', $linea)) {
                 $tieneLista = true;
-
                 break;
             }
         }
 
         if (!$tieneLista) {
-
             $this->crearRunsConFormato(
                 $dom,
                 $parrafo,
@@ -1338,21 +1017,10 @@ class WordController extends Controller
         $primerParrafo = true;
 
         foreach ($lineas as $linea) {
-            if (
-                preg_match(
-                    '/^\s*\+(.*)$/',
-                    $linea,
-                    $match
-                )
-            ) {
-
-                $textoLista =
-                    ltrim(
-                        $match[1]
-                    );
+            if (preg_match('/^\s*\+(.*)$/', $linea, $match)) {
+                $textoLista = ltrim($match[1]);
 
                 if ($primerParrafo) {
-
                     $this->agregarListaAlParrafo(
                         $dom,
                         $parrafo,
@@ -1363,12 +1031,7 @@ class WordController extends Controller
 
                     $primerParrafo = false;
                 } else {
-
-                    $nuevoParrafo =
-                        $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:p'
-                        );
+                    $nuevoParrafo = $dom->createElementNS(self::WORD_NS, 'w:p');
 
                     $parrafo->parentNode->insertBefore(
                         $nuevoParrafo,
@@ -1383,16 +1046,14 @@ class WordController extends Controller
                         $tamanoLetraActividades
                     );
 
-                    $parrafo =
-                        $nuevoParrafo;
+                    $parrafo = $nuevoParrafo;
                 }
 
                 continue;
             }
+
             if ($linea !== '') {
-
                 if ($primerParrafo) {
-
                     $this->crearRunsConFormato(
                         $dom,
                         $parrafo,
@@ -1403,12 +1064,7 @@ class WordController extends Controller
 
                     $primerParrafo = false;
                 } else {
-
-                    $nuevoParrafo =
-                        $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:p'
-                        );
+                    $nuevoParrafo = $dom->createElementNS(self::WORD_NS, 'w:p');
 
                     $parrafo->parentNode->insertBefore(
                         $nuevoParrafo,
@@ -1423,12 +1079,12 @@ class WordController extends Controller
                         $tamanoLetraActividades
                     );
 
-                    $parrafo =
-                        $nuevoParrafo;
+                    $parrafo = $nuevoParrafo;
                 }
             }
         }
     }
+
     private function agregarListaAlParrafo(
         DOMDocument $dom,
         DOMElement $parrafo,
@@ -1436,9 +1092,7 @@ class WordController extends Controller
         ?int $numIdLista,
         ?int $tamanoLetraActividades = null
     ): void {
-
         if ($numIdLista === null) {
-
             $this->crearRunsConFormato(
                 $dom,
                 $parrafo,
@@ -1449,79 +1103,28 @@ class WordController extends Controller
 
             return;
         }
-        $pPr =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:pPr'
-            );
 
-        $numPr =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:numPr'
-            );
+        $pPr = $dom->createElementNS(self::WORD_NS, 'w:pPr');
+        $numPr = $dom->createElementNS(self::WORD_NS, 'w:numPr');
 
-        $ilvl =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:ilvl'
-            );
+        $ilvl = $dom->createElementNS(self::WORD_NS, 'w:ilvl');
+        $ilvl->setAttributeNS(self::WORD_NS, 'w:val', '0');
 
-        $ilvl->setAttributeNS(
-            self::WORD_NS,
-            'w:val',
-            '0'
-        );
+        $numIdNode = $dom->createElementNS(self::WORD_NS, 'w:numId');
+        $numIdNode->setAttributeNS(self::WORD_NS, 'w:val', (string) $numIdLista);
 
-        $numIdNode =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:numId'
-            );
+        $numPr->appendChild($ilvl);
+        $numPr->appendChild($numIdNode);
+        $pPr->appendChild($numPr);
 
-        $numIdNode->setAttributeNS(
-            self::WORD_NS,
-            'w:val',
-            (string) $numIdLista
-        );
+        $ind = $dom->createElementNS(self::WORD_NS, 'w:ind');
+        $ind->setAttributeNS(self::WORD_NS, 'w:left', '180');
+        $ind->setAttributeNS(self::WORD_NS, 'w:hanging', '180');
 
-        $numPr->appendChild(
-            $ilvl
-        );
+        $pPr->appendChild($ind);
 
-        $numPr->appendChild(
-            $numIdNode
-        );
+        $parrafo->insertBefore($pPr, $parrafo->firstChild);
 
-        $pPr->appendChild(
-            $numPr
-        );
-        $ind =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:ind'
-            );
-
-        $ind->setAttributeNS(
-            self::WORD_NS,
-            'w:left',
-            '180'
-        );
-
-        $ind->setAttributeNS(
-            self::WORD_NS,
-            'w:hanging',
-            '180'
-        );
-
-        $pPr->appendChild(
-            $ind
-        );
-
-        $parrafo->insertBefore(
-            $pPr,
-            $parrafo->firstChild
-        );
         $this->crearRunsConFormato(
             $dom,
             $parrafo,
@@ -1530,6 +1133,7 @@ class WordController extends Controller
             $tamanoLetraActividades
         );
     }
+
     private function crearRunsConFormato(
         DOMDocument $dom,
         DOMElement $parrafo,
@@ -1537,19 +1141,8 @@ class WordController extends Controller
         ?int $numIdLista = null,
         ?int $tamanoLetraActividades = null
     ): void {
-
-        $valor = str_replace(
-            [
-                "\r\n",
-                "\n",
-                "\r",
-                "/n"
-            ],
-            "\n",
-            $valor
-        );
-        $regex =
-            '/(\*\*.*?\*\*|\*.*?\*)/s';
+        $valor = str_replace(["\r\n", "\n", "\r", "/n"], "\n", $valor);
+        $regex = '/(\*\*.*?\*\*|\*.*?\*)/s';
 
         preg_match_all(
             $regex,
@@ -1557,314 +1150,149 @@ class WordController extends Controller
             $matches,
             PREG_OFFSET_CAPTURE
         );
-        $crearRun =
-            function (string $texto, bool $negrita = false, bool $cursiva = false) use ($dom, $parrafo, $tamanoLetraActividades) {
 
-                $run =
-                    $dom->createElementNS(
-                        self::WORD_NS,
-                        'w:r'
-                    );
-                $rPr =
-                    $dom->createElementNS(
-                        self::WORD_NS,
-                        'w:rPr'
-                    );
-                $rFonts =
-                    $dom->createElementNS(
-                        self::WORD_NS,
-                        'w:rFonts'
-                    );
+        $crearRun = function (
+            string $texto,
+            bool $negrita = false,
+            bool $cursiva = false
+        ) use ($dom, $parrafo, $tamanoLetraActividades) {
+            $run = $dom->createElementNS(self::WORD_NS, 'w:r');
+            $rPr = $dom->createElementNS(self::WORD_NS, 'w:rPr');
+            $rFonts = $dom->createElementNS(self::WORD_NS, 'w:rFonts');
 
-                $rFonts->setAttributeNS(
-                    self::WORD_NS,
-                    'w:ascii',
-                    'Times New Roman'
-                );
+            $rFonts->setAttributeNS(self::WORD_NS, 'w:ascii', 'Times New Roman');
+            $rFonts->setAttributeNS(self::WORD_NS, 'w:hAnsi', 'Times New Roman');
+            $rFonts->setAttributeNS(self::WORD_NS, 'w:eastAsia', 'Times New Roman');
+            $rFonts->setAttributeNS(self::WORD_NS, 'w:cs', 'Times New Roman');
 
-                $rFonts->setAttributeNS(
-                    self::WORD_NS,
-                    'w:hAnsi',
-                    'Times New Roman'
-                );
+            $rPr->appendChild($rFonts);
 
-                $rFonts->setAttributeNS(
-                    self::WORD_NS,
-                    'w:eastAsia',
-                    'Times New Roman'
-                );
+            if ($tamanoLetraActividades !== null) {
+                $tamanoWord = (string) ($tamanoLetraActividades * 2);
 
-                $rFonts->setAttributeNS(
-                    self::WORD_NS,
-                    'w:cs',
-                    'Times New Roman'
-                );
+                $size = $dom->createElementNS(self::WORD_NS, 'w:sz');
+                $size->setAttributeNS(self::WORD_NS, 'w:val', $tamanoWord);
+                $rPr->appendChild($size);
 
+                $sizeCs = $dom->createElementNS(self::WORD_NS, 'w:szCs');
+                $sizeCs->setAttributeNS(self::WORD_NS, 'w:val', $tamanoWord);
+                $rPr->appendChild($sizeCs);
+            }
+
+            if ($negrita) {
                 $rPr->appendChild(
-                    $rFonts
+                    $dom->createElementNS(self::WORD_NS, 'w:b')
                 );
-                if (
-                    $tamanoLetraActividades !== null
-                ) {
+            }
 
-                    $tamanoWord =
-                        (string) (
-                            $tamanoLetraActividades * 2
-                        );
+            if ($cursiva) {
+                $rPr->appendChild(
+                    $dom->createElementNS(self::WORD_NS, 'w:i')
+                );
+            }
 
-                    $size =
-                        $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:sz'
-                        );
+            $run->appendChild($rPr);
 
-                    $size->setAttributeNS(
-                        self::WORD_NS,
-                        'w:val',
-                        $tamanoWord
+            $lineas = preg_split("/\r\n|\r|\n/", $texto);
+
+            foreach ($lineas as $indice => $linea) {
+                if ($linea !== '') {
+                    $textoWord = $dom->createElementNS(self::WORD_NS, 'w:t');
+
+                    $textoWord->setAttributeNS(
+                        self::XML_NS,
+                        'xml:space',
+                        'preserve'
                     );
 
-                    $rPr->appendChild(
-                        $size
+                    $textoWord->appendChild(
+                        $dom->createTextNode($linea)
                     );
 
-                    $sizeCs =
-                        $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:szCs'
-                        );
-
-                    $sizeCs->setAttributeNS(
-                        self::WORD_NS,
-                        'w:val',
-                        $tamanoWord
-                    );
-
-                    $rPr->appendChild(
-                        $sizeCs
-                    );
-                }if ($negrita) {
-
-                    $bold =
-                        $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:b'
-                        );
-
-                    $rPr->appendChild(
-                        $bold
-                    );
-                }if ($cursiva) {
-
-                    $italic =
-                        $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:i'
-                        );
-
-                    $rPr->appendChild(
-                        $italic
-                    );
+                    $run->appendChild($textoWord);
                 }
 
-                $run->appendChild(
-                    $rPr
-                );
-                $lineas =
-                    preg_split(
-                        "/\r\n|\r|\n/",
-                        $texto
+                if ($indice < count($lineas) - 1) {
+                    $run->appendChild(
+                        $dom->createElementNS(self::WORD_NS, 'w:br')
                     );
-
-                foreach (
-                    $lineas as $indice => $linea
-                ) {
-
-                    if ($linea !== '') {
-
-                        $textoWord =
-                            $dom->createElementNS(
-                                self::WORD_NS,
-                                'w:t'
-                            );
-
-                        $textoWord->setAttributeNS(
-                            self::XML_NS,
-                            'xml:space',
-                            'preserve'
-                        );
-
-                        $textoWord->appendChild(
-                            $dom->createTextNode(
-                                $linea
-                            )
-                        );
-
-                        $run->appendChild(
-                            $textoWord
-                        );
-                    }
-
-                    if (
-                        $indice < count($lineas) - 1
-                    ) {
-                        $salto = $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:br'
-                        );
-
-                        $run->appendChild(
-                            $salto
-                        );
-                    }
                 }
+            }
 
-                $parrafo->appendChild(
-                    $run
-                );
-            };
+            $parrafo->appendChild($run);
+        };
+
         $posicionActual = 0;
 
-        foreach (
-            $matches[0] as $match
-        ) {
+        foreach ($matches[0] as $match) {
+            $parte = $match[0];
+            $posicion = $match[1];
 
-            $parte =
-                $match[0];
-
-            $posicion =
-                $match[1];
-            if (
-                $posicion >
-                $posicionActual
-            ) {
-
-                $textoNormal =
-                    substr(
-                        $valor,
-                        $posicionActual,
-                        $posicion -
-                        $posicionActual
-                    );
-
-                $crearRun(
-                    $textoNormal
+            if ($posicion > $posicionActual) {
+                $textoNormal = substr(
+                    $valor,
+                    $posicionActual,
+                    $posicion - $posicionActual
                 );
+
+                $crearRun($textoNormal);
             }
+
             if (
-                str_starts_with(
-                    $parte,
-                    '**'
-                ) &&
-                str_ends_with(
-                    $parte,
-                    '**'
-                )
+                str_starts_with($parte, '**') &&
+                str_ends_with($parte, '**')
             ) {
-
-                $textoCursiva =
-                    substr(
-                        $parte,
-                        2,
-                        -2
-                    );
-
-                $crearRun(
-                    $textoCursiva,
-                    false,
-                    true
-                );
+                $textoCursiva = substr($parte, 2, -2);
+                $crearRun($textoCursiva, false, true);
             } elseif (
-                str_starts_with(
-                    $parte,
-                    '*'
-                ) &&
-                str_ends_with(
-                    $parte,
-                    '*'
-                )
+                str_starts_with($parte, '*') &&
+                str_ends_with($parte, '*')
             ) {
-
-                $textoNegrita =
-                    substr(
-                        $parte,
-                        1,
-                        -1
-                    );
-
-                $crearRun(
-                    $textoNegrita,
-                    true,
-                    false
-                );
+                $textoNegrita = substr($parte, 1, -1);
+                $crearRun($textoNegrita, true, false);
             }
 
-            $posicionActual =
-                $posicion +
-                strlen($parte);
+            $posicionActual = $posicion + strlen($parte);
         }
-        if (
-            $posicionActual < strlen($valor)
-        ) {
-            $textoFinal = substr($valor, $posicionActual);
-            $crearRun($textoFinal);
+
+        if ($posicionActual < strlen($valor)) {
+            $crearRun(substr($valor, $posicionActual));
         }
+
         if ($valor === '') {
             $crearRun('');
         }
     }
-    private function
-        aplicarFormatoGlobal(
+
+    private function aplicarFormatoGlobal(
         string $archivo,
         ?int $numIdLista = null
     ): void {
         $zip = new ZipArchive();
-        if (
-            $zip->open($archivo) !== true
-        ) {
 
-            throw new \Exception(
-                'No se pudo abrir el archivo generado.'
-            );
+        if ($zip->open($archivo) !== true) {
+            throw new \Exception('No se pudo abrir el archivo generado.');
         }
 
-        $xml = $zip->getFromName(
-            'word/document.xml'
-        );
+        $xml = $zip->getFromName('word/document.xml');
 
         if ($xml === false) {
-
             $zip->close();
-
-            throw new \Exception(
-                'No se encontró word/document.xml.'
-            );
+            throw new \Exception('No se encontró word/document.xml.');
         }
 
         $dom = new DOMDocument();
-
         $dom->preserveWhiteSpace = true;
         $dom->formatOutput = false;
 
         libxml_use_internal_errors(true);
-
         $dom->loadXML($xml);
-
         libxml_clear_errors();
 
         $xpath = new DOMXPath($dom);
+        $xpath->registerNamespace('w', self::WORD_NS);
 
-        $xpath->registerNamespace(
-            'w',
-            self::WORD_NS
-        );
-
-        $parrafos = $xpath->query(
-            '//w:p'
-        );
-
-        foreach ($parrafos as $parrafo) {
-
+        foreach ($xpath->query('//w:p') as $parrafo) {
             $this->procesarMarcadoresDelParrafo(
                 $dom,
                 $xpath,
@@ -1873,31 +1301,20 @@ class WordController extends Controller
             );
         }
 
-        $zip->addFromString(
-            'word/document.xml',
-            $dom->saveXML()
-        );
-
+        $zip->addFromString('word/document.xml', $dom->saveXML());
         $zip->close();
     }
+
     private function procesarMarcadoresDelParrafo(
         DOMDocument $dom,
         DOMXPath $xpath,
         DOMElement $parrafo,
         ?int $numIdLista = null
     ): void {
-
-        $runs = $xpath->query(
-            './w:r',
-            $parrafo
-        );
+        $runs = $xpath->query('./w:r', $parrafo);
 
         foreach ($runs as $run) {
-
-            $textos = $xpath->query(
-                './w:t',
-                $run
-            );
+            $textos = $xpath->query('./w:t', $run);
 
             if ($textos->length === 0) {
                 continue;
@@ -1906,70 +1323,42 @@ class WordController extends Controller
             $textoCompleto = '';
 
             foreach ($textos as $texto) {
-
-                $textoCompleto .=
-                    $texto->nodeValue;
+                $textoCompleto .= $texto->nodeValue;
             }
+
             if (
-                !str_contains(
-                    $textoCompleto,
-                    '*'
-                ) &&
-                !str_contains(
-                    $textoCompleto,
-                    '+'
-                ) &&
-                !str_contains(
-                    $textoCompleto,
-                    "\n"
-                ) &&
-                !str_contains(
-                    $textoCompleto,
-                    '/n'
-                )
+                !str_contains($textoCompleto, '*') &&
+                !str_contains($textoCompleto, '+') &&
+                !str_contains($textoCompleto, "\n") &&
+                !str_contains($textoCompleto, '/n')
             ) {
                 continue;
             }
 
-            $tieneFormato =
-                preg_match(
-                    '/(\*\*.*?\*\*|\*.*?\*)/s',
-                    $textoCompleto
-                );
+            $tieneFormato = preg_match(
+                '/(\*\*.*?\*\*|\*.*?\*)/s',
+                $textoCompleto
+            );
 
-            $tieneLista =
-                preg_match(
-                    '/(^|\n)\s*\+/',
-                    $textoCompleto
-                );
+            $tieneLista = preg_match(
+                '/(^|\n)\s*\+/',
+                $textoCompleto
+            );
 
             $tieneSalto =
-                str_contains(
-                    $textoCompleto,
-                    "\n"
-                ) ||
-                str_contains(
-                    $textoCompleto,
-                    '/n'
-                );
+                str_contains($textoCompleto, "\n") ||
+                str_contains($textoCompleto, '/n');
 
-            if (
-                !$tieneFormato &&
-                !$tieneLista &&
-                !$tieneSalto
-            ) {
+            if (!$tieneFormato && !$tieneLista && !$tieneSalto) {
                 continue;
             }
-            $runReferencia =
-                $run->cloneNode(
-                    true
-                );
-            foreach ($textos as $texto) {
 
-                $run->removeChild(
-                    $texto
-                );
+            $runReferencia = $run->cloneNode(true);
+
+            foreach ($textos as $texto) {
+                $run->removeChild($texto);
             }
+
             $this->agregarRunsFormateadosGlobal(
                 $dom,
                 $parrafo,
@@ -1977,16 +1366,13 @@ class WordController extends Controller
                 $textoCompleto,
                 $numIdLista
             );
-            if (
-                $run->parentNode === $parrafo
-            ) {
 
-                $parrafo->removeChild(
-                    $run
-                );
+            if ($run->parentNode === $parrafo) {
+                $parrafo->removeChild($run);
             }
         }
     }
+
     private function agregarRunsFormateadosGlobal(
         DOMDocument $dom,
         DOMElement $parrafo,
@@ -1994,47 +1380,17 @@ class WordController extends Controller
         string $valor,
         ?int $numIdLista = null
     ): void {
-        $valor = str_replace(
-            [
-                "\r\n",
-                "\n",
-                "\r",
-                "/n"
-            ],
-            "\n",
-            $valor
-        );
-        if (
-            preg_match(
-                '/(^|\n)\s*\+/',
-                $valor
-            )
-        ) {
+        $valor = str_replace(["\r\n", "\n", "\r", "/n"], "\n", $valor);
 
-            $lineas =
-                preg_split(
-                    "/\r\n|\r|\n/",
-                    $valor
-                );
-
+        if (preg_match('/(^|\n)\s*\+/', $valor)) {
+            $lineas = preg_split("/\r\n|\r|\n/", $valor);
             $primera = true;
 
             foreach ($lineas as $linea) {
-                if (
-                    preg_match(
-                        '/^\s*\+(.*)$/',
-                        $linea,
-                        $match
-                    )
-                ) {
-
-                    $texto =
-                        ltrim(
-                            $match[1]
-                        );
+                if (preg_match('/^\s*\+(.*)$/', $linea, $match)) {
+                    $texto = ltrim($match[1]);
 
                     if ($primera) {
-
                         $this->convertirParrafoEnLista(
                             $dom,
                             $parrafo,
@@ -2050,12 +1406,7 @@ class WordController extends Controller
 
                         $primera = false;
                     } else {
-
-                        $nuevoParrafo =
-                            $dom->createElementNS(
-                                self::WORD_NS,
-                                'w:p'
-                            );
+                        $nuevoParrafo = $dom->createElementNS(self::WORD_NS, 'w:p');
 
                         $parrafo->parentNode->insertBefore(
                             $nuevoParrafo,
@@ -2075,15 +1426,10 @@ class WordController extends Controller
                             $runReferencia
                         );
 
-                        $parrafo =
-                            $nuevoParrafo;
+                        $parrafo = $nuevoParrafo;
                     }
-                } elseif (
-                    trim($linea) !== ''
-                ) {
-
+                } elseif (trim($linea) !== '') {
                     if ($primera) {
-
                         $this->crearRunsGlobales(
                             $dom,
                             $parrafo,
@@ -2093,12 +1439,7 @@ class WordController extends Controller
 
                         $primera = false;
                     } else {
-
-                        $nuevoParrafo =
-                            $dom->createElementNS(
-                                self::WORD_NS,
-                                'w:p'
-                            );
+                        $nuevoParrafo = $dom->createElementNS(self::WORD_NS, 'w:p');
 
                         $parrafo->parentNode->insertBefore(
                             $nuevoParrafo,
@@ -2112,14 +1453,14 @@ class WordController extends Controller
                             $runReferencia
                         );
 
-                        $parrafo =
-                            $nuevoParrafo;
+                        $parrafo = $nuevoParrafo;
                     }
                 }
             }
 
             return;
         }
+
         $this->crearRunsGlobales(
             $dom,
             $parrafo,
@@ -2127,108 +1468,46 @@ class WordController extends Controller
             $runReferencia
         );
     }
+
     private function convertirParrafoEnLista(
         DOMDocument $dom,
         DOMElement $parrafo,
         ?int $numIdLista
     ): void {
-
         if ($numIdLista === null) {
             return;
         }
 
-        $pPr =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:pPr'
-            );
+        $pPr = $dom->createElementNS(self::WORD_NS, 'w:pPr');
+        $numPr = $dom->createElementNS(self::WORD_NS, 'w:numPr');
 
-        $numPr =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:numPr'
-            );
+        $ilvl = $dom->createElementNS(self::WORD_NS, 'w:ilvl');
+        $ilvl->setAttributeNS(self::WORD_NS, 'w:val', '0');
 
-        $ilvl =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:ilvl'
-            );
+        $numIdNode = $dom->createElementNS(self::WORD_NS, 'w:numId');
+        $numIdNode->setAttributeNS(self::WORD_NS, 'w:val', (string) $numIdLista);
 
-        $ilvl->setAttributeNS(
-            self::WORD_NS,
-            'w:val',
-            '0'
-        );
+        $numPr->appendChild($ilvl);
+        $numPr->appendChild($numIdNode);
+        $pPr->appendChild($numPr);
 
-        $numIdNode =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:numId'
-            );
+        $ind = $dom->createElementNS(self::WORD_NS, 'w:ind');
+        $ind->setAttributeNS(self::WORD_NS, 'w:left', '180');
+        $ind->setAttributeNS(self::WORD_NS, 'w:hanging', '180');
 
-        $numIdNode->setAttributeNS(
-            self::WORD_NS,
-            'w:val',
-            (string) $numIdLista
-        );
+        $pPr->appendChild($ind);
 
-        $numPr->appendChild(
-            $ilvl
-        );
-
-        $numPr->appendChild(
-            $numIdNode
-        );
-
-        $pPr->appendChild(
-            $numPr
-        );
-        $ind =
-            $dom->createElementNS(
-                self::WORD_NS,
-                'w:ind'
-            );
-
-        $ind->setAttributeNS(
-            self::WORD_NS,
-            'w:left',
-            '180'
-        );
-
-        $ind->setAttributeNS(
-            self::WORD_NS,
-            'w:hanging',
-            '180'
-        );
-
-        $pPr->appendChild(
-            $ind
-        );
-
-        $parrafo->insertBefore(
-            $pPr,
-            $parrafo->firstChild
-        );
+        $parrafo->insertBefore($pPr, $parrafo->firstChild);
     }
+
     private function crearRunsGlobales(
         DOMDocument $dom,
         DOMElement $parrafo,
         string $valor,
         DOMElement $runReferencia
     ): void {
-        $valor = str_replace(
-            [
-                "\r\n",
-                "\n",
-                "\r",
-                "/n"
-            ],
-            "\n",
-            $valor
-        );
-        $regex =
-            '/(\*\*.*?\*\*|\*.*?\*)/s';
+        $valor = str_replace(["\r\n", "\n", "\r", "/n"], "\n", $valor);
+        $regex = '/(\*\*.*?\*\*|\*.*?\*)/s';
 
         preg_match_all(
             $regex,
@@ -2236,316 +1515,147 @@ class WordController extends Controller
             $matches,
             PREG_OFFSET_CAPTURE
         );
-        $crearRun =
-            function (string $texto, bool $negrita = false, bool $cursiva = false) use ($dom, $parrafo, $runReferencia) {
 
-                $run =
-                    $dom->createElementNS(
-                        self::WORD_NS,
-                        'w:r'
-                    );
-                $rPrOriginal = null;
+        $crearRun = function (
+            string $texto,
+            bool $negrita = false,
+            bool $cursiva = false
+        ) use ($dom, $parrafo, $runReferencia) {
+            $run = $dom->createElementNS(self::WORD_NS, 'w:r');
+            $rPrOriginal = null;
 
-                foreach (
-                    $runReferencia->childNodes as $hijo
-                ) {
-
-                    if (
-                        $hijo instanceof DOMElement &&
-                        $hijo->localName === 'rPr'
-                    ) {
-
-                        $rPrOriginal =
-                            $hijo->cloneNode(
-                                true
-                            );
-
-                        break;
-                    }
-                }
-
+            foreach ($runReferencia->childNodes as $hijo) {
                 if (
-                    $rPrOriginal instanceof DOMElement
+                    $hijo instanceof DOMElement &&
+                    $hijo->localName === 'rPr'
                 ) {
+                    $rPrOriginal = $hijo->cloneNode(true);
+                    break;
+                }
+            }
 
-                    $run->appendChild(
-                        $rPrOriginal
-                    );
-                } else {
+            if ($rPrOriginal instanceof DOMElement) {
+                $run->appendChild($rPrOriginal);
+            } else {
+                $rPr = $dom->createElementNS(self::WORD_NS, 'w:rPr');
+                $rFonts = $dom->createElementNS(self::WORD_NS, 'w:rFonts');
 
-                    $rPr =
-                        $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:rPr'
-                        );
+                $rFonts->setAttributeNS(self::WORD_NS, 'w:ascii', 'Times New Roman');
+                $rFonts->setAttributeNS(self::WORD_NS, 'w:hAnsi', 'Times New Roman');
+                $rFonts->setAttributeNS(self::WORD_NS, 'w:eastAsia', 'Times New Roman');
+                $rFonts->setAttributeNS(self::WORD_NS, 'w:cs', 'Times New Roman');
 
-                    $rFonts =
-                        $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:rFonts'
-                        );
+                $rPr->appendChild($rFonts);
+                $run->appendChild($rPr);
+            }
 
-                    $rFonts->setAttributeNS(
-                        self::WORD_NS,
-                        'w:ascii',
-                        'Times New Roman'
-                    );
+            $rPr = null;
 
-                    $rFonts->setAttributeNS(
-                        self::WORD_NS,
-                        'w:hAnsi',
-                        'Times New Roman'
-                    );
-
-                    $rFonts->setAttributeNS(
-                        self::WORD_NS,
-                        'w:eastAsia',
-                        'Times New Roman'
-                    );
-
-                    $rFonts->setAttributeNS(
-                        self::WORD_NS,
-                        'w:cs',
-                        'Times New Roman'
-                    );
-
-                    $rPr->appendChild(
-                        $rFonts
-                    );
-
-                    $run->appendChild(
-                        $rPr
-                    );
-                }if ($negrita) {
-
-                    $rPr = null;
-
-                    foreach (
-                        $run->childNodes as $hijo
-                    ) {
-
-                        if (
-                            $hijo instanceof DOMElement &&
-                            $hijo->localName === 'rPr'
-                        ) {
-
-                            $rPr = $hijo;
-
-                            break;
-                        }
-                    }
-
-                    if ($rPr) {
-
-                        $bold =
-                            $dom->createElementNS(
-                                self::WORD_NS,
-                                'w:b'
-                            );
-
-                        $rPr->appendChild(
-                            $bold
-                        );
-                    }
-                }if ($cursiva) {
-
-                    $rPr = null;
-
-                    foreach (
-                        $run->childNodes as $hijo
-                    ) {
-
-                        if (
-                            $hijo instanceof DOMElement &&
-                            $hijo->localName === 'rPr'
-                        ) {
-
-                            $rPr = $hijo;
-
-                            break;
-                        }
-                    }
-
-                    if ($rPr) {
-
-                        $italic =
-                            $dom->createElementNS(
-                                self::WORD_NS,
-                                'w:i'
-                            );
-
-                        $rPr->appendChild(
-                            $italic
-                        );
-                    }
-                }$lineas =
-                    preg_split(
-                        "/\r\n|\r|\n/",
-                        $texto
-                    );
-
-                foreach (
-                    $lineas as $indice => $linea
+            foreach ($run->childNodes as $hijo) {
+                if (
+                    $hijo instanceof DOMElement &&
+                    $hijo->localName === 'rPr'
                 ) {
+                    $rPr = $hijo;
+                    break;
+                }
+            }
 
-                    if ($linea !== '') {
+            if ($negrita && $rPr) {
+                $rPr->appendChild(
+                    $dom->createElementNS(self::WORD_NS, 'w:b')
+                );
+            }
 
-                        $textoWord =
-                            $dom->createElementNS(
-                                self::WORD_NS,
-                                'w:t'
-                            );
+            if ($cursiva && $rPr) {
+                $rPr->appendChild(
+                    $dom->createElementNS(self::WORD_NS, 'w:i')
+                );
+            }
 
-                        $textoWord->setAttributeNS(
-                            self::XML_NS,
-                            'xml:space',
-                            'preserve'
-                        );
+            $lineas = preg_split("/\r\n|\r|\n/", $texto);
 
-                        $textoWord->appendChild(
-                            $dom->createTextNode(
-                                $linea
-                            )
-                        );
+            foreach ($lineas as $indice => $linea) {
+                if ($linea !== '') {
+                    $textoWord = $dom->createElementNS(self::WORD_NS, 'w:t');
 
-                        $run->appendChild(
-                            $textoWord
-                        );
-                    }
+                    $textoWord->setAttributeNS(
+                        self::XML_NS,
+                        'xml:space',
+                        'preserve'
+                    );
 
-                    if (
-                        $indice < count($lineas) - 1
-                    ) {
-                        $br = $dom->createElementNS(
-                            self::WORD_NS,
-                            'w:br'
-                        );
+                    $textoWord->appendChild(
+                        $dom->createTextNode($linea)
+                    );
 
-                        $run->appendChild(
-                            $br
-                        );
-                    }
+                    $run->appendChild($textoWord);
                 }
 
-                $parrafo->insertBefore(
-                    $run,
-                    $runReferencia
-                );
-            };
+                if ($indice < count($lineas) - 1) {
+                    $run->appendChild(
+                        $dom->createElementNS(self::WORD_NS, 'w:br')
+                    );
+                }
+            }
+
+            $parrafo->insertBefore($run, $runReferencia);
+        };
+
         $posicionActual = 0;
 
-        foreach (
-            $matches[0] as $match
-        ) {
+        foreach ($matches[0] as $match) {
+            $parte = $match[0];
+            $posicion = $match[1];
 
-            $parte =
-                $match[0];
-
-            $posicion =
-                $match[1];
-            if (
-                $posicion >
-                $posicionActual
-            ) {
-
-                $normal =
-                    substr(
-                        $valor,
-                        $posicionActual,
-                        $posicion -
-                        $posicionActual
-                    );
-
-                $crearRun(
-                    $normal
+            if ($posicion > $posicionActual) {
+                $normal = substr(
+                    $valor,
+                    $posicionActual,
+                    $posicion - $posicionActual
                 );
+
+                $crearRun($normal);
             }
+
             if (
-                str_starts_with(
-                    $parte,
-                    '**'
-                ) &&
-                str_ends_with(
-                    $parte,
-                    '**'
-                )
+                str_starts_with($parte, '**') &&
+                str_ends_with($parte, '**')
             ) {
-
-                $texto =
-                    substr(
-                        $parte,
-                        2,
-                        -2
-                    );
-
-                $crearRun(
-                    $texto,
-                    false,
-                    true
-                );
+                $texto = substr($parte, 2, -2);
+                $crearRun($texto, false, true);
             } elseif (
-                str_starts_with(
-                    $parte,
-                    '*'
-                ) &&
-                str_ends_with(
-                    $parte,
-                    '*'
-                )
+                str_starts_with($parte, '*') &&
+                str_ends_with($parte, '*')
             ) {
-
-                $texto =
-                    substr(
-                        $parte,
-                        1,
-                        -1
-                    );
-
-                $crearRun(
-                    $texto,
-                    true,
-                    false
-                );
+                $texto = substr($parte, 1, -1);
+                $crearRun($texto, true, false);
             }
 
-            $posicionActual =
-                $posicion +
-                strlen($parte);
+            $posicionActual = $posicion + strlen($parte);
         }
-        if (
-            $posicionActual < strlen($valor)
-        ) {
-            $final = substr($valor, $posicionActual);
-            $crearRun($final);
+
+        if ($posicionActual < strlen($valor)) {
+            $crearRun(substr($valor, $posicionActual));
         }
     }
-    private function
-        insertarDespues(
+
+    private function insertarDespues(
         DOMElement $referencia,
         DOMElement $nuevaFila
     ): void {
         $padre = $referencia->parentNode;
-
-        $siguiente =
-            $referencia->nextSibling;
+        $siguiente = $referencia->nextSibling;
 
         if ($siguiente !== null) {
-
-            $padre->insertBefore(
-                $nuevaFila,
-                $siguiente
-            );
+            $padre->insertBefore($nuevaFila, $siguiente);
         } else {
-
-            $padre->appendChild(
-                $nuevaFila
-            );
+            $padre->appendChild($nuevaFila);
         }
     }
-    private function eliminarTemporal(
-        string $archivo
-    ): void {
 
+    private function eliminarTemporal(string $archivo): void
+    {
         if (!file_exists($archivo)) {
             return;
         }
@@ -2554,6 +1664,7 @@ class WordController extends Controller
             if (@unlink($archivo)) {
                 return;
             }
+
             usleep(100000);
         }
     }
@@ -2571,7 +1682,6 @@ class WordController extends Controller
             mkdir($tempDir, 0777, true);
         }
 
-        // Configuración de PhpWord
         Settings::setTempDir($tempDir);
 
         putenv('TMP=' . $tempDir);
@@ -2579,12 +1689,14 @@ class WordController extends Controller
         putenv('TMPDIR=' . $tempDir);
 
         $ids = $request->input('planificaciones');
+
         $planificaciones = Auth::user()
             ->planificaciones()
-            ->with('actividades')
+            ->with('actividades.subactividades')
             ->whereIn('id', $ids)
             ->get()
             ->keyBy('id');
+
         $planificacionesOrdenadas = collect($ids)
             ->map(function ($id) use ($planificaciones) {
                 return $planificaciones->get($id);
@@ -2598,8 +1710,6 @@ class WordController extends Controller
             ], 404);
         }
 
-
-
         $fechas = $planificacionesOrdenadas
             ->pluck('fecha')
             ->filter()
@@ -2610,10 +1720,10 @@ class WordController extends Controller
                 return $fecha->timestamp;
             })
             ->values();
+
         $gruposFechas = [];
 
         foreach ($fechas as $fecha) {
-
             $anio = $fecha->format('Y');
             $mes = $fecha->format('m');
             $dia = $fecha->format('d');
@@ -2628,40 +1738,28 @@ class WordController extends Controller
 
             $gruposFechas[$anio][$mes][] = $dia;
         }
+
         $partesFecha = [];
 
         foreach ($gruposFechas as $anio => $meses) {
-
             foreach ($meses as $mes => $dias) {
                 $dias = array_unique($dias);
-
                 sort($dias);
-
-
 
                 $textoDias = $anio . '-' . $mes;
 
-                foreach ($dias as $indice => $dia) {
-
-                    if ($indice === 0) {
-
-                        $textoDias .= '-' . $dia;
-
-                    } else {
-
-                        $textoDias .= '-' . $dia;
-                    }
+                foreach ($dias as $dia) {
+                    $textoDias .= '-' . $dia;
                 }
 
                 $partesFecha[] = $textoDias;
             }
         }
+
         $nombreBase = 'planificaciones';
 
         if (!empty($partesFecha)) {
-
-            $nombreBase .= ' ' .
-                implode('_', $partesFecha);
+            $nombreBase .= ' ' . implode('_', $partesFecha);
         }
 
         $nombreDescarga = $nombreBase . '.docx';
@@ -2669,7 +1767,6 @@ class WordController extends Controller
 
         try {
             foreach ($planificacionesOrdenadas as $planificacion) {
-
                 $archivoTemporal =
                     $tempDir .
                     '/planificacion_' .
@@ -2683,9 +1780,9 @@ class WordController extends Controller
                     $archivoTemporal
                 );
 
-                $archivosTemporales[] =
-                    $archivoTemporal;
+                $archivosTemporales[] = $archivoTemporal;
             }
+
             $archivoFinal =
                 $tempDir .
                 '/planificaciones_' .
@@ -2693,41 +1790,35 @@ class WordController extends Controller
                 '_' .
                 uniqid() .
                 '.docx';
+
             $this->unirDocumentosWord(
                 $archivosTemporales,
                 $archivoFinal
             );
-            foreach ($archivosTemporales as $archivo) {
 
-                $this->eliminarTemporal(
-                    $archivo
-                );
+            foreach ($archivosTemporales as $archivo) {
+                $this->eliminarTemporal($archivo);
             }
+
             return response()
                 ->download(
                     $archivoFinal,
                     $nombreDescarga,
                     [
                         'Content-Type' =>
-                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                     ]
                 )
                 ->deleteFileAfterSend(true);
-
         } catch (\Throwable $e) {
             foreach ($archivosTemporales as $archivo) {
-
-                $this->eliminarTemporal(
-                    $archivo
-                );
+                $this->eliminarTemporal($archivo);
             }
 
             return response()->json([
                 'success' => false,
-                'message' =>
-                    'Error al generar las planificaciones.',
-                'error' =>
-                    $e->getMessage(),
+                'message' => 'Error al generar las planificaciones.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -2737,85 +1828,51 @@ class WordController extends Controller
         string $archivoFinal
     ): void {
         if (empty($archivos)) {
-            throw new \Exception(
-                'No hay documentos para unir.'
-            );
+            throw new \Exception('No hay documentos para unir.');
         }
 
         if (!copy($archivos[0], $archivoFinal)) {
-            throw new \Exception(
-                'No se pudo crear el documento Word final.'
-            );
+            throw new \Exception('No se pudo crear el documento Word final.');
         }
 
         $zipFinal = new ZipArchive();
 
         if ($zipFinal->open($archivoFinal) !== true) {
-            throw new \Exception(
-                'No se pudo abrir el documento Word final.'
-            );
+            throw new \Exception('No se pudo abrir el documento Word final.');
         }
 
         try {
-
-            
-            $xmlPrincipal = $zipFinal->getFromName(
-                'word/document.xml'
-            );
+            $xmlPrincipal = $zipFinal->getFromName('word/document.xml');
 
             if ($xmlPrincipal === false) {
-                throw new \Exception(
-                    'No se encontró word/document.xml en el documento base.'
-                );
+                throw new \Exception('No se encontró word/document.xml en el documento base.');
             }
 
             $domPrincipal = new DOMDocument();
-
             $domPrincipal->preserveWhiteSpace = false;
 
             if (!$domPrincipal->loadXML($xmlPrincipal)) {
-                throw new \Exception(
-                    'No se pudo leer el XML del documento base.'
-                );
+                throw new \Exception('No se pudo leer el XML del documento base.');
             }
 
-            $xpathPrincipal = new DOMXPath(
-                $domPrincipal
-            );
-
-            $xpathPrincipal->registerNamespace(
-                'w',
-                self::WORD_NS
-            );
-
+            $xpathPrincipal = new DOMXPath($domPrincipal);
+            $xpathPrincipal->registerNamespace('w', self::WORD_NS);
             $xpathPrincipal->registerNamespace(
                 'r',
                 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
             );
 
-            $bodyPrincipal =
-                $xpathPrincipal->query(
-                    '//w:body'
-                )->item(0);
+            $bodyPrincipal = $xpathPrincipal->query('//w:body')->item(0);
 
             if (!$bodyPrincipal) {
-                throw new \Exception(
-                    'No se encontró el cuerpo del documento Word.'
-                );
+                throw new \Exception('No se encontró el cuerpo del documento Word.');
             }
 
-            $sectPr =
-                $xpathPrincipal->query(
-                    './w:sectPr',
-                    $bodyPrincipal
-                )->item(0);
+            $sectPr = $xpathPrincipal->query('./w:sectPr', $bodyPrincipal)->item(0);
 
-
-            
-            $relsPrincipalXml =
-                $zipFinal->getFromName(
-                    'word/_rels/document.xml.rels'
-                );
+            $relsPrincipalXml = $zipFinal->getFromName(
+                'word/_rels/document.xml.rels'
+            );
 
             if ($relsPrincipalXml === false) {
                 $relsPrincipalXml =
@@ -2825,108 +1882,62 @@ class WordController extends Controller
                     '"></Relationships>';
             }
 
-            $domRelsPrincipal =
-                new DOMDocument();
-
+            $domRelsPrincipal = new DOMDocument();
             $domRelsPrincipal->preserveWhiteSpace = false;
 
-            if (
-                !$domRelsPrincipal->loadXML(
-                    $relsPrincipalXml
-                )
-            ) {
+            if (!$domRelsPrincipal->loadXML($relsPrincipalXml)) {
                 throw new \Exception(
                     'No se pudieron leer las relaciones del documento Word principal.'
                 );
             }
 
-            $xpathRelsPrincipal =
-                new DOMXPath(
-                    $domRelsPrincipal
-                );
+            $xpathRelsPrincipal = new DOMXPath($domRelsPrincipal);
 
             $xpathRelsPrincipal->registerNamespace(
                 'rel',
                 'http://schemas.openxmlformats.org/package/2006/relationships'
             );
 
-            $relationshipsPrincipal =
-                $domRelsPrincipal->documentElement;
+            $relationshipsPrincipal = $domRelsPrincipal->documentElement;
 
+            for ($i = 1; $i < count($archivos); $i++) {
+                $archivo = $archivos[$i];
+                $zipSecundario = new ZipArchive();
 
-            
-            for (
-                $i = 1;
-                $i < count($archivos);
-                $i++
-            ) {
-
-                $archivo =
-                    $archivos[$i];
-
-                $zipSecundario =
-                    new ZipArchive();
-
-                if (
-                    $zipSecundario->open(
-                        $archivo
-                    ) !== true
-                ) {
+                if ($zipSecundario->open($archivo) !== true) {
                     throw new \Exception(
                         "No se pudo abrir el documento: {$archivo}"
                     );
                 }
 
                 try {
+                    $xmlSecundario = $zipSecundario->getFromName(
+                        'word/document.xml'
+                    );
 
-                    
-                    $xmlSecundario =
-                        $zipSecundario->getFromName(
-                            'word/document.xml'
-                        );
-
-                    if (
-                        $xmlSecundario === false
-                    ) {
+                    if ($xmlSecundario === false) {
                         throw new \Exception(
                             'No se encontró word/document.xml en uno de los documentos.'
                         );
                     }
 
-                    $domSecundario =
-                        new DOMDocument();
-
+                    $domSecundario = new DOMDocument();
                     $domSecundario->preserveWhiteSpace = false;
 
-                    if (
-                        !$domSecundario->loadXML(
-                            $xmlSecundario
-                        )
-                    ) {
+                    if (!$domSecundario->loadXML($xmlSecundario)) {
                         throw new \Exception(
                             'No se pudo leer el XML de una de las planificaciones.'
                         );
                     }
 
-                    $xpathSecundario =
-                        new DOMXPath(
-                            $domSecundario
-                        );
-
-                    $xpathSecundario->registerNamespace(
-                        'w',
-                        self::WORD_NS
-                    );
-
+                    $xpathSecundario = new DOMXPath($domSecundario);
+                    $xpathSecundario->registerNamespace('w', self::WORD_NS);
                     $xpathSecundario->registerNamespace(
                         'r',
                         'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
                     );
 
-                    $bodySecundario =
-                        $xpathSecundario->query(
-                            '//w:body'
-                        )->item(0);
+                    $bodySecundario = $xpathSecundario->query('//w:body')->item(0);
 
                     if (!$bodySecundario) {
                         throw new \Exception(
@@ -2934,37 +1945,23 @@ class WordController extends Controller
                         );
                     }
 
+                    $relsSecundarioXml = $zipSecundario->getFromName(
+                        'word/_rels/document.xml.rels'
+                    );
 
-                    
-                    $relsSecundarioXml =
-                        $zipSecundario->getFromName(
-                            'word/_rels/document.xml.rels'
-                        );
+                    if ($relsSecundarioXml !== false) {
+                        $domRelsSecundario = new DOMDocument();
+                        $domRelsSecundario->preserveWhiteSpace = false;
 
-                    if (
-                        $relsSecundarioXml !== false
-                    ) {
-
-                        $domRelsSecundario =
-                            new DOMDocument();
-
-                        $domRelsSecundario->preserveWhiteSpace =
-                            false;
-
-                        if (
-                            !$domRelsSecundario->loadXML(
-                                $relsSecundarioXml
-                            )
-                        ) {
+                        if (!$domRelsSecundario->loadXML($relsSecundarioXml)) {
                             throw new \Exception(
                                 'No se pudieron leer las relaciones de una de las planificaciones.'
                             );
                         }
 
-                        $xpathRelsSecundario =
-                            new DOMXPath(
-                                $domRelsSecundario
-                            );
+                        $xpathRelsSecundario = new DOMXPath(
+                            $domRelsSecundario
+                        );
 
                         $xpathRelsSecundario->registerNamespace(
                             'rel',
@@ -2976,184 +1973,98 @@ class WordController extends Controller
                                 '/rel:Relationships/rel:Relationship'
                             );
 
-
-                        
                         $mapaRids = [];
 
-                        foreach (
-                            $relacionesSecundarias as $relacion
-                        ) {
+                        foreach ($relacionesSecundarias as $relacion) {
+                            $idViejo = $relacion->getAttribute('Id');
+                            $tipo = $relacion->getAttribute('Type');
+                            $target = $relacion->getAttribute('Target');
 
-                            $idViejo =
-                                $relacion->getAttribute(
-                                    'Id'
-                                );
-
-                            $tipo =
-                                $relacion->getAttribute(
-                                    'Type'
-                                );
-
-                            $target =
-                                $relacion->getAttribute(
-                                    'Target'
-                                );
-
-                            
-                            $esImagen =
-                                str_contains(
-                                    $tipo,
-                                    '/image'
-                                );
-
-                            if (!$esImagen) {
+                            if (!str_contains($tipo, '/image')) {
                                 continue;
                             }
 
-                            
-                            $nombreOriginal =
-                                basename(
-                                    $target
-                                );
+                            $nombreOriginal = basename($target);
+                            $extension = pathinfo(
+                                $nombreOriginal,
+                                PATHINFO_EXTENSION
+                            );
 
-                            $extension =
-                                pathinfo(
-                                    $nombreOriginal,
-                                    PATHINFO_EXTENSION
-                                );
-
-                            if (
-                                $extension === ''
-                            ) {
+                            if ($extension === '') {
                                 $extension = 'png';
                             }
 
                             $nombreImagenNuevo =
                                 'image_' .
-                                uniqid(
-                                    '',
-                                    true
-                                ) .
+                                uniqid('', true) .
                                 '_' .
                                 $i .
                                 '.' .
-                                strtolower(
-                                    $extension
-                                );
+                                strtolower($extension);
 
-                            
-                            $rutaImagen =
-                                'word/media/' .
-                                $nombreOriginal;
+                            $rutaImagen = 'word/media/' . $nombreOriginal;
 
                             $contenidoImagen =
-                                $zipSecundario->getFromName(
-                                    $rutaImagen
+                                $zipSecundario->getFromName($rutaImagen);
+
+                            if ($contenidoImagen === false) {
+                                $nombreTarget = ltrim(
+                                    str_replace('\\', '/', $target),
+                                    '/'
                                 );
 
-                            /*
-                            |--------------------------------------------------------------------------
-                            | SI LA RUTA TIENE OTRA FORMA,
-                            | BUSCAR DIRECTAMENTE EN WORD/MEDIA
-                            |--------------------------------------------------------------------------
-                            */
-
-                            if (
-                                $contenidoImagen === false
-                            ) {
-
-                                $nombreTarget =
-                                    ltrim(
-                                        str_replace(
-                                            '\\',
-                                            '/',
-                                            $target
-                                        ),
-                                        '/'
-                                    );
-
-                                $rutaImagen =
-                                    'word/' .
-                                    $nombreTarget;
+                                $rutaImagen = 'word/' . $nombreTarget;
 
                                 $contenidoImagen =
-                                    $zipSecundario->getFromName(
-                                        $rutaImagen
-                                    );
+                                    $zipSecundario->getFromName($rutaImagen);
                             }
 
-                            if (
-                                $contenidoImagen === false
-                            ) {
+                            if ($contenidoImagen === false) {
                                 continue;
                             }
 
-                            
                             $zipFinal->addFromString(
-                                'word/media/' .
-                                $nombreImagenNuevo,
+                                'word/media/' . $nombreImagenNuevo,
                                 $contenidoImagen
                             );
 
-
-                            
                             $ridNuevo =
                                 'rId' .
                                 (
                                     1000 +
                                     ($i * 100) +
-                                    count(
-                                        $mapaRids
-                                    ) +
+                                    count($mapaRids) +
                                     1
                                 );
 
-                            
                             while (
                                 $xpathRelsPrincipal->query(
                                     '/rel:Relationships/rel:Relationship[@Id="' .
-                                    $ridNuevo .
-                                    '"]'
+                                        $ridNuevo .
+                                        '"]'
                                 )->length > 0
                             ) {
-
                                 $ridNuevo =
                                     'rId' .
                                     (
                                         2000 +
-                                        rand(
-                                            1,
-                                            999999
-                                        )
+                                        rand(1, 999999)
                                     );
                             }
 
-                            $mapaRids[
-                                $idViejo
-                            ] = $ridNuevo;
+                            $mapaRids[$idViejo] = $ridNuevo;
 
-
-                            
                             $nuevaRelacion =
                                 $domRelsPrincipal->createElementNS(
                                     'http://schemas.openxmlformats.org/package/2006/relationships',
                                     'Relationship'
                                 );
 
-                            $nuevaRelacion->setAttribute(
-                                'Id',
-                                $ridNuevo
-                            );
-
-                            $nuevaRelacion->setAttribute(
-                                'Type',
-                                $tipo
-                            );
-
+                            $nuevaRelacion->setAttribute('Id', $ridNuevo);
+                            $nuevaRelacion->setAttribute('Type', $tipo);
                             $nuevaRelacion->setAttribute(
                                 'Target',
-                                'media/' .
-                                $nombreImagenNuevo
+                                'media/' . $nombreImagenNuevo
                             );
 
                             $relationshipsPrincipal->appendChild(
@@ -3161,27 +2072,14 @@ class WordController extends Controller
                             );
                         }
 
-
-                        
                         if (!empty($mapaRids)) {
-
                             $elementosConRid =
                                 $xpathSecundario->query(
                                     '//*[@r:embed or @r:id or @r:link]'
                                 );
 
-                            foreach (
-                                $elementosConRid as $elemento
-                            ) {
-
-                                foreach (
-                                    [
-                                        'embed',
-                                        'id',
-                                        'link'
-                                    ] as $atributo
-                                ) {
-
+                            foreach ($elementosConRid as $elemento) {
+                                foreach (['embed', 'id', 'link'] as $atributo) {
                                     if (
                                         !$elemento->hasAttributeNS(
                                             'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
@@ -3197,20 +2095,11 @@ class WordController extends Controller
                                             $atributo
                                         );
 
-                                    if (
-                                        isset(
-                                        $mapaRids[
-                                            $ridViejo
-                                        ]
-                                    )
-                                    ) {
-
+                                    if (isset($mapaRids[$ridViejo])) {
                                         $elemento->setAttributeNS(
                                             'http://schemas.openxmlformats.org/officeDocument/2006/relationships',
                                             'r:' . $atributo,
-                                            $mapaRids[
-                                                $ridViejo
-                                            ]
+                                            $mapaRids[$ridViejo]
                                         );
                                     }
                                 }
@@ -3218,8 +2107,6 @@ class WordController extends Controller
                         }
                     }
 
-
-                    
                     $parrafoSalto =
                         $domPrincipal->createElementNS(
                             self::WORD_NS,
@@ -3244,39 +2131,22 @@ class WordController extends Controller
                         'page'
                     );
 
-                    $runSalto->appendChild(
-                        $br
-                    );
-
-                    $parrafoSalto->appendChild(
-                        $runSalto
-                    );
+                    $runSalto->appendChild($br);
+                    $parrafoSalto->appendChild($runSalto);
 
                     if ($sectPr) {
-
                         $bodyPrincipal->insertBefore(
                             $parrafoSalto,
                             $sectPr
                         );
-
                     } else {
-
-                        $bodyPrincipal->appendChild(
-                            $parrafoSalto
-                        );
+                        $bodyPrincipal->appendChild($parrafoSalto);
                     }
 
-
-                    
-                    foreach (
-                        $bodySecundario->childNodes as $nodo
-                    ) {
-
+                    foreach ($bodySecundario->childNodes as $nodo) {
                         if (
-                            $nodo->nodeType ===
-                            XML_ELEMENT_NODE &&
-                            $nodo->localName ===
-                            'sectPr'
+                            $nodo->nodeType === XML_ELEMENT_NODE &&
+                            $nodo->localName === 'sectPr'
                         ) {
                             continue;
                         }
@@ -3288,51 +2158,34 @@ class WordController extends Controller
                             );
 
                         if ($sectPr) {
-
                             $bodyPrincipal->insertBefore(
                                 $nodoImportado,
                                 $sectPr
                             );
-
                         } else {
-
                             $bodyPrincipal->appendChild(
                                 $nodoImportado
                             );
                         }
                     }
-
                 } finally {
-
                     $zipSecundario->close();
                 }
             }
 
-
-            
-            $xmlFinal =
-                $domPrincipal->saveXML();
-
             $zipFinal->addFromString(
                 'word/document.xml',
-                $xmlFinal
+                $domPrincipal->saveXML()
             );
 
-
-            
             $zipFinal->addFromString(
                 'word/_rels/document.xml.rels',
                 $domRelsPrincipal->saveXML()
             );
 
-
-            
             $zipFinal->close();
-
         } catch (\Throwable $e) {
-
             $zipFinal->close();
-
             throw $e;
         }
     }
@@ -3358,89 +2211,31 @@ class WordController extends Controller
         putenv('TMPDIR=' . $tmpDir);
         putenv('TMP=' . $tmpDir);
         putenv('TEMP=' . $tmpDir);
-
         @ini_set('sys_temp_dir', $tmpDir);
-
-        // ==========================================================
-        // ACTIVIDADES PART 1
-        // ==========================================================
 
         $part1 = $planificacion->actividades
             ->where('seccion', 'part1')
             ->sortBy('orden')
-            ->map(function ($actividad) {
-                return [
-                    'ambito' =>
-                        $actividad->ambito ?? '',
-
-                    'destreza' =>
-                        $actividad->destreza ?? '',
-
-                    'estrategias_metologicas' =>
-                        $actividad->estrategias_metologicas ?? '',
-
-                    'estrategias_metologicas_imagen' =>
-                        $actividad->estrategias_metologicas_imagen ?? '',
-
-                    'recursos' =>
-                        $actividad->recursos ?? '',
-
-                    'indicadores_logro' =>
-                        $actividad->indicadores_logro ?? '',
-                ];
-            })
-            ->values()
-            ->toArray();
-
-
-        // ==========================================================
-        // ACTIVIDADES PART 2
-        // ==========================================================
+            ->values();
 
         $part2 = $planificacion->actividades
             ->where('seccion', 'part2')
             ->sortBy('orden')
-            ->map(function ($actividad) {
-                return [
-                    'ambito' =>
-                        $actividad->ambito ?? '',
-
-                    'destreza' =>
-                        $actividad->destreza ?? '',
-
-                    'estrategias_metologicas' =>
-                        $actividad->estrategias_metologicas ?? '',
-
-                    'estrategias_metologicas_imagen' =>
-                        $actividad->estrategias_metologicas_imagen ?? '',
-
-                    'recursos' =>
-                        $actividad->recursos ?? '',
-
-                    'indicadores_logro' =>
-                        $actividad->indicadores_logro ?? '',
-                ];
-            })
-            ->values()
-            ->toArray();
-
+            ->values();
 
         $tamanoLetraActividades =
-            (int) (
-                $planificacion->tamano_letra_actividades ?? 8
-            );
+            (int) ($planificacion->tamano_letra_actividades ?? 8);
 
         $plantilla = storage_path(
             'app/plantillas/planificacion.docx'
         );
 
         if (!file_exists($plantilla)) {
-            throw new \Exception(
-                'No existe la plantilla Word.'
-            );
+            throw new \Exception('No existe la plantilla Word.');
         }
 
-        $temporal = $tmpDir .
+        $temporal =
+            $tmpDir .
             '/temporal_planificacion_' .
             uniqid('', true) .
             '.docx';
@@ -3451,9 +2246,7 @@ class WordController extends Controller
             );
         }
 
-
         try {
-
             $zip = new ZipArchive();
 
             if ($zip->open($temporal) !== true) {
@@ -3475,14 +2268,11 @@ class WordController extends Controller
             }
 
             $dom = new DOMDocument();
-
             $dom->preserveWhiteSpace = true;
             $dom->formatOutput = false;
 
             libxml_use_internal_errors(true);
-
             $resultado = $dom->loadXML($xml);
-
             libxml_clear_errors();
 
             if (!$resultado) {
@@ -3492,7 +2282,6 @@ class WordController extends Controller
                     'No se pudo leer el XML del Word.'
                 );
             }
-
 
             $xpath = new DOMXPath($dom);
 
@@ -3510,6 +2299,11 @@ class WordController extends Controller
                     $xpath
                 );
 
+            $filaSubactividad =
+                $this->buscarFilaSubactividad(
+                    $xpath
+                );
+
             if ($filaActividad === null) {
                 $zip->close();
 
@@ -3518,28 +2312,23 @@ class WordController extends Controller
                 );
             }
 
+            if ($filaSubactividad === null) {
+                $zip->close();
+
+                throw new \Exception(
+                    'No se encontró la fila de subactividades en el Word.'
+                );
+            }
+
             $filaSnack =
                 $this->buscarFilaSnack(
                     $xpath
                 );
 
-
-            // ==========================================================
-            // MACROS DE IMÁGENES
-            // ==========================================================
-
             $imagenesEstrategias = [];
-
-
-            // ==========================================================
-            // PART 1
-            // ==========================================================
-
-            $padre =
-                $filaActividad->parentNode;
+            $padre = $filaActividad->parentNode;
 
             foreach ($part1 as $indice => $actividad) {
-
                 $fila =
                     $this->clonarFila(
                         $filaActividad
@@ -3549,13 +2338,28 @@ class WordController extends Controller
                     'estrategias_imagen_part1_' . $indice;
 
                 $imagenesEstrategias[$macroImagen] =
-                    $actividad['estrategias_metologicas_imagen'] ?? '';
+                    $actividad->estrategias_metologicas_imagen ?? '';
+
+                $datosActividad = [
+                    'ambito' =>
+                    $actividad->ambito ?? '',
+                    'destreza' =>
+                    $actividad->destreza ?? '',
+                    'estrategias_metologicas' =>
+                    $actividad->estrategias_metologicas ?? '',
+                    'estrategias_metologicas_imagen' =>
+                    $actividad->estrategias_metologicas_imagen ?? '',
+                    'recursos' =>
+                    $actividad->recursos ?? '',
+                    'indicadores_logro' =>
+                    $actividad->indicadores_logro ?? '',
+                ];
 
                 $this->rellenarActividad(
                     $dom,
                     $xpath,
                     $fila,
-                    $actividad,
+                    $datosActividad,
                     $numIdLista,
                     $tamanoLetraActividades,
                     $macroImagen
@@ -3565,15 +2369,51 @@ class WordController extends Controller
                     $fila,
                     $filaActividad
                 );
+
+                $ultimaFila = $fila;
+
+                foreach (
+                    $actividad->subactividades
+                        ->sortBy('orden')
+                    as $subactividad
+                ) {
+                    $filaSub =
+                        $this->clonarFila(
+                            $filaSubactividad
+                        );
+
+                    $datosSubactividad = [
+                        'ambito' =>
+                        $subactividad->ambito ?? '',
+                        'destreza' =>
+                        $subactividad->destreza ?? '',
+                        'estrategias_metologicas' =>
+                        $subactividad->estrategias_metologicas ?? '',
+                        'recursos' =>
+                        $subactividad->recursos ?? '',
+                        'indicadores_logro' =>
+                        $subactividad->indicadores_logro ?? '',
+                    ];
+
+                    $this->rellenarSubactividad(
+                        $dom,
+                        $xpath,
+                        $filaSub,
+                        $datosSubactividad,
+                        $numIdLista,
+                        $tamanoLetraActividades
+                    );
+
+                    $this->insertarDespues(
+                        $ultimaFila,
+                        $filaSub
+                    );
+
+                    $ultimaFila = $filaSub;
+                }
             }
 
-
-            // ==========================================================
-            // FILA SNACK
-            // ==========================================================
-
             if ($filaSnack === null) {
-
                 $filaSnack =
                     $this->clonarFila(
                         $filaActividad
@@ -3592,13 +2432,9 @@ class WordController extends Controller
                 );
             }
 
-
-            // ==========================================================
-            // PART 2
-            // ==========================================================
+            $ultimaFilaPart2 = $filaSnack;
 
             foreach ($part2 as $indice => $actividad) {
-
                 $fila =
                     $this->clonarFila(
                         $filaActividad
@@ -3608,39 +2444,91 @@ class WordController extends Controller
                     'estrategias_imagen_part2_' . $indice;
 
                 $imagenesEstrategias[$macroImagen] =
-                    $actividad['estrategias_metologicas_imagen'] ?? '';
+                    $actividad->estrategias_metologicas_imagen ?? '';
+
+                $datosActividad = [
+                    'ambito' =>
+                    $actividad->ambito ?? '',
+                    'destreza' =>
+                    $actividad->destreza ?? '',
+                    'estrategias_metologicas' =>
+                    $actividad->estrategias_metologicas ?? '',
+                    'estrategias_metologicas_imagen' =>
+                    $actividad->estrategias_metologicas_imagen ?? '',
+                    'recursos' =>
+                    $actividad->recursos ?? '',
+                    'indicadores_logro' =>
+                    $actividad->indicadores_logro ?? '',
+                ];
 
                 $this->rellenarActividad(
                     $dom,
                     $xpath,
                     $fila,
-                    $actividad,
+                    $datosActividad,
                     $numIdLista,
                     $tamanoLetraActividades,
                     $macroImagen
                 );
 
                 $this->insertarDespues(
-                    $filaSnack,
+                    $ultimaFilaPart2,
                     $fila
                 );
 
-                $filaSnack = $fila;
+                $ultimaFilaPart2 = $fila;
+
+                foreach (
+                    $actividad->subactividades
+                        ->sortBy('orden') as $subactividad
+                ) {
+                    $filaSub =
+                        $this->clonarFila(
+                            $filaSubactividad
+                        );
+
+                    $datosSubactividad = [
+                        'ambito' =>
+                        $subactividad->ambito ?? '',
+                        'destreza' =>
+                        $subactividad->destreza ?? '',
+                        'estrategias_metologicas' =>
+                        $subactividad->estrategias_metologicas ?? '',
+                        'recursos' =>
+                        $subactividad->recursos ?? '',
+                        'indicadores_logro' =>
+                        $subactividad->indicadores_logro ?? '',
+                    ];
+
+                    $this->rellenarSubactividad(
+                        $dom,
+                        $xpath,
+                        $filaSub,
+                        $datosSubactividad,
+                        $numIdLista,
+                        $tamanoLetraActividades
+                    );
+
+                    $this->insertarDespues(
+                        $ultimaFilaPart2,
+                        $filaSub
+                    );
+
+                    $ultimaFilaPart2 = $filaSub;
+                }
             }
 
+            if ($filaActividad->parentNode) {
+                $filaActividad->parentNode->removeChild(
+                    $filaActividad
+                );
+            }
 
-            // ==========================================================
-            // ELIMINAR FILA ORIGINAL
-            // ==========================================================
-
-            $padre->removeChild(
-                $filaActividad
-            );
-
-
-            // ==========================================================
-            // GUARDAR DOCUMENT.XML
-            // ==========================================================
+            if ($filaSubactividad->parentNode) {
+                $filaSubactividad->parentNode->removeChild(
+                    $filaSubactividad
+                );
+            }
 
             $zip->addFromString(
                 'word/document.xml',
@@ -3649,105 +2537,77 @@ class WordController extends Controller
 
             $zip->close();
 
-
-            // ==========================================================
-            // TEMPLATE PROCESSOR
-            // ==========================================================
-
             $template =
                 new TemplateProcessor(
                     $temporal
                 );
-
 
             $template->setValue(
                 '1_experiencia_prendizaje',
                 $planificacion->experiencia_aprendizaje ?? ''
             );
 
-
             $template->setValue(
                 '2_descripcion_general_experiencia',
                 $planificacion->descripcion_general_experiencia ?? ''
             );
-
 
             $template->setValue(
                 '3_nombre_maestra',
                 $planificacion->nombre_maestra ?? ''
             );
 
-
             $template->setValue(
                 '4_tiempo_estimado',
                 $planificacion->tiempo_estimado ?? ''
             );
 
-
-            $fecha = $planificacion->fecha;
+            $fecha =
+                $planificacion->fecha;
 
             if ($fecha) {
-
                 $fechaFormateada =
                     \Carbon\Carbon::parse($fecha)
-                        ->locale('es')
-                        ->translatedFormat(
-                            'l d \d\e F \d\e Y'
-                        );
+                    ->locale('es')
+                    ->translatedFormat(
+                        'l d \d\e F \d\e Y'
+                    );
 
                 $fechaFormateada =
                     ucfirst($fechaFormateada);
-
             } else {
-
                 $fechaFormateada = '';
-
             }
-
 
             $template->setValue(
                 '5_fecha',
                 $fechaFormateada
             );
 
-
             $template->setValue(
                 '6_nivel_educativo',
                 $planificacion->nivel_educativo ?? ''
             );
-
 
             $template->setValue(
                 '7_objetivo_aprendizaje',
                 $planificacion->objetivo_aprendizaje ?? ''
             );
 
-
             $template->setValue(
                 '8_elemento_integrador',
                 $planificacion->elemento_integrador ?? ''
             );
-
 
             $template->setValue(
                 '9_nocion_dia',
                 $planificacion->nocion_dia ?? ''
             );
 
-
-            // ==========================================================
-            // APLICAR IMÁGENES DE ESTRATEGIAS METODOLÓGICAS
-            // ==========================================================
-
             $this->aplicarImagenesEstrategias(
                 $template,
                 $imagenesEstrategias
             );
-
-
-            // ==========================================================
-            // GUARDAR WORD
-            // ==========================================================
 
             $template->saveAs(
                 $archivo
@@ -3755,19 +2615,11 @@ class WordController extends Controller
 
             unset($template);
 
-
-            // ==========================================================
-            // FORMATO GLOBAL
-            // ==========================================================
-
             $this->aplicarFormatoGlobal(
                 $archivo,
                 $numIdLista
             );
-
-
         } finally {
-
             if (isset($template)) {
                 unset($template);
             }
@@ -3778,16 +2630,12 @@ class WordController extends Controller
         }
     }
 
-
     private function aplicarImagenesEstrategias(
         TemplateProcessor $template,
         array $imagenes
     ): void {
-
         foreach ($imagenes as $macro => $ruta) {
-
             if (empty($ruta)) {
-
                 $template->setValue(
                     $macro,
                     ''
@@ -3796,11 +2644,12 @@ class WordController extends Controller
                 continue;
             }
 
-            $rutaFisica = Storage::disk('public')
-                ->path($ruta);
+            $rutaFisica =
+                Storage::disk('public')->path(
+                    $ruta
+                );
 
             if (!is_file($rutaFisica)) {
-
                 $template->setValue(
                     $macro,
                     ''
@@ -3820,5 +2669,4 @@ class WordController extends Controller
             );
         }
     }
-
 }

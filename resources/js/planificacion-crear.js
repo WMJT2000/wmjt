@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', async function () {
 
     const MAX_ACTIVIDADES = 10;
@@ -76,23 +75,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     /* =========================================================
        MODOS
-
-       1. NUEVA PLANIFICACIÓN
-          planificacionId = null
-          usarPlantilla = false
-
-       2. EDITAR PLANIFICACIÓN
-          planificacionId = ID
-          usarPlantilla = false
-
-       3. USAR PLANTILLA
-          planificacionId = ID
-          usarPlantilla = true
-
-       IMPORTANTE:
-       "Guardar como plantilla" SOLO aparece en el
-       modo 1: nueva planificación desde cero.
     ========================================================== */
+
     const tieneId =
         window.planificacionId !== null &&
         window.planificacionId !== undefined &&
@@ -115,19 +99,9 @@ document.addEventListener('DOMContentLoaded', async function () {
         !tieneId;
 
 
-    /*
-    =========================================================
-       IMPORTANTE
-
-       Convertimos el botón guardar en BUTTON.
-
-       Así el navegador NO ejecuta automáticamente los
-       "required" antes de que nuestro JavaScript pueda
-       decidir qué validación corresponde.
-
-       Nosotros controlaremos la validación manualmente.
-    =========================================================
-    */
+    /* =========================================================
+       BOTONES
+    ========================================================== */
 
     if (saveButton) {
         saveButton.type = 'button';
@@ -139,29 +113,21 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
     /* =========================================================
-       MOSTRAR / OCULTAR BOTÓN "GUARDAR COMO PLANTILLA"
+       MOSTRAR / OCULTAR BOTÓN PLANTILLA
     ========================================================== */
 
     if (templateButton) {
 
         if (nuevaPlanificacion) {
-
-            // NUEVA DESDE CERO
             templateButton.style.display = '';
-
         } else {
-
-            // EDITANDO PLANIFICACIÓN
-            // EDITANDO PLANTILLA
-            // USANDO PLANTILLA
-
             templateButton.style.display = 'none';
         }
     }
 
 
     /* =========================================================
-       TEXTO DEL BOTÓN GUARDAR
+       TEXTO BOTÓN GUARDAR
     ========================================================== */
 
     if (saveButton) {
@@ -194,41 +160,39 @@ document.addEventListener('DOMContentLoaded', async function () {
     let part1Actual = 0;
     let part2Actual = 0;
 
+    /*
+     * Guarda la subactividad visible de cada actividad.
+     *
+     * Cada activity-card tiene su propio índice.
+     */
+    let subactividadActual =
+        new WeakMap();
+
     let agregandoPart1 = false;
     let agregandoPart2 = false;
-
-    /*
-    Esta variable se actualizará cuando carguemos el registro.
-
-    Sirve para saber si estamos editando realmente una plantilla.
-    */
 
     let editandoPlantillaExistente = false;
     let recuperandoBorrador = false;
 
-    // =========================================================
-    // AUTOGUARDADO
-    // =========================================================
-
     let autoGuardando = false;
     let autoGuardadoPendiente = false;
     let planificacionCreadaPorAutoguardado = false;
-
     let cambiosPendientes = false;
+
 
     function marcarCambiosPendientes() {
         cambiosPendientes = true;
     }
 
-    // =========================================================
-    // GUARDAR AUTOMÁTICAMENTE
-    // NO VALIDA CAMPOS
-    // NO REDIRECCIONA
-    // =========================================================
+
+    /* =========================================================
+       AUTOGUARDADO
+    ========================================================== */
 
     async function autoguardarPlanificacion() {
 
         if (autoGuardando) {
+
             autoGuardadoPendiente = true;
             return;
         }
@@ -240,13 +204,11 @@ document.addEventListener('DOMContentLoaded', async function () {
         autoGuardando = true;
         autoGuardadoPendiente = false;
 
-        const formData = new FormData(form);
+        const formData =
+            new FormData(form);
 
-        /*
-        Si estamos creando desde una plantilla,
-        guardamos de dónde salió.
-        */
         if (usandoPlantilla && window.plantillaId) {
+
             formData.set(
                 'plantilla_origen_id',
                 window.plantillaId
@@ -255,14 +217,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
         let url = '/planificaciones';
 
-        /*
-        NUEVA PLANIFICACIÓN
-        -------------------
-        No existe todavía un ID real.
-    
-        También aplica cuando estamos usando una plantilla,
-        porque la plantilla NO es la planificación nueva.
-        */
         if (
             !window.planificacionId ||
             usandoPlantilla
@@ -275,14 +229,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             url = '/planificaciones';
 
-        }
-
-        /*
-        PLANIFICACIÓN YA CREADA
-        -----------------------
-        A partir de aquí actualizamos el ID real.
-        */
-        else {
+        } else {
 
             url =
                 `/planificaciones/${window.planificacionId}`;
@@ -336,16 +283,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 );
             }
 
-            /*
-            SI ACABAMOS DE CREAR LA PLANIFICACIÓN
-            -------------------------------------
-    
-            El controller devuelve:
-    
-            data.planificacion_id
-    
-            Ese será desde ahora el ID REAL.
-            */
             if (
                 !window.planificacionId ||
                 usandoPlantilla
@@ -387,6 +324,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     }
 
+
     /* =========================================================
        OBTENER CARDS
     ========================================================== */
@@ -397,6 +335,712 @@ document.addEventListener('DOMContentLoaded', async function () {
             container.querySelectorAll(
                 '.activity-card'
             )
+        );
+    }
+
+
+    /* =========================================================
+       OBTENER SUBACTIVIDADES
+    ========================================================== */
+
+    function obtenerSubactividades(card) {
+
+        return Array.from(
+            card.querySelectorAll(
+                '.subactivity-card'
+            )
+        );
+    }
+
+
+    /* =========================================================
+       MOSTRAR UNA SOLA SUBACTIVIDAD
+    ========================================================== */
+
+    function mostrarSubactividad(
+        card,
+        indice
+    ) {
+
+        const subCards =
+            obtenerSubactividades(card);
+
+        if (subCards.length === 0) {
+
+            subactividadActual.delete(
+                card
+            );
+
+            return;
+        }
+
+
+        if (indice < 0) {
+            indice = 0;
+        }
+
+
+        if (indice >= subCards.length) {
+
+            indice =
+                subCards.length - 1;
+        }
+
+
+        subCards.forEach(
+            function (
+                subCard,
+                index
+            ) {
+
+                subCard.style.display =
+                    index === indice
+                        ? 'block'
+                        : 'none';
+            }
+        );
+
+
+        subactividadActual.set(
+            card,
+            indice
+        );
+
+
+        actualizarBotonesSubactividad(
+            card,
+            indice
+        );
+    }
+
+
+    /* =========================================================
+       ACTUALIZAR BOTONES SUBACTIVIDAD
+    ========================================================== */
+
+    function actualizarBotonesSubactividad(
+        card,
+        indice
+    ) {
+
+        const subCards =
+            obtenerSubactividades(card);
+
+        if (subCards.length === 0) {
+            return;
+        }
+
+
+        const actual =
+            subCards[indice];
+
+        if (!actual) {
+            return;
+        }
+
+
+        const anterior =
+            actual.querySelector(
+                '.subactivity-prev'
+            );
+
+        const siguiente =
+            actual.querySelector(
+                '.subactivity-next'
+            );
+
+
+        if (anterior) {
+
+            anterior.disabled =
+                indice === 0;
+        }
+
+
+        if (siguiente) {
+
+            siguiente.disabled =
+                indice ===
+                subCards.length - 1;
+        }
+    }
+
+
+    /* =========================================================
+       CREAR SUBACTIVIDAD
+       
+       IMPORTANTE:
+       La subactividad NO tiene ámbito propio.
+       Hereda el ámbito de la actividad padre.
+    ========================================================== */
+
+    function crearSubactividad(
+        card,
+        prefijo,
+        actividadIndex,
+        numero,
+        datos = null
+    ) {
+
+        const container =
+            card.querySelector(
+                '.subactivities-container'
+            );
+
+        if (!container) {
+            return;
+        }
+
+
+        const subCard =
+            document.createElement('div');
+
+        subCard.className =
+            'subactivity-card';
+
+        subCard.dataset.numero =
+            numero;
+
+
+        subCard.innerHTML = `
+
+            <div class="subactivity-card-header">
+
+                <div class="subactivity-card-title">
+
+                    <span class="subactivity-number">
+                        ${numero}
+                    </span>
+
+                    <strong>
+                        Subactividad ${numero}
+                    </strong>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="subactivity-delete delete"
+                    title="Eliminar subactividad"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="subactivity-card-body">
+
+                <div class="activity-field">
+
+                    <label>
+                        Destreza
+                    </label>
+
+                    <textarea
+                        name="${prefijo}[${actividadIndex}][subactividades][${numero - 1}][destreza]"
+                        rows="3"
+                        placeholder="Escribe la destreza..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="activity-field activity-field-full">
+
+                    <label>
+                        Estrategias metodológicas
+                    </label>
+
+                    <textarea
+                        name="${prefijo}[${actividadIndex}][subactividades][${numero - 1}][estrategias_metologicas]"
+                        rows="4"
+                        placeholder="Describe las estrategias metodológicas..."
+                    ></textarea>
+
+
+                    <label style="margin-top: 10px;">
+                        Imagen de estrategias metodológicas
+                    </label>
+
+                    <input
+                        type="file"
+                        name="${prefijo}[${actividadIndex}][subactividades][${numero - 1}][estrategias_metologicas_imagen]"
+                        accept="image/*"
+                    >
+
+                </div>
+
+
+                <div class="activity-field">
+
+                    <label>
+                        Recursos
+                    </label>
+
+                    <textarea
+                        name="${prefijo}[${actividadIndex}][subactividades][${numero - 1}][recursos]"
+                        rows="3"
+                        placeholder="Recursos necesarios..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="activity-field">
+
+                    <label>
+                        Indicadores de logro
+                    </label>
+
+                    <textarea
+                        name="${prefijo}[${actividadIndex}][subactividades][${numero - 1}][indicadores_logro]"
+                        rows="3"
+                        placeholder="Indicadores de logro..."
+                    ></textarea>
+
+                </div>
+
+
+                <!-- ============================================
+                     NAVEGACIÓN DE SUBACTIVIDADES
+                ============================================= -->
+
+                <div class="subactivity-navigation">
+
+                    <button
+                        type="button"
+                        class="subactivity-nav-button subactivity-prev"
+                    >
+                        ← Anterior
+                    </button>
+
+                    <button
+                        type="button"
+                        class="subactivity-nav-button subactivity-next"
+                    >
+                        Siguiente →
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+
+        container.appendChild(
+            subCard
+        );
+
+
+        /* =====================================================
+           CARGAR DATOS
+        ====================================================== */
+
+        if (datos) {
+
+            const destreza =
+                subCard.querySelector(
+                    '[name$="[destreza]"]'
+                );
+
+            const estrategias =
+                subCard.querySelector(
+                    '[name$="[estrategias_metologicas]"]'
+                );
+
+            const recursos =
+                subCard.querySelector(
+                    '[name$="[recursos]"]'
+                );
+
+            const indicadores =
+                subCard.querySelector(
+                    '[name$="[indicadores_logro]"]'
+                );
+
+
+            if (destreza) {
+
+                destreza.value =
+                    datos.destreza ?? '';
+            }
+
+
+            if (estrategias) {
+
+                estrategias.value =
+                    datos.estrategias_metologicas ?? '';
+            }
+
+
+            if (datos.estrategias_metologicas_imagen) {
+
+                const imagenExistente =
+                    document.createElement('input');
+
+                imagenExistente.type =
+                    'hidden';
+
+                imagenExistente.name =
+                    `${prefijo}[${actividadIndex}][subactividades][${numero - 1}][estrategias_metologicas_imagen_existente]`;
+
+                imagenExistente.value =
+                    datos.estrategias_metologicas_imagen;
+
+                subCard.appendChild(
+                    imagenExistente
+                );
+            }
+
+
+            if (recursos) {
+
+                recursos.value =
+                    datos.recursos ?? '';
+            }
+
+
+            if (indicadores) {
+
+                indicadores.value =
+                    datos.indicadores_logro ?? '';
+            }
+        }
+
+
+        configurarBotonesSubactividad(
+            subCard
+        );
+
+
+        actualizarNumeracionSubactividades(
+            card
+        );
+
+
+        /*
+         * La subactividad recién creada pasa
+         * a ser la visible.
+         */
+        const subCards =
+            obtenerSubactividades(card);
+
+        const nuevoIndice =
+            subCards.length - 1;
+
+        mostrarSubactividad(
+            card,
+            nuevoIndice
+        );
+    }
+
+
+    /* =========================================================
+       BOTONES SUBACTIVIDAD
+    ========================================================== */
+
+    function configurarBotonesSubactividad(
+        subCard
+    ) {
+
+        const deleteButton =
+            subCard.querySelector(
+                '.subactivity-delete'
+            );
+
+        const previousButton =
+            subCard.querySelector(
+                '.subactivity-prev'
+            );
+
+        const nextButton =
+            subCard.querySelector(
+                '.subactivity-next'
+            );
+
+
+        /* =====================================================
+           ELIMINAR SUBACTIVIDAD
+        ====================================================== */
+
+        if (deleteButton) {
+
+            deleteButton.addEventListener(
+                'click',
+                function () {
+
+                    const card =
+                        subCard.closest(
+                            '.activity-card'
+                        );
+
+                    if (!card) {
+                        return;
+                    }
+
+
+                    const subCardsAntes =
+                        obtenerSubactividades(
+                            card
+                        );
+
+
+                    const indiceEliminado =
+                        subCardsAntes.indexOf(
+                            subCard
+                        );
+
+
+                    let indiceActual =
+                        subactividadActual.get(
+                            card
+                        ) ?? 0;
+
+
+                    subCard.remove();
+
+
+                    actualizarNumeracionSubactividades(
+                        card
+                    );
+
+
+                    const subCardsDespues =
+                        obtenerSubactividades(
+                            card
+                        );
+
+
+                    if (
+                        subCardsDespues.length === 0
+                    ) {
+
+                        subactividadActual.delete(
+                            card
+                        );
+
+                    } else {
+
+                        if (
+                            indiceEliminado <
+                            indiceActual
+                        ) {
+
+                            indiceActual--;
+                        }
+
+
+                        if (
+                            indiceActual >=
+                            subCardsDespues.length
+                        ) {
+
+                            indiceActual =
+                                subCardsDespues.length - 1;
+                        }
+
+
+                        mostrarSubactividad(
+                            card,
+                            indiceActual
+                        );
+                    }
+
+
+                    marcarCambiosPendientes();
+                    actualizarEstado();
+                }
+            );
+        }
+
+
+        /* =====================================================
+           SUBACTIVIDAD ANTERIOR
+        ====================================================== */
+
+        if (previousButton) {
+
+            previousButton.addEventListener(
+                'click',
+                function () {
+
+                    const card =
+                        subCard.closest(
+                            '.activity-card'
+                        );
+
+                    if (!card) {
+                        return;
+                    }
+
+
+                    const indiceActual =
+                        subactividadActual.get(
+                            card
+                        ) ?? 0;
+
+
+                    if (
+                        indiceActual > 0
+                    ) {
+
+                        mostrarSubactividad(
+                            card,
+                            indiceActual - 1
+                        );
+                    }
+                }
+            );
+        }
+
+
+        /* =====================================================
+           SUBACTIVIDAD SIGUIENTE
+        ====================================================== */
+
+        if (nextButton) {
+
+            nextButton.addEventListener(
+                'click',
+                function () {
+
+                    const card =
+                        subCard.closest(
+                            '.activity-card'
+                        );
+
+                    if (!card) {
+                        return;
+                    }
+
+
+                    const subCards =
+                        obtenerSubactividades(
+                            card
+                        );
+
+
+                    const indiceActual =
+                        subactividadActual.get(
+                            card
+                        ) ?? 0;
+
+
+                    if (
+                        indiceActual <
+                        subCards.length - 1
+                    ) {
+
+                        mostrarSubactividad(
+                            card,
+                            indiceActual + 1
+                        );
+                    }
+                }
+            );
+        }
+    }
+
+
+    /* =========================================================
+       NUMERACIÓN SUBACTIVIDADES
+    ========================================================== */
+
+    function actualizarNumeracionSubactividades(
+        card
+    ) {
+
+        const container =
+            card.querySelector(
+                '.subactivities-container'
+            );
+
+        if (!container) {
+            return;
+        }
+
+
+        const subCards =
+            obtenerSubactividades(card);
+
+
+        subCards.forEach(
+            function (
+                subCard,
+                index
+            ) {
+
+                const numero =
+                    index + 1;
+
+
+                subCard.dataset.numero =
+                    numero;
+
+
+                const number =
+                    subCard.querySelector(
+                        '.subactivity-number'
+                    );
+
+
+                if (number) {
+
+                    number.textContent =
+                        numero;
+                }
+
+
+                const title =
+                    subCard.querySelector(
+                        '.subactivity-card-title strong'
+                    );
+
+
+                if (title) {
+
+                    title.textContent =
+                        'Subactividad ' + numero;
+                }
+
+
+                const inputs =
+                    subCard.querySelectorAll(
+                        'input, textarea'
+                    );
+
+
+                inputs.forEach(
+                    function (input) {
+
+                        const name =
+                            input.getAttribute(
+                                'name'
+                            );
+
+
+                        if (!name) {
+                            return;
+                        }
+
+
+                        const nuevoName =
+                            name.replace(
+                                /(\[subactividades\])\[\d+\]/,
+                                '$1[' +
+                                (numero - 1) +
+                                ']'
+                            );
+
+
+                        input.setAttribute(
+                            'name',
+                            nuevoName
+                        );
+                    }
+                );
+            }
         );
     }
 
@@ -413,20 +1057,29 @@ document.addEventListener('DOMContentLoaded', async function () {
         const cards =
             obtenerCards(container);
 
+
         if (cards.length === 0) {
             return;
         }
+
 
         if (indice < 0) {
             indice = 0;
         }
 
+
         if (indice >= cards.length) {
-            indice = cards.length - 1;
+
+            indice =
+                cards.length - 1;
         }
 
+
         cards.forEach(
-            function (card, index) {
+            function (
+                card,
+                index
+            ) {
 
                 card.style.display =
                     index === indice
@@ -435,18 +1088,26 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
         );
 
+
         if (container === part1Container) {
-            part1Actual = indice;
+
+            part1Actual =
+                indice;
         }
 
+
         if (container === part2Container) {
-            part2Actual = indice;
+
+            part2Actual =
+                indice;
         }
+
 
         actualizarIndicadorActividad(
             container,
             indice
         );
+
 
         actualizarBotonesNavegacion(
             container,
@@ -456,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
     /* =========================================================
-       INDICADOR
+       INDICADOR ACTIVIDAD
     ========================================================== */
 
     function actualizarIndicadorActividad(
@@ -467,15 +1128,19 @@ document.addEventListener('DOMContentLoaded', async function () {
         const cards =
             obtenerCards(container);
 
+
         if (cards.length === 0) {
             return;
         }
 
+
         const actual =
             indice + 1;
 
+
         const total =
             cards.length;
+
 
         cards.forEach(
             function (card) {
@@ -484,6 +1149,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     card.querySelector(
                         '.activity-page-indicator'
                     );
+
 
                 if (indicador) {
 
@@ -496,7 +1162,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
     /* =========================================================
-       NAVEGACIÓN
+       NAVEGACIÓN ACTIVIDADES
     ========================================================== */
 
     function actualizarBotonesNavegacion(
@@ -507,32 +1173,39 @@ document.addEventListener('DOMContentLoaded', async function () {
         const cards =
             obtenerCards(container);
 
+
         if (cards.length === 0) {
             return;
         }
 
+
         const actual =
             cards[indice];
+
 
         if (!actual) {
             return;
         }
+
 
         const anterior =
             actual.querySelector(
                 '.activity-prev'
             );
 
+
         const siguiente =
             actual.querySelector(
                 '.activity-next'
             );
+
 
         if (anterior) {
 
             anterior.disabled =
                 indice === 0;
         }
+
 
         if (siguiente) {
 
@@ -556,13 +1229,21 @@ document.addEventListener('DOMContentLoaded', async function () {
         const card =
             document.createElement('div');
 
+
         card.className =
             'activity-card';
+
 
         card.dataset.numero =
             numero;
 
+
+        card.dataset.prefijo =
+            prefijo;
+
+
         card.innerHTML = `
+
             <div class="activity-card-header">
 
                 <div class="activity-card-title">
@@ -577,6 +1258,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 </div>
 
+
                 <div class="activity-card-actions">
 
                     <button
@@ -586,6 +1268,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     >
                         −
                     </button>
+
 
                     <button
                         type="button"
@@ -599,9 +1282,11 @@ document.addEventListener('DOMContentLoaded', async function () {
 
             </div>
 
+
             <div class="activity-page-indicator">
                 Actividad ${numero} de ${numero}
             </div>
+
 
             <div class="activity-card-body">
 
@@ -619,6 +1304,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 </div>
 
+
                 <div class="activity-field">
 
                     <label>
@@ -632,26 +1318,32 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 </div>
 
+
                 <div class="activity-field activity-field-full">
-    <label>
-        Estrategias metodológicas
-    </label>
 
-    <textarea
-        name="${prefijo}[${numero - 1}][estrategias_metologicas]"
-        placeholder="Describe las estrategias metodológicas..."
-    ></textarea>
+                    <label>
+                        Estrategias metodológicas
+                    </label>
 
-    <label style="margin-top: 10px;">
-        Imagen de estrategias metodológicas
-    </label>
+                    <textarea
+                        name="${prefijo}[${numero - 1}][estrategias_metologicas]"
+                        placeholder="Describe las estrategias metodológicas..."
+                    ></textarea>
 
-    <input
-        type="file"
-        name="${prefijo}[${numero - 1}][estrategias_metologicas_imagen]"
-        accept="image/*"
-    >
-</div>
+
+                    <label style="margin-top: 10px;">
+                        Imagen de estrategias metodológicas
+                    </label>
+
+
+                    <input
+                        type="file"
+                        name="${prefijo}[${numero - 1}][estrategias_metologicas_imagen]"
+                        accept="image/*"
+                    >
+
+                </div>
+
 
                 <div class="activity-field">
 
@@ -666,6 +1358,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 </div>
 
+
                 <div class="activity-field">
 
                     <label>
@@ -679,6 +1372,36 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 </div>
 
+
+                <!-- =================================================
+                     SUBACTIVIDADES
+                ================================================== -->
+
+                <div class="activity-field activity-field-full">
+
+                    <div class="subactivities-header">
+
+                        <strong>
+                            Subactividades
+                        </strong>
+
+
+                        <button
+                            type="button"
+                            class="add-subactivity"
+                        >
+                            + Agregar subactividad
+                        </button>
+
+                    </div>
+
+
+                    <div class="subactivities-container">
+                    </div>
+
+                </div>
+
+
                 <div class="activity-navigation">
 
                     <button
@@ -687,6 +1410,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     >
                         ← Anterior
                     </button>
+
 
                     <button
                         type="button"
@@ -700,11 +1424,12 @@ document.addEventListener('DOMContentLoaded', async function () {
             </div>
         `;
 
+
         container.appendChild(card);
 
 
         /* =====================================================
-           CARGAR DATOS DE ACTIVIDAD
+           CARGAR DATOS ACTIVIDAD
         ====================================================== */
 
         if (datos) {
@@ -714,20 +1439,24 @@ document.addEventListener('DOMContentLoaded', async function () {
                     '[name$="[ambito]"]'
                 );
 
+
             const destreza =
                 card.querySelector(
                     '[name$="[destreza]"]'
                 );
+
 
             const estrategias =
                 card.querySelector(
                     '[name$="[estrategias_metologicas]"]'
                 );
 
+
             const recursos =
                 card.querySelector(
                     '[name$="[recursos]"]'
                 );
+
 
             const indicadores =
                 card.querySelector(
@@ -736,50 +1465,128 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
             if (ambito) {
+
                 ambito.value =
                     datos.ambito ?? '';
             }
 
+
             if (destreza) {
+
                 destreza.value =
                     datos.destreza ?? '';
             }
 
+
             if (estrategias) {
+
                 estrategias.value =
                     datos.estrategias_metologicas ?? '';
             }
 
+
             if (datos.estrategias_metologicas_imagen) {
-    const imagenExistente =
-        document.createElement('input');
 
-    imagenExistente.type = 'hidden';
+                const imagenExistente =
+                    document.createElement('input');
 
-    imagenExistente.name =
-        `${prefijo}[${numero - 1}][estrategias_metologicas_imagen_existente]`;
 
-    imagenExistente.value =
-        datos.estrategias_metologicas_imagen;
+                imagenExistente.type =
+                    'hidden';
 
-    card.appendChild(imagenExistente);
-}
+
+                imagenExistente.name =
+                    `${prefijo}[${numero - 1}][estrategias_metologicas_imagen_existente]`;
+
+
+                imagenExistente.value =
+                    datos.estrategias_metologicas_imagen;
+
+
+                card.appendChild(
+                    imagenExistente
+                );
+            }
+
 
             if (recursos) {
+
                 recursos.value =
                     datos.recursos ?? '';
             }
 
+
             if (indicadores) {
+
                 indicadores.value =
                     datos.indicadores_logro ?? '';
+            }
+
+
+            /* =================================================
+               CARGAR SUBACTIVIDADES EXISTENTES
+            ================================================== */
+
+            const subactividades =
+                Array.isArray(
+                    datos.subactividades
+                )
+                    ? datos.subactividades
+                    : [];
+
+
+            subactividades
+                .sort(
+                    function (a, b) {
+
+                        return (
+                            Number(a.orden ?? 0) -
+                            Number(b.orden ?? 0)
+                        );
+                    }
+                )
+                .forEach(
+                    function (
+                        subactividad,
+                        subIndex
+                    ) {
+
+                        crearSubactividad(
+                            card,
+                            prefijo,
+                            numero - 1,
+                            subIndex + 1,
+                            subactividad
+                        );
+                    }
+                );
+
+
+            /*
+             * Al terminar de cargar todas las subactividades,
+             * dejamos visible solamente la primera.
+             */
+            if (
+                subactividades.length > 0
+            ) {
+
+                mostrarSubactividad(
+                    card,
+                    0
+                );
             }
         }
 
 
-        configurarBotonesActividad(card);
+        configurarBotonesActividad(
+            card
+        );
 
-        actualizarNumeracion(container);
+
+        actualizarNumeracion(
+            container
+        );
+
 
         actualizarIndicadorActividad(
             container,
@@ -794,22 +1601,27 @@ document.addEventListener('DOMContentLoaded', async function () {
        BOTONES DE ACTIVIDAD
     ========================================================== */
 
-    function configurarBotonesActividad(card) {
+    function configurarBotonesActividad(
+        card
+    ) {
 
         const deleteButton =
             card.querySelector(
                 '.delete-activity'
             );
 
+
         const collapseButton =
             card.querySelector(
                 '.collapse-activity'
             );
 
+
         const previousButton =
             card.querySelector(
                 '.activity-prev'
             );
+
 
         const nextButton =
             card.querySelector(
@@ -817,219 +1629,322 @@ document.addEventListener('DOMContentLoaded', async function () {
             );
 
 
+        const addSubactivityButton =
+            card.querySelector(
+                '.add-subactivity'
+            );
+
+
         /* =====================================================
-           ELIMINAR
+           AGREGAR SUBACTIVIDAD
         ====================================================== */
 
-        deleteButton.addEventListener(
-            'click',
-            function () {
+        if (addSubactivityButton) {
 
-                const container =
-                    card.parentElement;
+            addSubactivityButton.addEventListener(
+                'click',
+                function () {
 
-                const cardsAntes =
-                    obtenerCards(container);
+                    const prefijo =
+                        card.dataset.prefijo;
 
-                const indiceEliminado =
-                    cardsAntes.indexOf(card);
 
-                let indiceActual;
+                    const actividadNumero =
+                        Number(
+                            card.dataset.numero || 1
+                        );
 
-                if (container === part1Container) {
 
-                    indiceActual =
-                        part1Actual;
+                    const actividadIndex =
+                        actividadNumero - 1;
 
-                } else {
 
-                    indiceActual =
-                        part2Actual;
+                    const cantidad =
+                        obtenerSubactividades(
+                            card
+                        ).length;
+
+
+                    crearSubactividad(
+                        card,
+                        prefijo,
+                        actividadIndex,
+                        cantidad + 1
+                    );
+
+
+                    marcarCambiosPendientes();
+                    actualizarEstado();
                 }
+            );
+        }
 
 
-                card.remove();
+        /* =====================================================
+           ELIMINAR ACTIVIDAD
+        ====================================================== */
 
-                actualizarNumeracion(
-                    container
-                );
+        if (deleteButton) {
+
+            deleteButton.addEventListener(
+                'click',
+                function () {
+
+                    const container =
+                        card.parentElement;
 
 
-                const cardsDespues =
-                    obtenerCards(container);
+                    const cardsAntes =
+                        obtenerCards(container);
 
 
-                if (cardsDespues.length === 0) {
+                    const indiceEliminado =
+                        cardsAntes.indexOf(card);
 
-                    if (container === part1Container) {
 
-                        part1Actual = 0;
+                    let indiceActual;
 
-                    } else {
-
-                        part2Actual = 0;
-                    }
-
-                } else {
 
                     if (
-                        indiceEliminado <
-                        indiceActual
-                    ) {
-
-                        indiceActual--;
-                    }
-
-                    if (
-                        indiceActual >=
-                        cardsDespues.length
+                        container ===
+                        part1Container
                     ) {
 
                         indiceActual =
-                            cardsDespues.length - 1;
+                            part1Actual;
+
+                    } else {
+
+                        indiceActual =
+                            part2Actual;
                     }
 
-                    mostrarActividad(
-                        container,
-                        indiceActual
-                    );
-                }
 
-                actualizarEstado();
-                marcarCambiosPendientes();
-            }
-        );
+                    card.remove();
+
+
+                    actualizarNumeracion(
+                        container
+                    );
+
+
+                    const cardsDespues =
+                        obtenerCards(container);
+
+
+                    if (
+                        cardsDespues.length === 0
+                    ) {
+
+                        if (
+                            container ===
+                            part1Container
+                        ) {
+
+                            part1Actual = 0;
+
+                        } else {
+
+                            part2Actual = 0;
+                        }
+
+                    } else {
+
+                        if (
+                            indiceEliminado <
+                            indiceActual
+                        ) {
+
+                            indiceActual--;
+                        }
+
+
+                        if (
+                            indiceActual >=
+                            cardsDespues.length
+                        ) {
+
+                            indiceActual =
+                                cardsDespues.length - 1;
+                        }
+
+
+                        mostrarActividad(
+                            container,
+                            indiceActual
+                        );
+                    }
+
+
+                    actualizarEstado();
+                    marcarCambiosPendientes();
+                }
+            );
+        }
 
 
         /* =====================================================
            CONTRAER
         ====================================================== */
 
-        collapseButton.addEventListener(
-            'click',
-            function () {
+        if (collapseButton) {
 
-                const body =
-                    card.querySelector(
-                        '.activity-card-body'
-                    );
+            collapseButton.addEventListener(
+                'click',
+                function () {
 
-                const visible =
-                    body.style.display !== 'none';
+                    const body =
+                        card.querySelector(
+                            '.activity-card-body'
+                        );
 
-                body.style.display =
-                    visible
-                        ? 'none'
-                        : 'grid';
 
-                collapseButton.textContent =
-                    visible
-                        ? '+'
-                        : '−';
+                    const visible =
+                        body.style.display !== 'none';
 
-                collapseButton.title =
-                    visible
-                        ? 'Expandir'
-                        : 'Contraer';
-            }
-        );
+
+                    body.style.display =
+                        visible
+                            ? 'none'
+                            : 'grid';
+
+
+                    collapseButton.textContent =
+                        visible
+                            ? '+'
+                            : '−';
+
+
+                    collapseButton.title =
+                        visible
+                            ? 'Expandir'
+                            : 'Contraer';
+                }
+            );
+        }
 
 
         /* =====================================================
            ANTERIOR
         ====================================================== */
 
-        previousButton.addEventListener(
-            'click',
-            function () {
+        if (previousButton) {
 
-                const container =
-                    card.parentElement;
+            previousButton.addEventListener(
+                'click',
+                function () {
 
-                let indiceActual;
+                    const container =
+                        card.parentElement;
 
-                if (container === part1Container) {
 
-                    indiceActual =
-                        part1Actual;
+                    let indiceActual;
 
-                } else {
 
-                    indiceActual =
-                        part2Actual;
+                    if (
+                        container ===
+                        part1Container
+                    ) {
+
+                        indiceActual =
+                            part1Actual;
+
+                    } else {
+
+                        indiceActual =
+                            part2Actual;
+                    }
+
+
+                    if (indiceActual > 0) {
+
+                        mostrarActividad(
+                            container,
+                            indiceActual - 1
+                        );
+                    }
                 }
-
-
-                if (indiceActual > 0) {
-
-                    mostrarActividad(
-                        container,
-                        indiceActual - 1
-                    );
-                }
-            }
-        );
+            );
+        }
 
 
         /* =====================================================
            SIGUIENTE
         ====================================================== */
 
-        nextButton.addEventListener(
-            'click',
-            function () {
+        if (nextButton) {
 
-                const container =
-                    card.parentElement;
+            nextButton.addEventListener(
+                'click',
+                function () {
 
-                const cards =
-                    obtenerCards(container);
+                    const container =
+                        card.parentElement;
 
-                let indiceActual;
 
-                if (container === part1Container) {
+                    const cards =
+                        obtenerCards(
+                            container
+                        );
 
-                    indiceActual =
-                        part1Actual;
 
-                } else {
+                    let indiceActual;
 
-                    indiceActual =
-                        part2Actual;
+
+                    if (
+                        container ===
+                        part1Container
+                    ) {
+
+                        indiceActual =
+                            part1Actual;
+
+                    } else {
+
+                        indiceActual =
+                            part2Actual;
+                    }
+
+
+                    if (
+                        indiceActual <
+                        cards.length - 1
+                    ) {
+
+                        mostrarActividad(
+                            container,
+                            indiceActual + 1
+                        );
+                    }
                 }
-
-
-                if (
-                    indiceActual <
-                    cards.length - 1
-                ) {
-
-                    mostrarActividad(
-                        container,
-                        indiceActual + 1
-                    );
-                }
-            }
-        );
+            );
+        }
     }
 
 
     /* =========================================================
-       NUMERACIÓN
+       NUMERACIÓN ACTIVIDADES
     ========================================================== */
 
-    function actualizarNumeracion(container) {
+    function actualizarNumeracion(
+        container
+    ) {
 
         const cards =
             container.querySelectorAll(
                 '.activity-card'
             );
 
+
         cards.forEach(
-            function (card, index) {
+            function (
+                card,
+                index
+            ) {
 
                 const numero =
                     index + 1;
+
 
                 card.dataset.numero =
                     numero;
@@ -1039,6 +1954,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     card.querySelector(
                         '.activity-number'
                     );
+
 
                 if (number) {
 
@@ -1052,6 +1968,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                         '.activity-card-title strong'
                     );
 
+
                 if (title) {
 
                     title.textContent =
@@ -1059,10 +1976,19 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
 
 
+                const prefijo =
+                    card.dataset.prefijo;
+
+
+                /* =================================================
+                   ACTUALIZAR NOMBRES ACTIVIDAD
+                ================================================== */
+
                 const inputs =
                     card.querySelectorAll(
-                        'input, textarea'
+                        ':scope > .activity-card-body input, :scope > .activity-card-body textarea'
                     );
+
 
                 inputs.forEach(
                     function (input) {
@@ -1072,21 +1998,36 @@ document.addEventListener('DOMContentLoaded', async function () {
                                 'name'
                             );
 
+
                         if (!name) {
                             return;
                         }
 
+
                         const nuevoName =
                             name.replace(
-                                /\[\d+\]/,
-                                '[' + (numero - 1) + ']'
+                                new RegExp(
+                                    '^' +
+                                    prefijo +
+                                    '\\[\\d+\\]'
+                                ),
+                                prefijo +
+                                '[' +
+                                (numero - 1) +
+                                ']'
                             );
+
 
                         input.setAttribute(
                             'name',
                             nuevoName
                         );
                     }
+                );
+
+
+                actualizarNumeracionSubactividades(
+                    card
                 );
             }
         );
@@ -1096,11 +2037,17 @@ document.addEventListener('DOMContentLoaded', async function () {
             obtenerCards(container);
 
 
-        if (cardsActuales.length > 0) {
+        if (
+            cardsActuales.length > 0
+        ) {
 
             let indiceActual;
 
-            if (container === part1Container) {
+
+            if (
+                container ===
+                part1Container
+            ) {
 
                 indiceActual =
                     part1Actual;
@@ -1127,6 +2074,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 indiceActual
             );
 
+
             actualizarBotonesNavegacion(
                 container,
                 indiceActual
@@ -1149,7 +2097,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                     return;
                 }
 
+
                 agregandoPart1 = true;
+
 
                 setTimeout(
                     function () {
@@ -1173,6 +2123,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     alert(
                         'Puedes agregar máximo 10 actividades antes del Snack.'
                     );
+
 
                     return;
                 }
@@ -1212,7 +2163,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                     return;
                 }
 
+
                 agregandoPart2 = true;
+
 
                 setTimeout(
                     function () {
@@ -1236,6 +2189,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     alert(
                         'Puedes agregar máximo 10 actividades después del Snack.'
                     );
+
 
                     return;
                 }
@@ -1272,6 +2226,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 '.activity-card'
             ).length;
 
+
         part2Count =
             part2Container.querySelectorAll(
                 '.activity-card'
@@ -1279,11 +2234,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
         actualizarContadores();
-
         actualizarVacios();
-
         actualizarSidebar();
-
         actualizarProgreso();
 
 
@@ -1448,19 +2400,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
         if (verificarDatosGenerales()) {
-
             progreso += 40;
         }
 
 
         if (part1Count > 0) {
-
             progreso += 30;
         }
 
 
         if (part2Count > 0) {
-
             progreso += 30;
         }
 
@@ -1496,21 +2445,13 @@ document.addEventListener('DOMContentLoaded', async function () {
         const campos = [
 
             '1_experiencia_prendizaje',
-
             '2_descripcion_general_experiencia',
-
             '3_nombre_maestra',
-
             '4_tiempo_estimado',
-
             '5_fecha',
-
             '6_nivel_educativo',
-
             '7_objetivo_aprendizaje',
-
             '8_elemento_integrador',
-
             '9_nocion_dia'
 
         ];
@@ -1544,7 +2485,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
     /* =========================================================
-       VALIDAR DATOS NORMALES
+       VALIDAR DATOS
     ========================================================== */
 
     function validarAntesDeGuardar() {
@@ -1588,7 +2529,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
             if (!continuar) {
-
                 return false;
             }
         }
@@ -1599,44 +2539,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
     /* =========================================================
-       GUARDAR PLANIFICACIÓN NORMAL
-
-       CASOS:
-
-       NUEVA:
-       POST /planificaciones
-
-       USANDO PLANTILLA:
-       POST /planificaciones
-
-       EDITANDO PLANIFICACIÓN:
-       PUT /planificaciones/{id}
-
-       EDITANDO PLANTILLA:
-       PUT /planificaciones/{id}
-
-       IMPORTANTE:
-       Si es plantilla existente NO hacemos validación
-       obligatoria.
+       GUARDAR PLANIFICACIÓN
     ========================================================== */
 
     async function guardarPlanificacion() {
-
-        /*
-        ---------------------------------------------------------
-        SI ESTAMOS EDITANDO UNA PLANTILLA:
-
-        NO VALIDAMOS CAMPOS OBLIGATORIOS.
-
-        Esto permite guardar aunque la plantilla tenga
-        campos vacíos.
-        ---------------------------------------------------------
-        */
 
         if (!editandoPlantillaExistente) {
 
             const valido =
                 validarAntesDeGuardar();
+
 
             if (!valido) {
                 return;
@@ -1647,7 +2559,12 @@ document.addEventListener('DOMContentLoaded', async function () {
         const formData =
             new FormData(form);
 
-        if (usandoPlantilla && window.plantillaId) {
+
+        if (
+            usandoPlantilla &&
+            window.plantillaId
+        ) {
+
             formData.set(
                 'plantilla_origen_id',
                 window.plantillaId
@@ -1655,29 +2572,20 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
 
 
-        /*
-        ---------------------------------------------------------
-        EDITANDO:
-
-        PUT /planificaciones/{id}
-
-        NUEVA / USANDO PLANTILLA:
-
-        POST /planificaciones
-        ---------------------------------------------------------
-        */
-
         const tienePlanificacionGuardada =
             window.planificacionId !== null &&
             window.planificacionId !== undefined &&
             window.planificacionId !== '';
+
 
         const url =
             tienePlanificacionGuardada
                 ? `/planificaciones/${window.planificacionId}`
                 : '/planificaciones';
 
+
         if (tienePlanificacionGuardada) {
+
             formData.append(
                 '_method',
                 'PUT'
@@ -1700,7 +2608,9 @@ document.addEventListener('DOMContentLoaded', async function () {
                 saveButton.innerHTML =
                     'Creando planificación...';
 
-            } else if (editandoPlantillaExistente) {
+            } else if (
+                editandoPlantillaExistente
+            ) {
 
                 saveButton.innerHTML =
                     'Actualizando plantilla...';
@@ -1722,13 +2632,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                     url,
                     {
                         method: 'POST',
-
                         body: formData,
-
                         headers: {
                             'X-Requested-With':
                                 'XMLHttpRequest',
-
                             'Accept':
                                 'application/json'
                         }
@@ -1741,10 +2648,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const texto =
                     await response.text();
 
+
                 console.error(
                     'Respuesta del servidor:',
                     texto
                 );
+
 
                 throw new Error(
                     'Error al guardar la planificación.'
@@ -1769,7 +2678,6 @@ document.addEventListener('DOMContentLoaded', async function () {
                 );
             }
 
-
         } catch (error) {
 
             console.error(
@@ -1782,11 +2690,11 @@ document.addEventListener('DOMContentLoaded', async function () {
                 'Ocurrió un error al guardar la planificación.'
             );
 
-
         } finally {
 
             saveButton.disabled =
                 false;
+
 
             saveButton.innerHTML =
                 textoOriginal;
@@ -1796,8 +2704,6 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     /* =========================================================
        GUARDAR COMO PLANTILLA
-
-       SOLO NUEVA PLANIFICACIÓN DESDE CERO.
     ========================================================== */
 
     async function guardarComoPlantilla() {
@@ -1813,6 +2719,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 'Guardar como plantilla solo está disponible para nuevas planificaciones.'
             );
 
+
             return;
         }
 
@@ -1820,12 +2727,6 @@ document.addEventListener('DOMContentLoaded', async function () {
         const formData =
             new FormData(form);
 
-
-        /*
-        ---------------------------------------------------------
-        INDICAMOS AL CONTROLLER QUE ES UNA PLANTILLA
-        ---------------------------------------------------------
-        */
 
         formData.set(
             'es_plantilla',
@@ -1858,13 +2759,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                     '/planificaciones',
                     {
                         method: 'POST',
-
                         body: formData,
-
                         headers: {
                             'X-Requested-With':
                                 'XMLHttpRequest',
-
                             'Accept':
                                 'application/json'
                         }
@@ -1877,10 +2775,12 @@ document.addEventListener('DOMContentLoaded', async function () {
                 const texto =
                     await response.text();
 
+
                 console.error(
                     'Respuesta del servidor:',
                     texto
                 );
+
 
                 throw new Error(
                     'Error al guardar la plantilla.'
@@ -1922,11 +2822,11 @@ document.addEventListener('DOMContentLoaded', async function () {
                 'Ocurrió un error al guardar la plantilla.'
             );
 
-
         } finally {
 
             templateButton.disabled =
                 false;
+
 
             templateButton.innerHTML =
                 textoOriginal;
@@ -1937,13 +2837,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     /* =========================================================
        ACTUALIZAR AL ESCRIBIR
     ========================================================== */
+
     form.addEventListener(
         'input',
         function (event) {
 
+            const campo =
+                event.target;
 
-
-            const campo = event.target;
 
             if (
                 campo.matches(
@@ -1951,22 +2852,20 @@ document.addEventListener('DOMContentLoaded', async function () {
                 )
             ) {
 
-
-
                 actualizarEstado();
-
                 marcarCambiosPendientes();
             }
         }
     );
 
+
     form.addEventListener(
         'change',
         function (event) {
 
+            const campo =
+                event.target;
 
-
-            const campo = event.target;
 
             if (
                 campo.matches(
@@ -1974,10 +2873,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 )
             ) {
 
-
-
                 actualizarEstado();
-
                 marcarCambiosPendientes();
             }
         }
@@ -1985,7 +2881,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
     /* =========================================================
-       CLICK GUARDAR PLANIFICACIÓN
+       CLICK GUARDAR
     ========================================================== */
 
     if (saveButton) {
@@ -1996,6 +2892,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 event.preventDefault();
 
+
                 guardarPlanificacion();
             }
         );
@@ -2003,7 +2900,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 
     /* =========================================================
-       CLICK GUARDAR COMO PLANTILLA
+       CLICK GUARDAR PLANTILLA
     ========================================================== */
 
     if (templateButton) {
@@ -2014,6 +2911,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                 event.preventDefault();
 
+
                 guardarComoPlantilla();
             }
         );
@@ -2022,41 +2920,16 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     /* =========================================================
        GENERAR WORD
-
-       IMPORTANTE:
-
-       El botón "Generar Word" sigue siendo submit.
-
-       Como el botón Guardar planificación ahora es
-       type="button", solamente este botón llegará
-       al submit normal del formulario.
     ========================================================== */
 
     form.addEventListener(
         'submit',
         function (event) {
 
-            /*
-            -----------------------------------------------------
-            SI ESTAMOS EDITANDO UNA PLANTILLA
-
-            No bloqueamos por campos obligatorios.
-
-            Pero este submit corresponde principalmente
-            al botón Generar Word.
-            -----------------------------------------------------
-            */
-
             if (editandoPlantillaExistente) {
                 return;
             }
 
-
-            /*
-            -----------------------------------------------------
-            VALIDACIÓN NORMAL
-            -----------------------------------------------------
-            */
 
             const generalCompleto =
                 verificarDatosGenerales();
@@ -2088,12 +2961,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             }
 
 
-            /*
-            -----------------------------------------------------
-            VALIDAR ACTIVIDADES
-            -----------------------------------------------------
-            */
-
             if (
                 part1Count === 0 &&
                 part2Count === 0
@@ -2109,22 +2976,23 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                     event.preventDefault();
 
+
                     return;
                 }
             }
-
         }
     );
 
 
     /* =========================================================
-   CARGAR PLANIFICACIÓN / PLANTILLA
-========================================================== */
+       CARGAR PLANIFICACIÓN / PLANTILLA
+    ========================================================== */
 
     const idParaCargar =
         tienePlantillaId
             ? window.plantillaId
             : window.planificacionId;
+
 
     if (idParaCargar) {
 
@@ -2135,6 +3003,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     `/api/planificaciones/${idParaCargar}`
                 );
 
+
             if (!response.ok) {
 
                 throw new Error(
@@ -2142,8 +3011,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                 );
             }
 
+
             const result =
                 await response.json();
+
 
             if (!result.success) {
 
@@ -2153,29 +3024,24 @@ document.addEventListener('DOMContentLoaded', async function () {
                 );
             }
 
+
             const planificacion =
                 result.data;
 
-            /*
-            =====================================================
-            DETECTAR SI EL REGISTRO ES REALMENTE UNA PLANTILLA
-            =====================================================
-            */
+
+            /* =================================================
+               DETECTAR PLANTILLA
+            ================================================== */
 
             const esPlantillaExistente =
                 Boolean(
                     planificacion.es_plantilla
                 );
 
-            /*
-            =====================================================
-            USANDO PLANTILLA
-            =====================================================
-    
-            La plantilla SOLO sirve como origen de datos.
-    
-            Su ID NO se asigna a window.planificacionId.
-            */
+
+            /* =================================================
+               USANDO PLANTILLA
+            ================================================== */
 
             if (usandoPlantilla) {
 
@@ -2186,27 +3052,29 @@ document.addEventListener('DOMContentLoaded', async function () {
                     );
                 }
 
+
                 if (templateButton) {
 
                     templateButton.style.display =
                         'none';
                 }
 
+
                 if (saveButton) {
 
                     saveButton.textContent =
                         'Guardar nueva planificación';
+
 
                     saveButton.type =
                         'button';
                 }
             }
 
-            /*
-            =====================================================
-            EDITANDO PLANIFICACIÓN EXISTENTE
-            =====================================================
-            */
+
+            /* =================================================
+               EDITANDO PLANIFICACIÓN
+            ================================================== */
 
             if (
                 editando &&
@@ -2216,27 +3084,29 @@ document.addEventListener('DOMContentLoaded', async function () {
                 editandoPlantillaExistente =
                     false;
 
+
                 if (templateButton) {
 
                     templateButton.style.display =
                         'none';
                 }
 
+
                 if (saveButton) {
 
                     saveButton.textContent =
                         'Actualizar planificación';
+
 
                     saveButton.type =
                         'button';
                 }
             }
 
-            /*
-            =====================================================
-            EDITANDO PLANTILLA EXISTENTE
-            =====================================================
-            */
+
+            /* =================================================
+               EDITANDO PLANTILLA
+            ================================================== */
 
             if (
                 editando &&
@@ -2246,27 +3116,29 @@ document.addEventListener('DOMContentLoaded', async function () {
                 editandoPlantillaExistente =
                     true;
 
+
                 if (templateButton) {
 
                     templateButton.style.display =
                         'none';
                 }
 
+
                 if (saveButton) {
 
                     saveButton.textContent =
                         'Actualizar plantilla';
+
 
                     saveButton.type =
                         'button';
                 }
             }
 
-            /*
-            =====================================================
-            DATOS GENERALES
-            =====================================================
-            */
+
+            /* =================================================
+               DATOS GENERALES
+            ================================================== */
 
             const campos = {
 
@@ -2301,13 +3173,20 @@ document.addEventListener('DOMContentLoaded', async function () {
                     planificacion.tamano_letra_actividades ?? 8
             };
 
+
             Object.entries(campos).forEach(
-                function ([nombre, valor]) {
+                function (
+                    [
+                        nombre,
+                        valor
+                    ]
+                ) {
 
                     const campo =
                         form.querySelector(
                             `[name="${nombre}"]`
                         );
+
 
                     if (campo) {
 
@@ -2317,22 +3196,16 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             );
 
-            /*
-            =====================================================
-            PROGRESO
-            =====================================================
-            */
+
+            /* =================================================
+               PROGRESO
+            ================================================== */
 
             const progreso =
                 Number(
                     planificacion.progreso ?? 0
                 );
 
-            /*
-            Si usamos plantilla NO copiamos el progreso.
-    
-            La nueva planificación debe calcular su propio progreso.
-            */
 
             if (!usandoPlantilla) {
 
@@ -2342,11 +3215,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                         progreso;
                 }
 
+
                 if (progressPercent) {
 
                     progressPercent.textContent =
                         progreso + '%';
                 }
+
 
                 if (progressValue) {
 
@@ -2355,11 +3230,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                 }
             }
 
-            /*
-            =====================================================
-            LIMPIAR ACTIVIDADES ACTUALES
-            =====================================================
-            */
+
+            /* =================================================
+               LIMPIAR ACTIVIDADES
+            ================================================== */
 
             part1Container
                 .querySelectorAll(
@@ -2372,6 +3246,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     }
                 );
 
+
             part2Container
                 .querySelectorAll(
                     '.activity-card'
@@ -2383,42 +3258,54 @@ document.addEventListener('DOMContentLoaded', async function () {
                     }
                 );
 
-            /*
-            =====================================================
-            OBTENER ACTIVIDADES
-            =====================================================
-            */
+
+            /* =================================================
+               OBTENER ACTIVIDADES
+            ================================================== */
 
             const actividades =
                 planificacion.actividades ?? [];
+
 
             const part1Actividades =
                 actividades.filter(
                     function (actividad) {
 
-                        return actividad.seccion === 'part1';
+                        return (
+                            actividad.seccion ===
+                            'part1'
+                        );
                     }
                 );
+
 
             const part2Actividades =
                 actividades.filter(
                     function (actividad) {
 
-                        return actividad.seccion === 'part2';
+                        return (
+                            actividad.seccion ===
+                            'part2'
+                        );
                     }
                 );
 
-            /*
-            =====================================================
-            PARTE 1
-            =====================================================
-            */
+
+            /* =================================================
+               PARTE 1
+            ================================================== */
 
             part1Actividades
                 .sort(
-                    function (a, b) {
+                    function (
+                        a,
+                        b
+                    ) {
 
-                        return a.orden - b.orden;
+                        return (
+                            Number(a.orden ?? 0) -
+                            Number(b.orden ?? 0)
+                        );
                     }
                 )
                 .slice(
@@ -2426,7 +3313,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                     MAX_ACTIVIDADES
                 )
                 .forEach(
-                    function (actividad, index) {
+                    function (
+                        actividad,
+                        index
+                    ) {
 
                         crearActividad(
                             part1Container,
@@ -2437,17 +3327,22 @@ document.addEventListener('DOMContentLoaded', async function () {
                     }
                 );
 
-            /*
-            =====================================================
-            PARTE 2
-            =====================================================
-            */
+
+            /* =================================================
+               PARTE 2
+            ================================================== */
 
             part2Actividades
                 .sort(
-                    function (a, b) {
+                    function (
+                        a,
+                        b
+                    ) {
 
-                        return a.orden - b.orden;
+                        return (
+                            Number(a.orden ?? 0) -
+                            Number(b.orden ?? 0)
+                        );
                     }
                 )
                 .slice(
@@ -2455,7 +3350,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                     MAX_ACTIVIDADES
                 )
                 .forEach(
-                    function (actividad, index) {
+                    function (
+                        actividad,
+                        index
+                    ) {
 
                         crearActividad(
                             part2Container,
@@ -2466,16 +3364,18 @@ document.addEventListener('DOMContentLoaded', async function () {
                     }
                 );
 
-            /*
-            =====================================================
-            COMENZAR EN LA PRIMERA ACTIVIDAD
-            =====================================================
-            */
+
+            /* =================================================
+               COMENZAR PRIMERA ACTIVIDAD
+            ================================================== */
 
             part1Actual = 0;
             part2Actual = 0;
 
-            if (part1Actividades.length > 0) {
+
+            if (
+                part1Actividades.length > 0
+            ) {
 
                 mostrarActividad(
                     part1Container,
@@ -2483,7 +3383,10 @@ document.addEventListener('DOMContentLoaded', async function () {
                 );
             }
 
-            if (part2Actividades.length > 0) {
+
+            if (
+                part2Actividades.length > 0
+            ) {
 
                 mostrarActividad(
                     part2Container,
@@ -2491,13 +3394,13 @@ document.addEventListener('DOMContentLoaded', async function () {
                 );
             }
 
-            /*
-            =====================================================
-            ACTUALIZAR ESTADO
-            =====================================================
-            */
+
+            /* =================================================
+               ACTUALIZAR ESTADO
+            ================================================== */
 
             actualizarEstado();
+
 
         } catch (error) {
 
@@ -2506,6 +3409,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                 error
             );
 
+
             alert(
                 usandoPlantilla
                     ? 'No se pudo cargar la plantilla.'
@@ -2513,15 +3417,18 @@ document.addEventListener('DOMContentLoaded', async function () {
             );
         }
     }
+
+
     /* =========================================================
        INICIALIZAR
     ========================================================== */
 
     actualizarEstado();
 
-    // =========================================================
-    // AUTOGUARDADO CADA 30 SEGUNDOS
-    // =========================================================
+
+    /* =========================================================
+       AUTOGUARDADO CADA 15 SEGUNDOS
+    ========================================================== */
 
     setInterval(
         function () {
@@ -2531,4 +3438,5 @@ document.addEventListener('DOMContentLoaded', async function () {
         },
         15000
     );
+
 });

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Actividad extends Model
 {
@@ -23,5 +24,11 @@ class Actividad extends Model
     public function planificacion(): BelongsTo
     {
         return $this->belongsTo(Planificacion::class);
+    }
+
+    public function subactividades(): HasMany
+    {
+        return $this->hasMany(Subactividad::class)
+            ->orderBy('orden');
     }
 }

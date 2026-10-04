@@ -13,10 +13,9 @@
 
 <div class="planning-page">
 
-
     {{-- =====================================================
-     ENCABEZADO
-====================================================== --}}
+         ENCABEZADO
+    ====================================================== --}}
 
     <div class="planning-header">
 
@@ -37,13 +36,11 @@
 
     <div class="planning-layout">
 
-
         {{-- =================================================
-         SIDEBAR
-    ================================================== --}}
+             SIDEBAR
+        ================================================== --}}
 
         <aside class="planning-sidebar">
-
 
             {{-- PROGRESO --}}
 
@@ -155,22 +152,24 @@
                 <a
                     href="{{ route('gestion.planificacion.index') }}"
                     class="btn-primary">
+
                     ← Ir a planificaciones
+
                 </a>
 
             </div>
-
 
         </aside>
 
 
         {{-- =================================================
-         CONTENIDO PRINCIPAL
-    ================================================== --}}
+             CONTENIDO PRINCIPAL
+        ================================================== --}}
 
         <main class="planning-content">
 
-            {{-- IMPORTANTE: enctype permite enviar imágenes --}}
+            {{-- IMPORTANTE:
+                 enctype permite enviar imágenes --}}
             <form
                 action="{{ route('word.generar') }}"
                 method="POST"
@@ -187,8 +186,8 @@
 
 
                 {{-- =================================================
-                 INFORMACIÓN GENERAL
-            ================================================== --}}
+                     INFORMACIÓN GENERAL
+                ================================================== --}}
 
                 <section class="planning-section">
 
@@ -210,7 +209,6 @@
 
 
                     <div class="planning-grid">
-
 
                         {{-- EXPERIENCIA --}}
 
@@ -413,8 +411,8 @@
 
 
                 {{-- =================================================
-                 ACTIVIDADES INICIALES
-            ================================================== --}}
+                     ACTIVIDADES INICIALES
+                ================================================== --}}
 
                 <section class="planning-section">
 
@@ -423,11 +421,11 @@
                         <div>
 
                             <div style="
-                            display:flex;
-                            align-items:center;
-                            gap:12px;
-                            flex-wrap:wrap;
-                        ">
+                                display:flex;
+                                align-items:center;
+                                gap:12px;
+                                flex-wrap:wrap;
+                            ">
 
                                 <h2>
                                     Actividades iniciales
@@ -436,7 +434,9 @@
                                 <span
                                     id="part1Counter"
                                     class="activity-counter">
+
                                     0 / 10
+
                                 </span>
 
                             </div>
@@ -452,7 +452,9 @@
                             type="button"
                             id="addPart1"
                             class="btn-add-activity">
+
                             + Agregar actividad
+
                         </button>
 
                     </div>
@@ -486,8 +488,8 @@
 
 
                 {{-- =================================================
-                 ACTIVIDADES FINALES
-            ================================================== --}}
+                     ACTIVIDADES FINALES
+                ================================================== --}}
 
                 <section class="planning-section">
 
@@ -496,11 +498,11 @@
                         <div>
 
                             <div style="
-                            display:flex;
-                            align-items:center;
-                            gap:12px;
-                            flex-wrap:wrap;
-                        ">
+                                display:flex;
+                                align-items:center;
+                                gap:12px;
+                                flex-wrap:wrap;
+                            ">
 
                                 <h2>
                                     Actividades finales
@@ -509,7 +511,9 @@
                                 <span
                                     id="part2Counter"
                                     class="activity-counter">
+
                                     0 / 10
+
                                 </span>
 
                             </div>
@@ -525,7 +529,9 @@
                             type="button"
                             id="addPart2"
                             class="btn-add-activity">
+
                             + Agregar actividad
+
                         </button>
 
                     </div>
@@ -559,41 +565,53 @@
 
 
                 {{-- =================================================
-                 BOTONES FINALES
-            ================================================== --}}
+                     BOTONES FINALES
+                ================================================== --}}
 
                 <div class="planning-actions">
 
 
                     {{-- =================================================
-                     GUARDAR COMO PLANTILLA
-                ================================================== --}}
+                         GUARDAR COMO PLANTILLA
+
+                         IMPORTANTE:
+                         El JavaScript cambia este botón a type="button"
+                         y controla el envío manualmente.
+                    ================================================== --}}
 
                     <button
-                        type="submit"
+                        type="button"
                         id="btnGuardarComoPlantilla"
-                        formaction="{{ route('planificaciones.store') }}"
                         class="btn-save">
+
                         Guardar como plantilla
+
                     </button>
 
 
                     {{-- =================================================
-                     GUARDAR / ACTUALIZAR
-                ================================================== --}}
+                         GUARDAR / ACTUALIZAR
+
+                         IMPORTANTE:
+                         El JavaScript cambia este botón a type="button"
+                         y controla el envío manualmente.
+                    ================================================== --}}
 
                     <button
-                        type="submit"
+                        type="button"
                         id="btnGuardarPlanificacion"
-                        formaction="{{ route('planificaciones.store') }}"
                         class="btn-save">
+
                         Guardar planificación
+
                     </button>
 
 
                     {{-- =================================================
-                     GENERAR WORD
-                ================================================== --}}
+                         GENERAR WORD
+
+                         Este botón SÍ permanece como submit.
+                    ================================================== --}}
 
                     <button
                         type="submit"
@@ -616,7 +634,6 @@
         </main>
 
     </div>
-
 
 </div>
 
