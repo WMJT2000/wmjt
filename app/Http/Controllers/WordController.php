@@ -2246,6 +2246,8 @@ class WordController extends Controller
             );
         }
 
+        $template = null;
+
         try {
             $zip = new ZipArchive();
 
@@ -2255,9 +2257,7 @@ class WordController extends Controller
                 );
             }
 
-            $xml = $zip->getFromName(
-                'word/document.xml'
-            );
+            $xml = $zip->getFromName('word/document.xml');
 
             if ($xml === false) {
                 $zip->close();
@@ -2272,7 +2272,9 @@ class WordController extends Controller
             $dom->formatOutput = false;
 
             libxml_use_internal_errors(true);
+
             $resultado = $dom->loadXML($xml);
+
             libxml_clear_errors();
 
             if (!$resultado) {
@@ -2290,19 +2292,13 @@ class WordController extends Controller
                 self::WORD_NS
             );
 
-            $numIdLista = $this->prepararListaWord(
-                $zip
-            );
+            $numIdLista = $this->prepararListaWord($zip);
 
             $filaActividad =
-                $this->buscarFilaActividad(
-                    $xpath
-                );
+                $this->buscarFilaActividad($xpath);
 
             $filaSubactividad =
-                $this->buscarFilaSubactividad(
-                    $xpath
-                );
+                $this->buscarFilaSubactividad($xpath);
 
             if ($filaActividad === null) {
                 $zip->close();
@@ -2321,18 +2317,16 @@ class WordController extends Controller
             }
 
             $filaSnack =
-                $this->buscarFilaSnack(
-                    $xpath
-                );
+                $this->buscarFilaSnack($xpath);
 
             $imagenesEstrategias = [];
+
             $padre = $filaActividad->parentNode;
 
             foreach ($part1 as $indice => $actividad) {
-                $fila =
-                    $this->clonarFila(
-                        $filaActividad
-                    );
+                $fila = $this->clonarFila(
+                    $filaActividad
+                );
 
                 $macroImagen =
                     'estrategias_imagen_part1_' . $indice;
@@ -2343,14 +2337,19 @@ class WordController extends Controller
                 $datosActividad = [
                     'ambito' =>
                     $actividad->ambito ?? '',
+
                     'destreza' =>
                     $actividad->destreza ?? '',
+
                     'estrategias_metologicas' =>
                     $actividad->estrategias_metologicas ?? '',
+
                     'estrategias_metologicas_imagen' =>
                     $actividad->estrategias_metologicas_imagen ?? '',
+
                     'recursos' =>
                     $actividad->recursos ?? '',
+
                     'indicadores_logro' =>
                     $actividad->indicadores_logro ?? '',
                 ];
@@ -2372,25 +2371,26 @@ class WordController extends Controller
 
                 $ultimaFila = $fila;
 
+                $filasSubactividades = [];
+
                 foreach (
                     $actividad->subactividades
-                        ->sortBy('orden')
-                    as $subactividad
+                        ->sortBy('orden') as $subactividad
                 ) {
-                    $filaSub =
-                        $this->clonarFila(
-                            $filaSubactividad
-                        );
+                    $filaSub = $this->clonarFila(
+                        $filaSubactividad
+                    );
 
                     $datosSubactividad = [
-                        'ambito' =>
-                        $subactividad->ambito ?? '',
                         'destreza' =>
                         $subactividad->destreza ?? '',
+
                         'estrategias_metologicas' =>
                         $subactividad->estrategias_metologicas ?? '',
+
                         'recursos' =>
                         $subactividad->recursos ?? '',
+
                         'indicadores_logro' =>
                         $subactividad->indicadores_logro ?? '',
                     ];
@@ -2400,6 +2400,7 @@ class WordController extends Controller
                         $xpath,
                         $filaSub,
                         $datosSubactividad,
+                        $actividad->ambito ?? '',
                         $numIdLista,
                         $tamanoLetraActividades
                     );
@@ -2410,7 +2411,16 @@ class WordController extends Controller
                     );
 
                     $ultimaFila = $filaSub;
+
+                    $filasSubactividades[] = $filaSub;
                 }
+
+                $this->combinarAmbitoVertical(
+                    $dom,
+                    $xpath,
+                    $fila,
+                    $filasSubactividades
+                );
             }
 
             if ($filaSnack === null) {
@@ -2435,10 +2445,9 @@ class WordController extends Controller
             $ultimaFilaPart2 = $filaSnack;
 
             foreach ($part2 as $indice => $actividad) {
-                $fila =
-                    $this->clonarFila(
-                        $filaActividad
-                    );
+                $fila = $this->clonarFila(
+                    $filaActividad
+                );
 
                 $macroImagen =
                     'estrategias_imagen_part2_' . $indice;
@@ -2449,14 +2458,19 @@ class WordController extends Controller
                 $datosActividad = [
                     'ambito' =>
                     $actividad->ambito ?? '',
+
                     'destreza' =>
                     $actividad->destreza ?? '',
+
                     'estrategias_metologicas' =>
                     $actividad->estrategias_metologicas ?? '',
+
                     'estrategias_metologicas_imagen' =>
                     $actividad->estrategias_metologicas_imagen ?? '',
+
                     'recursos' =>
                     $actividad->recursos ?? '',
+
                     'indicadores_logro' =>
                     $actividad->indicadores_logro ?? '',
                 ];
@@ -2478,24 +2492,26 @@ class WordController extends Controller
 
                 $ultimaFilaPart2 = $fila;
 
+                $filasSubactividades = [];
+
                 foreach (
                     $actividad->subactividades
                         ->sortBy('orden') as $subactividad
                 ) {
-                    $filaSub =
-                        $this->clonarFila(
-                            $filaSubactividad
-                        );
+                    $filaSub = $this->clonarFila(
+                        $filaSubactividad
+                    );
 
                     $datosSubactividad = [
-                        'ambito' =>
-                        $subactividad->ambito ?? '',
                         'destreza' =>
                         $subactividad->destreza ?? '',
+
                         'estrategias_metologicas' =>
                         $subactividad->estrategias_metologicas ?? '',
+
                         'recursos' =>
                         $subactividad->recursos ?? '',
+
                         'indicadores_logro' =>
                         $subactividad->indicadores_logro ?? '',
                     ];
@@ -2505,6 +2521,7 @@ class WordController extends Controller
                         $xpath,
                         $filaSub,
                         $datosSubactividad,
+                        $actividad->ambito ?? '',
                         $numIdLista,
                         $tamanoLetraActividades
                     );
@@ -2515,7 +2532,16 @@ class WordController extends Controller
                     );
 
                     $ultimaFilaPart2 = $filaSub;
+
+                    $filasSubactividades[] = $filaSub;
                 }
+
+                $this->combinarAmbitoVertical(
+                    $dom,
+                    $xpath,
+                    $fila,
+                    $filasSubactividades
+                );
             }
 
             if ($filaActividad->parentNode) {
@@ -2537,10 +2563,9 @@ class WordController extends Controller
 
             $zip->close();
 
-            $template =
-                new TemplateProcessor(
-                    $temporal
-                );
+            $template = new TemplateProcessor(
+                $temporal
+            );
 
             $template->setValue(
                 '1_experiencia_prendizaje',
@@ -2562,8 +2587,7 @@ class WordController extends Controller
                 $planificacion->tiempo_estimado ?? ''
             );
 
-            $fecha =
-                $planificacion->fecha;
+            $fecha = $planificacion->fecha;
 
             if ($fecha) {
                 $fechaFormateada =
@@ -2629,7 +2653,6 @@ class WordController extends Controller
             );
         }
     }
-
     private function aplicarImagenesEstrategias(
         TemplateProcessor $template,
         array $imagenes
