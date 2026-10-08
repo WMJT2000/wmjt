@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', 'Practicar ' . $category->name)
@@ -18,21 +19,17 @@
             </div>
 
             <div>
-
-            <a
-                href="{{ route('english.index') }}"
-                class="english-mastery-back-button"
-            >
-                ← Volver a Inglés
-            </a>
-
+                <a
+                    href="{{ route('english.index') }}"
+                    class="english-mastery-back-button"
+                >
+                    ← Volver a Inglés
+                </a>
+            </div>
         </div>
-        </div>
-
 
         @if ($words->count() > 0)
 
-            {{-- BOTÓN DE SONIDOS --}}
             <button
                 type="button"
                 id="btn-toggle-practice-sounds"
@@ -41,17 +38,11 @@
                 🔊 Sonidos
             </button>
 
-
-            {{-- =========================================================
-            SELECCIÓN DEL MODO DE PRÁCTICA
-            ========================================================= --}}
-
             <div
                 id="practice-mode-selector"
                 class="english-practice-mode-selector">
 
                 <div class="english-practice-mode-header">
-
                     <h2>
                         ¿Cómo quieres practicar?
                     </h2>
@@ -59,9 +50,7 @@
                     <p>
                         Elige el tipo de ejercicio.
                     </p>
-
                 </div>
-
 
                 <div class="english-practice-mode-options">
 
@@ -76,7 +65,6 @@
                         </span>
 
                         <span class="english-practice-mode-content">
-
                             <strong>
                                 Inglés → Español
                             </strong>
@@ -84,7 +72,6 @@
                             <small>
                                 Mira la palabra en inglés y elige su significado.
                             </small>
-
                         </span>
 
                     </button>
@@ -101,7 +88,6 @@
                         </span>
 
                         <span class="english-practice-mode-content">
-
                             <strong>
                                 Español → Inglés
                             </strong>
@@ -109,13 +95,12 @@
                             <small>
                                 Mira el significado en español y elige la palabra.
                             </small>
-
                         </span>
 
                     </button>
 
 
-                    {{-- ESCUCHAR → INGLÉS --}}
+                    {{-- ESCUCHAR → ESCRIBIR --}}
                     <button
                         type="button"
                         class="english-practice-mode-option"
@@ -126,15 +111,59 @@
                         </span>
 
                         <span class="english-practice-mode-content">
-
                             <strong>
-                                Escuchar → Inglés
+                                Escuchar → Escribir
                             </strong>
 
                             <small>
-                                Escucha la pronunciación y selecciona la palabra.
+                                Escucha la pronunciación y escribe la palabra que escuchaste.
                             </small>
+                        </span>
 
+                    </button>
+
+
+                    {{-- INGLÉS → ESCRIBIR SIGNIFICADO --}}
+                    <button
+                        type="button"
+                        class="english-practice-mode-option"
+                        data-practice-mode="english-meaning">
+
+                        <span class="english-practice-mode-icon">
+                            ✍️
+                        </span>
+
+                        <span class="english-practice-mode-content">
+                            <strong>
+                                Inglés → Escribir significado
+                            </strong>
+
+                            <small>
+                                Mira la palabra en inglés y escribe su significado en español.
+                            </small>
+                        </span>
+
+                    </button>
+
+
+                    {{-- ESPAÑOL → ESCRIBIR INGLÉS --}}
+                    <button
+                        type="button"
+                        class="english-practice-mode-option"
+                        data-practice-mode="spanish-word">
+
+                        <span class="english-practice-mode-icon">
+                            ✍️
+                        </span>
+
+                        <span class="english-practice-mode-content">
+                            <strong>
+                                Español → Escribir inglés
+                            </strong>
+
+                            <small>
+                                Mira el significado en español y escribe la palabra en inglés.
+                            </small>
                         </span>
 
                     </button>
@@ -151,7 +180,6 @@
                         </span>
 
                         <span class="english-practice-mode-content">
-
                             <strong>
                                 Mezclado
                             </strong>
@@ -159,7 +187,6 @@
                             <small>
                                 Combina los diferentes tipos de preguntas.
                             </small>
-
                         </span>
 
                     </button>
@@ -177,7 +204,6 @@
                         </span>
 
                         <span class="english-practice-mode-content">
-
                             <strong>
                                 Repetir incorrectas
                             </strong>
@@ -189,7 +215,6 @@
                                     Todavía no tienes palabras incorrectas.
                                 @endif
                             </small>
-
                         </span>
 
                         @if (count($incorrectWordIds) > 0)
@@ -202,10 +227,6 @@
 
                 </div>
 
-
-                {{-- =========================================================
-                CANTIDAD DE PREGUNTAS
-                ========================================================= --}}
 
                 <div class="english-practice-question-count">
 
@@ -220,7 +241,6 @@
                         </p>
 
                     </div>
-
 
                     <div class="english-practice-question-count-options">
 
@@ -250,7 +270,6 @@
                 </div>
 
 
-                {{-- COMENZAR PRÁCTICA --}}
                 <button
                     type="button"
                     id="btn-start-practice"
@@ -264,16 +283,11 @@
             </div>
 
 
-            {{-- =========================================================
-            TARJETA DE LA PRÁCTICA
-            ========================================================= --}}
-
             <div
                 id="practice-card"
                 class="english-practice-card"
                 style="display: none;">
 
-                {{-- PROGRESO --}}
                 <div class="english-practice-progress">
 
                     <span>
@@ -287,7 +301,6 @@
                 </div>
 
 
-                {{-- PREGUNTA --}}
                 <div class="english-practice-question">
 
                     <span
@@ -297,7 +310,6 @@
 
                     <h2 id="practice-question"></h2>
 
-                    {{-- CONTENEDOR DE AUDIO --}}
                     <div
                         id="practice-listen"
                         class="english-practice-listen-container"
@@ -307,14 +319,12 @@
                 </div>
 
 
-                {{-- OPCIONES DE RESPUESTA --}}
                 <div
                     id="practice-options"
                     class="english-practice-options">
                 </div>
 
 
-                {{-- FEEDBACK --}}
                 <div
                     id="practice-feedback"
                     class="english-practice-feedback"
@@ -327,13 +337,8 @@
                 </div>
 
 
-                {{-- =========================================================
-                ACCIONES DE LA PRÁCTICA
-                ========================================================= --}}
-
                 <div class="english-practice-actions">
 
-                    {{-- SALIR DE LA PRÁCTICA --}}
                     <button
                         type="button"
                         id="btn-exit-practice"
@@ -344,7 +349,6 @@
                     </button>
 
 
-                    {{-- AUTO NEXT --}}
                     <button
                         type="button"
                         id="btn-toggle-auto-next"
@@ -356,7 +360,6 @@
                     </button>
 
 
-                    {{-- SIGUIENTE --}}
                     <button
                         type="button"
                         id="btn-next-practice"
@@ -371,10 +374,6 @@
             </div>
 
 
-            {{-- =========================================================
-            RESULTADO FINAL
-            ========================================================= --}}
-
             <div
                 id="practice-result"
                 class="english-practice-result"
@@ -387,21 +386,16 @@
 
                 <div class="english-practice-summary">
 
-                    {{-- CATEGORÍA --}}
                     <p>
-
                         <strong>
                             Categoría:
                         </strong>
 
                         <span id="practice-result-category"></span>
-
                     </p>
 
 
-                    {{-- CORRECTAS --}}
                     <p>
-
                         <strong>
                             Correctas:
                         </strong>
@@ -409,13 +403,10 @@
                         <span id="practice-correct-answers">
                             0
                         </span>
-
                     </p>
 
 
-                    {{-- INCORRECTAS --}}
                     <p>
-
                         <strong>
                             Incorrectas:
                         </strong>
@@ -423,13 +414,10 @@
                         <span id="practice-incorrect-answers">
                             0
                         </span>
-
                     </p>
 
 
-                    {{-- PUNTAJE --}}
                     <p>
-
                         <strong>
                             Puntaje:
                         </strong>
@@ -437,17 +425,14 @@
                         <span id="practice-score">
                             0%
                         </span>
-
                     </p>
 
                 </div>
 
 
-                {{-- MENSAJE FINAL --}}
                 <p id="practice-result-message"></p>
 
 
-                {{-- BOTONES DEL RESULTADO --}}
                 <div class="english-practice-result-actions">
 
                     <button
@@ -484,10 +469,6 @@
 
 
         @else
-
-            {{-- =========================================================
-            SIN PALABRAS
-            ========================================================= --}}
 
             <div class="english-empty">
 
@@ -528,32 +509,18 @@
     </div>
 
 
-    {{-- =========================================================
-    DATOS PARA JAVASCRIPT
-    ========================================================= --}}
-
     <script>
-
         window.englishPractice = {
-
             words: @json($words),
-
             incorrectWordIds: @json($incorrectWordIds),
-
             wordPracticeStats: @json($wordPracticeStats),
-
             categoryId: {{ $category->id }},
-
             categoryName: @json($category->name),
-
             questionCount: 10,
-
             selectedMode: null,
-
             sessionId: crypto.randomUUID()
-
         };
-
     </script>
 
 @endsection
+
