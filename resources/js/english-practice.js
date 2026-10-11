@@ -114,15 +114,23 @@
             } else {
                 soundToggle.textContent = '🔇 Sonidos';
                 soundToggle.classList.add('muted');
-                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             }
         });
     }
 
-    function obtenerSignificado(word) {
-        if (!word.meanings || word.meanings.length === 0) return null;
-        return word.meanings[0].meaning;
+
+    function obtenerSignificados(word) {
+        if (!word.meanings || word.meanings.length === 0) return [];
+
+        return word.meanings
+            .map(item => item.meaning)
+            .filter(Boolean);
     }
+
+    function obtenerSignificado(word) {
+        return obtenerSignificados(word)[0] || null;
+    }
+
 
     function obtenerPalabrasConSignificado() {
         return practice.words.filter(word => word.meanings && word.meanings.length > 0);
@@ -150,20 +158,26 @@
     }
 
     function crearPregunta(word, tipo) {
+
         if (tipo === 'english-spanish') {
-            const respuestaCorrecta = obtenerSignificado(word);
-            if (!respuestaCorrecta) return null;
+            const significados = obtenerSignificados(word);
+            if (significados.length === 0) return null;
+
+            const respuestaCorrecta = significados[0];
+
             return {
                 type: 'english-spanish',
                 typeLabel: 'Inglés → Español',
                 question: word.word,
                 pronunciationGuide: word.pronunciation_guide || '',
                 correctAnswer: respuestaCorrecta,
-                meaning: respuestaCorrecta,
+                correctAnswers: significados,
+                meaning: significados.join(', '),
                 wordId: word.id,
                 options: crearOpciones(respuestaCorrecta, obtenerSignificado)
             };
         }
+
 
         if (tipo === 'spanish-english') {
             const significado = obtenerSignificado(word);
@@ -191,16 +205,19 @@
             };
         }
 
+
         if (tipo === 'english-meaning') {
-            const significado = obtenerSignificado(word);
-            if (!significado) return null;
+            const significados = obtenerSignificados(word);
+            if (significados.length === 0) return null;
+
             return {
                 type: 'english-meaning',
                 typeLabel: 'Inglés → Escribir significado',
                 question: word.word,
                 pronunciationGuide: word.pronunciation_guide || '',
-                correctAnswer: significado,
-                meaning: significado,
+                correctAnswer: significados[0],
+                correctAnswers: significados,
+                meaning: significados.join(', '),
                 wordId: word.id
             };
         }
@@ -234,110 +251,110 @@
         return null;
     }
 
-function generarPreguntas() {
-    let palabras = [...practice.words];
+    function generarPreguntas() {
+        let palabras = [...practice.words];
 
-    if (selectedPracticeMode === 'incorrect') {
-        const incorrectWordIds = practice.incorrectWordIds || [];
-        palabras = palabras.filter(word => incorrectWordIds.includes(word.id));
-    }
+        if (selectedPracticeMode === 'incorrect') {
+            const incorrectWordIds = practice.incorrectWordIds || [];
+            palabras = palabras.filter(word => incorrectWordIds.includes(word.id));
+        }
 
-    if (selectedPracticeMode !== 'listening') {
-        palabras = palabras.filter(word => word.meanings && word.meanings.length > 0);
-    }
+        if (selectedPracticeMode !== 'listening') {
+            palabras = palabras.filter(word => word.meanings && word.meanings.length > 0);
+        }
 
-    if (palabras.length === 0) {
-        console.warn('NO HAY PALABRAS DISPONIBLES');
-        return [];
-    }
+        if (palabras.length === 0) {
+            console.warn('NO HAY PALABRAS DISPONIBLES');
+            return [];
+        }
 
-    const totalQuestions = Math.min(practice.questionCount, palabras.length);
+        const totalQuestions = Math.min(practice.questionCount, palabras.length);
 
-    function obtenerPeso(word) {
-        const stats = practice.wordPracticeStats?.[word.id];
-        if (!stats || stats.total === 0) return 3;
-        if (stats.accuracy < 50) return 6;
-        if (stats.accuracy < 80) return 4;
-        if (stats.total < 5) return 3;
-        return 1;
-    }
+        function obtenerPeso(word) {
+            const stats = practice.wordPracticeStats?.[word.id];
+            if (!stats || stats.total === 0) return 3;
+            if (stats.accuracy < 50) return 6;
+            if (stats.accuracy < 80) return 4;
+            if (stats.total < 5) return 3;
+            return 1;
+        }
 
-    function seleccionarPalabrasPonderadas(palabrasDisponibles, cantidad) {
-        const seleccionadas = [];
-        const candidatos = [...palabrasDisponibles];
+        function seleccionarPalabrasPonderadas(palabrasDisponibles, cantidad) {
+            const seleccionadas = [];
+            const candidatos = [...palabrasDisponibles];
 
-        while (candidatos.length > 0 && seleccionadas.length < cantidad) {
-            let pesoTotal = 0;
+            while (candidatos.length > 0 && seleccionadas.length < cantidad) {
+                let pesoTotal = 0;
 
-            candidatos.forEach(word => {
-                pesoTotal += obtenerPeso(word);
-            });
+                candidatos.forEach(word => {
+                    pesoTotal += obtenerPeso(word);
+                });
 
-            let objetivo = Math.random() * pesoTotal;
-            let seleccionada = null;
+                let objetivo = Math.random() * pesoTotal;
+                let seleccionada = null;
 
-            for (const word of candidatos) {
-                objetivo -= obtenerPeso(word);
+                for (const word of candidatos) {
+                    objetivo -= obtenerPeso(word);
 
-                if (objetivo <= 0) {
-                    seleccionada = word;
-                    break;
+                    if (objetivo <= 0) {
+                        seleccionada = word;
+                        break;
+                    }
                 }
+
+                if (!seleccionada) break;
+
+                seleccionadas.push(seleccionada);
+
+                const index = candidatos.indexOf(seleccionada);
+                if (index !== -1) candidatos.splice(index, 1);
             }
 
-            if (!seleccionada) break;
-
-            seleccionadas.push(seleccionada);
-
-            const index = candidatos.indexOf(seleccionada);
-            if (index !== -1) candidatos.splice(index, 1);
+            return seleccionadas;
         }
 
-        return seleccionadas;
-    }
+        const palabrasSeleccionadas = seleccionarPalabrasPonderadas(palabras, totalQuestions);
 
-    const palabrasSeleccionadas = seleccionarPalabrasPonderadas(palabras, totalQuestions);
+        let tipos = [];
 
-    let tipos = [];
-
-    if (selectedPracticeMode === 'english-spanish') {
-        tipos = ['english-spanish'];
-    } else if (selectedPracticeMode === 'spanish-english') {
-        tipos = ['spanish-english'];
-    } else if (selectedPracticeMode === 'listening') {
-        tipos = ['listening'];
-    } else if (selectedPracticeMode === 'english-meaning') {
-        tipos = ['english-meaning'];
-    } else if (selectedPracticeMode === 'spanish-word') {
-        tipos = ['spanish-word'];
-    } else if (selectedPracticeMode === 'mixed') {
-        tipos = ['english-spanish', 'spanish-english', 'listening', 'english-meaning', 'spanish-word'];
-    } else if (selectedPracticeMode === 'incorrect') {
-        tipos = ['english-spanish', 'spanish-english', 'listening', 'english-meaning', 'spanish-word'];
-    }
-
-    if (tipos.length === 0) {
-        console.error('NO HAY TIPOS DE PREGUNTA PARA:', selectedPracticeMode);
-        return [];
-    }
-
-    const resultado = [];
-
-    palabrasSeleccionadas.forEach(word => {
-        const tiposDisponibles = mezclar(tipos);
-        let pregunta = null;
-
-        for (const tipo of tiposDisponibles) {
-            pregunta = crearPregunta(word, tipo);
-
-            if (pregunta) break;
+        if (selectedPracticeMode === 'english-spanish') {
+            tipos = ['english-spanish'];
+        } else if (selectedPracticeMode === 'spanish-english') {
+            tipos = ['spanish-english'];
+        } else if (selectedPracticeMode === 'listening') {
+            tipos = ['listening'];
+        } else if (selectedPracticeMode === 'english-meaning') {
+            tipos = ['english-meaning'];
+        } else if (selectedPracticeMode === 'spanish-word') {
+            tipos = ['spanish-word'];
+        } else if (selectedPracticeMode === 'mixed') {
+            tipos = ['english-spanish', 'spanish-english', 'listening', 'english-meaning', 'spanish-word'];
+        } else if (selectedPracticeMode === 'incorrect') {
+            tipos = ['english-spanish', 'spanish-english', 'listening', 'english-meaning', 'spanish-word'];
         }
 
-        if (pregunta) resultado.push(pregunta);
-    });
+        if (tipos.length === 0) {
+            console.error('NO HAY TIPOS DE PREGUNTA PARA:', selectedPracticeMode);
+            return [];
+        }
 
-    return resultado;
-}
+        const resultado = [];
+
+        palabrasSeleccionadas.forEach(word => {
+            const tiposDisponibles = mezclar(tipos);
+            let pregunta = null;
+
+            for (const tipo of tiposDisponibles) {
+                pregunta = crearPregunta(word, tipo);
+
+                if (pregunta) break;
+            }
+
+            if (pregunta) resultado.push(pregunta);
+        });
+
+        return resultado;
+    }
     function mostrarPregunta() {
         const current = questions[currentQuestionIndex];
 
@@ -351,7 +368,6 @@ function generarPreguntas() {
             autoNextTimer = null;
         }
 
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
         answered = false;
         questionType.style.display = '';
@@ -382,8 +398,8 @@ function generarPreguntas() {
             pronunciationToggle.type = 'button';
             pronunciationToggle.className = 'english-practice-pronunciation-toggle';
             pronunciationToggle.textContent = '⌄';
-            pronunciationToggle.setAttribute('aria-expanded', 'false');
-
+            pronunciationToggle.setAttribute('aria-expanded', 'true');
+            pronunciationToggle.textContent = '⌃';
             const pronunciationGuide = document.createElement('div');
             pronunciationGuide.className = 'english-practice-pronunciation-guide';
 
@@ -396,7 +412,7 @@ function generarPreguntas() {
                 pronunciationGuide.textContent = ipa;
             }
 
-            pronunciationGuide.style.display = 'none';
+            pronunciationGuide.style.display = 'block';
 
             pronunciationToggle.addEventListener('click', () => {
                 const visible = pronunciationGuide.style.display !== 'none';
@@ -544,7 +560,13 @@ function generarPreguntas() {
             return;
         }
 
-        const correcta = normalizarRespuesta(respuesta) === normalizarRespuesta(current.correctAnswer);
+
+        const respuestasCorrectas = current.correctAnswers || [current.correctAnswer];
+
+        const correcta = respuestasCorrectas.some(
+            respuestaCorrecta =>
+                normalizarRespuesta(respuesta) === normalizarRespuesta(respuestaCorrecta)
+        );
 
         const response = await fetch(`/english/category/${practice.categoryId}/practice/result`, {
             method: 'POST',
@@ -568,99 +590,107 @@ function generarPreguntas() {
         return response.json();
     }
 
-async function responder(respuesta, button, current) {
-    if (answered) return;
+    async function responder(respuesta, button, current) {
+        if (answered) return;
 
-    answered = true;
+        answered = true;
 
-    const correcta = normalizarRespuesta(respuesta) === normalizarRespuesta(current.correctAnswer);
-    const significado = current.meaning || obtenerSignificado(practice.words.find(word => word.id === current.wordId)) || 'Sin significado disponible';
 
-    try {
-        await guardarResultado(current, respuesta);
-    } catch (error) {
-        console.error('ERROR GUARDANDO RESPUESTA:', error);
-    }
+        const respuestasCorrectas = current.correctAnswers || [current.correctAnswer];
 
-    if (correcta) {
-        score++;
-        reproducirSonidoCorrecto();
-    } else {
-        reproducirSonidoIncorrecto();
-    }
+        const correcta = respuestasCorrectas.some(
+            respuestaCorrecta =>
+                normalizarRespuesta(respuesta) === normalizarRespuesta(respuestaCorrecta)
+        );
+        const significado = current.meaning || obtenerSignificado(practice.words.find(word => word.id === current.wordId)) || 'Sin significado disponible';
 
-    const botones = options.querySelectorAll('button');
-
-    botones.forEach(boton => {
-        boton.disabled = true;
-
-        if (boton.textContent === current.correctAnswer) {
-            boton.classList.add('correct');
+        try {
+            await guardarResultado(current, respuesta);
+        } catch (error) {
+            console.error('ERROR GUARDANDO RESPUESTA:', error);
         }
-    });
 
-    const inputRespuesta = options.querySelector('.english-practice-answer-input');
-
-    if (inputRespuesta) {
-        inputRespuesta.disabled = true;
-        inputRespuesta.classList.add(correcta ? 'correct' : 'incorrect');
-    }
-
-if (current.type === 'listening') {
-    if (correcta) {
-        feedbackTitle.textContent = '✅ ¡Correcto!';
-        feedbackText.textContent = `¡Muy bien! La respuesta es: ${current.correctAnswer} — ${significado}`;
-        reproducirFeedback(`¡Muy bien! La respuesta es ${current.correctAnswer}`);
-    } else {
-        feedbackTitle.textContent = '❌ Incorrecto';
-        feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${current.correctAnswer} — ${significado}`;
-        reproducirFeedback(`Incorrecto. La respuesta correcta es ${current.correctAnswer}`);
-    }
-} else if (current.type === 'english-meaning') {
         if (correcta) {
+            score++;
+            reproducirSonidoCorrecto();
+        } else {
+            reproducirSonidoIncorrecto();
+        }
+
+        const botones = options.querySelectorAll('button');
+
+        botones.forEach(boton => {
+            boton.disabled = true;
+
+            if (boton.textContent === current.correctAnswer) {
+                boton.classList.add('correct');
+            }
+        });
+
+        const inputRespuesta = options.querySelector('.english-practice-answer-input');
+
+        if (inputRespuesta) {
+            inputRespuesta.disabled = true;
+            inputRespuesta.classList.add(correcta ? 'correct' : 'incorrect');
+        }
+
+        if (current.type === 'listening') {
+            if (correcta) {
+                feedbackTitle.textContent = '✅ ¡Correcto!';
+                feedbackText.textContent = `¡Muy bien! La respuesta es: ${current.correctAnswer} — ${significado}`;
+                reproducirFeedback(`¡Muy bien! La respuesta es ${current.correctAnswer}`);
+            } else {
+                feedbackTitle.textContent = '❌ Incorrecto';
+                feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${current.correctAnswer} — ${significado}`;
+                reproducirFeedback(`Incorrecto. La respuesta correcta es ${current.correctAnswer}`);
+            }
+        } else if (current.type === 'english-meaning') {
+            const significados = current.correctAnswers || [current.correctAnswer];
+            const todosLosSignificados = significados.join(', ');
+            if (correcta) {
+                feedbackTitle.textContent = '✅ ¡Correcto!';
+                feedbackText.textContent = `¡Muy bien! La respuesta es:  ${todosLosSignificados}`;
+                reproducirFeedback(`¡Muy bien! La respuesta es ${respuesta}`);
+            } else {
+                feedbackTitle.textContent = '❌ Incorrecto';
+                feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${todosLosSignificados}`;
+                reproducirFeedback(`Incorrecto. La respuesta correcta es ${todosLosSignificados}`);
+            }
+        } else if (current.type === 'spanish-word') {
+            if (correcta) {
+                feedbackTitle.textContent = '✅ ¡Correcto!';
+                feedbackText.textContent = `¡Muy bien! La respuesta es: ${current.correctAnswer}`;
+                reproducirFeedback(`¡Muy bien! La respuesta es ${current.correctAnswer}`);
+            } else {
+                feedbackTitle.textContent = '❌ Incorrecto';
+                feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${current.correctAnswer}`;
+                reproducirFeedback(`Incorrecto. La respuesta correcta es ${current.correctAnswer}`);
+            }
+        } else if (correcta) {
+            if (button) button.classList.add('correct');
+
             feedbackTitle.textContent = '✅ ¡Correcto!';
             feedbackText.textContent = `¡Muy bien! La respuesta es: ${current.correctAnswer}`;
             reproducirFeedback(`¡Muy bien! La respuesta es ${current.correctAnswer}`);
         } else {
+            if (button) button.classList.add('incorrect');
+
             feedbackTitle.textContent = '❌ Incorrecto';
-            feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${current.correctAnswer}`;
+            feedbackText.textContent = `La respuesta correcta es: ${current.correctAnswer}`;
             reproducirFeedback(`Incorrecto. La respuesta correcta es ${current.correctAnswer}`);
         }
-    } else if (current.type === 'spanish-word') {
-        if (correcta) {
-            feedbackTitle.textContent = '✅ ¡Correcto!';
-            feedbackText.textContent = `¡Muy bien! La respuesta es: ${current.correctAnswer}`;
-            reproducirFeedback(`¡Muy bien! La respuesta es ${current.correctAnswer}`);
-        } else {
-            feedbackTitle.textContent = '❌ Incorrecto';
-            feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${current.correctAnswer}`;
-            reproducirFeedback(`Incorrecto. La respuesta correcta es ${current.correctAnswer}`);
+
+        feedback.style.display = 'block';
+        nextButton.style.display = 'inline-flex';
+
+        if (autoNextEnabled) {
+            const tiempoAutoNext = practiceSoundsEnabled ? 5000 : 1500;
+
+            autoNextTimer = setTimeout(() => {
+                avanzarSiguiente();
+            }, tiempoAutoNext);
         }
-    } else if (correcta) {
-        if (button) button.classList.add('correct');
-
-        feedbackTitle.textContent = '✅ ¡Correcto!';
-        feedbackText.textContent = `¡Muy bien! La respuesta es: ${current.correctAnswer}`;
-        reproducirFeedback(`¡Muy bien! La respuesta es ${current.correctAnswer}`);
-    } else {
-        if (button) button.classList.add('incorrect');
-
-        feedbackTitle.textContent = '❌ Incorrecto';
-        feedbackText.textContent = `La respuesta correcta es: ${current.correctAnswer}`;
-        reproducirFeedback(`Incorrecto. La respuesta correcta es ${current.correctAnswer}`);
     }
-
-    feedback.style.display = 'block';
-    nextButton.style.display = 'inline-flex';
-
-    if (autoNextEnabled) {
-        const tiempoAutoNext = practiceSoundsEnabled ? 5000 : 1500;
-
-        autoNextTimer = setTimeout(() => {
-            avanzarSiguiente();
-        }, tiempoAutoNext);
-    }
-}
 
     function avanzarSiguiente() {
         if (autoNextTimer) {
@@ -668,7 +698,6 @@ if (current.type === 'listening') {
             autoNextTimer = null;
         }
 
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
         currentQuestionIndex++;
         mostrarPregunta();
@@ -700,7 +729,6 @@ if (current.type === 'listening') {
 
     async function finalizarPractica() {
         try {
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
             const resultado = await finalizarSesion();
 
@@ -734,7 +762,6 @@ if (current.type === 'listening') {
             autoNextTimer = null;
         }
 
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
         practice.sessionId = crypto.randomUUID();
         currentQuestionIndex = 0;
@@ -771,7 +798,6 @@ if (current.type === 'listening') {
             autoNextTimer = null;
         }
 
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
         questions = [];
         currentQuestionIndex = 0;
@@ -846,28 +872,25 @@ if (current.type === 'listening') {
         });
     }
 
-    function reproducirPalabra(palabra) {
-        if (!palabra || !practiceSoundsEnabled) return;
 
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-        }
+    function reproducirPalabra(palabra) {
+        if (!palabra) return;
+
+
 
         if (typeof window.reproducirPronunciacion === 'function') {
             setTimeout(() => {
-                if (practiceSoundsEnabled) {
-                    window.reproducirPronunciacion(palabra);
-                }
+                window.reproducirPronunciacion(palabra);
             }, 100);
         }
     }
 
+
+
     function reproducirFeedback(texto) {
         if (!practiceSoundsEnabled || !texto) return;
 
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-        }
+
 
         if (typeof window.reproducirPronunciacion === 'function') {
             setTimeout(() => {
@@ -877,6 +900,7 @@ if (current.type === 'listening') {
             }, 150);
         }
     }
+
 
     if (startButton) {
         startButton.addEventListener('click', async () => {
