@@ -132,6 +132,22 @@
     }
 
 
+    function obtenerPalabrasMismoSignificado(word) {
+        const significados = obtenerSignificados(word)
+            .map(normalizarRespuesta);
+
+        return practice.words.filter(item => {
+            const significadosItem = obtenerSignificados(item)
+                .map(normalizarRespuesta);
+
+            return significados.some(significado =>
+                significadosItem.includes(significado)
+            );
+        });
+    }
+
+
+
     function obtenerPalabrasConSignificado() {
         return practice.words.filter(word => word.meanings && word.meanings.length > 0);
     }
@@ -222,18 +238,34 @@
             };
         }
 
+
         if (tipo === 'spanish-word') {
             const significado = obtenerSignificado(word);
+
             if (!significado) return null;
+
+            const palabrasRelacionadas =
+                obtenerPalabrasMismoSignificado(word);
+
+            const respuestasCorrectas = [
+                ...new Set(
+                    palabrasRelacionadas.map(item =>
+                        normalizarRespuesta(item.word)
+                    )
+                )
+            ];
+
             return {
                 type: 'spanish-word',
                 typeLabel: 'Español → Escribir inglés',
                 question: significado,
                 correctAnswer: word.word,
+                correctAnswers: respuestasCorrectas,
                 meaning: significado,
                 wordId: word.id
             };
         }
+
 
         if (tipo === 'sentence' && word.example) {
             const oracionIncompleta = crearOracionIncompleta(word.example, word.word);
@@ -656,15 +688,32 @@
                 feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${todosLosSignificados}`;
                 reproducirFeedback(`Incorrecto. La respuesta correcta es ${todosLosSignificados}`);
             }
+
         } else if (current.type === 'spanish-word') {
+            const respuestasAceptadas = current.correctAnswers || [
+                current.correctAnswer
+            ];
+
+            const todasLasRespuestas = respuestasAceptadas.join(', ');
+
             if (correcta) {
                 feedbackTitle.textContent = '✅ ¡Correcto!';
-                feedbackText.textContent = `¡Muy bien! La respuesta es: ${current.correctAnswer}`;
-                reproducirFeedback(`¡Muy bien! La respuesta es ${current.correctAnswer}`);
+
+                feedbackText.textContent =
+                    `¡Muy bien! Respuestas válidas: ${todasLasRespuestas}`;
+
+                reproducirFeedback(
+                    `¡Muy bien! Respuestas válidas: ${todasLasRespuestas}`
+                );
             } else {
                 feedbackTitle.textContent = '❌ Incorrecto';
-                feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${current.correctAnswer}`;
-                reproducirFeedback(`Incorrecto. La respuesta correcta es ${current.correctAnswer}`);
+
+                feedbackText.textContent =
+                    `Escribiste: ${respuesta} | Respuestas correctas: ${todasLasRespuestas}`;
+
+                reproducirFeedback(
+                    `Incorrecto. Las respuestas correctas son: ${todasLasRespuestas}`
+                );
             }
         } else if (correcta) {
             if (button) button.classList.add('correct');

@@ -18,11 +18,17 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="categorySelect" class="form-label">
+                                <label
+                                    for="englishImportCategorySelect"
+                                    class="form-label"
+                                >
                                     Categoría
                                 </label>
 
-                                <select id="categorySelect" class="form-select">
+                                <select
+                                    id="englishImportCategorySelect"
+                                    class="form-select"
+                                >
                                     <option value="">
                                         Seleccione una categoría
                                     </option>
@@ -38,11 +44,17 @@
 
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="importType" class="form-label">
+                                <label
+                                    for="englishImportType"
+                                    class="form-label"
+                                >
                                     Tipo de importación
                                 </label>
 
-                                <select id="importType" class="form-select">
+                                <select
+                                    id="englishImportType"
+                                    class="form-select"
+                                >
                                     <option value="">
                                         Seleccione un tipo
                                     </option>
@@ -67,12 +79,23 @@
                         </div>
                     </div>
 
-                    <div id="parentGroup" class="mb-3" style="display: none;">
-                        <label id="parentLabel" for="parentSelect" class="form-label">
+                    <div
+                        id="englishImportParentGroup"
+                        class="mb-3"
+                        style="display: none;"
+                    >
+                        <label
+                            id="englishImportParentLabel"
+                            for="englishImportParentSelect"
+                            class="form-label"
+                        >
                             Seleccione
                         </label>
 
-                        <select id="parentSelect" class="form-select">
+                        <select
+                            id="englishImportParentSelect"
+                            class="form-select"
+                        >
                             <option value="">
                                 Seleccione una opción
                             </option>
@@ -80,13 +103,16 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="jsonFile" class="form-label">
+                        <label
+                            for="englishImportJsonFile"
+                            class="form-label"
+                        >
                             Archivo JSON
                         </label>
 
                         <input
                             type="file"
-                            id="jsonFile"
+                            id="englishImportJsonFile"
                             class="form-control"
                             accept=".json,application/json"
                             disabled
@@ -101,7 +127,7 @@
                     <div class="d-flex gap-2">
                         <button
                             type="button"
-                            id="validateBtn"
+                            id="englishImportValidateBtn"
                             class="btn btn-primary"
                             disabled
                         >
@@ -110,7 +136,7 @@
 
                         <button
                             type="button"
-                            id="importBtn"
+                            id="englishImportImportBtn"
                             class="btn btn-success"
                             style="display: none;"
                         >
@@ -119,7 +145,7 @@
                     </div>
 
                     <div
-                        id="preview"
+                        id="englishImportPreview"
                         class="mt-4"
                         style="display: none;"
                     ></div>
@@ -144,5 +170,4 @@
         };
     </script>
 
-    <script src="{{ asset('js/english-import.js') }}"></script>
 @endpush
