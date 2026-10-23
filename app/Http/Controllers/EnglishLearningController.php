@@ -16,7 +16,7 @@ class EnglishLearningController extends Controller
     {
         $categories = EnglishCategory::with('words')
             ->withCount('words')
-            ->orderBy('name', 'asc')
+            ->inRandomOrder()
             ->get();
         
         $progressByCategory = [];

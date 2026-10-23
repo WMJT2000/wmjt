@@ -43,7 +43,8 @@ import './english-words.js';
 import './english-meanings.js';
 import './pronunciation.js';
 import './gemini-live.js';
-import './english-study.js'
+import './english-study.js';
+import './english-index.js';
 import './english-practice.js';
 import './manuals.js';
 import './manual-sections.js';

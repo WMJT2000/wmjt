@@ -53,9 +53,9 @@ if (study) {
             'btn-next-word'
         );
 
-    const completed =
+    const completedGroup =
         document.getElementById(
-            'study-completed'
+            'study-completed-group'
         );
 
 
@@ -302,11 +302,11 @@ if (study) {
 
 
 
-        if (completed) {
+        if (completedGroup) {
 
-            completed.style.display =
+            completedGroup.style.display =
                 currentIndex === study.words.length - 1
-                    ? 'inline-block'
+                    ? 'flex'
                     : 'none';
 
         }

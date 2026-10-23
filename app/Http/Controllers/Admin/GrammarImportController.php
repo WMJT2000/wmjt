@@ -22,8 +22,7 @@ class GrammarImportController extends Controller
     {
         $categories = GrammarCategory::query()
             ->where('status', 1)
-            ->orderBy('level')
-            ->orderBy('sort_order')
+            ->inRandomOrder()
             ->get();
 
         return view(

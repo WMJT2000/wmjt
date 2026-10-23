@@ -8,6 +8,8 @@
     let answered = false;
     let autoNextEnabled = true;
     let autoNextTimer = null;
+    let feedbackCompletionToken = 0;
+    let feedbackTimer = null;
     let selectedPracticeMode = null;
     let practiceSoundsEnabled = true;
     let audioContext = null;
@@ -132,18 +134,14 @@
     }
 
 
-    function obtenerPalabrasMismoSignificado(word) {
-        const significados = obtenerSignificados(word)
-            .map(normalizarRespuesta);
+    function obtenerPalabrasPorSignificado(significado) {
+        const clave = normalizarRespuesta(significado);
 
-        return practice.words.filter(item => {
-            const significadosItem = obtenerSignificados(item)
-                .map(normalizarRespuesta);
-
-            return significados.some(significado =>
-                significadosItem.includes(significado)
-            );
-        });
+        return practice.words.filter(word =>
+            obtenerSignificados(word).some(item =>
+                normalizarRespuesta(item) === clave
+            )
+        );
     }
 
 
@@ -162,14 +160,32 @@
         return oracion.replace(expresion, '____');
     }
 
-    function crearOpciones(respuestaCorrecta, obtenerRespuesta) {
-        const opciones = [respuestaCorrecta];
+    function crearOpciones(respuestasCorrectas, obtenerRespuesta) {
+        const correctas = Array.isArray(respuestasCorrectas)
+            ? respuestasCorrectas
+            : [respuestasCorrectas];
+
+        const opciones = [];
+        const opcionesVistas = new Set();
+
+        const agregarOpcion = (respuesta) => {
+            if (!respuesta) return;
+
+            const clave = normalizarRespuesta(respuesta);
+            if (opcionesVistas.has(clave)) return;
+
+            opcionesVistas.add(clave);
+            opciones.push(respuesta);
+        };
+
+        correctas.forEach(agregarOpcion);
+
         const candidatos = mezclar(practice.words);
         for (const word of candidatos) {
-            const respuesta = obtenerRespuesta(word);
-            if (respuesta && !opciones.includes(respuesta)) opciones.push(respuesta);
-            if (opciones.length === 4) break;
+            agregarOpcion(obtenerRespuesta(word));
+            if (opciones.length >= 4) break;
         }
+
         return mezclar(opciones);
     }
 
@@ -188,9 +204,10 @@
                 pronunciationGuide: word.pronunciation_guide || '',
                 correctAnswer: respuestaCorrecta,
                 correctAnswers: significados,
+                answerLanguage: 'es-ES',
                 meaning: significados.join(', '),
                 wordId: word.id,
-                options: crearOpciones(respuestaCorrecta, obtenerSignificado)
+                options: crearOpciones(significados, obtenerSignificado)
             };
         }
 
@@ -198,15 +215,26 @@
         if (tipo === 'spanish-english') {
             const significado = obtenerSignificado(word);
             if (!significado) return null;
-            const respuestaCorrecta = word.word;
+
+            const respuestasCorrectas = [
+                ...new Map(
+                    obtenerPalabrasPorSignificado(significado).map(item => [
+                        normalizarRespuesta(item.word),
+                        item.word
+                    ])
+                ).values()
+            ];
+
             return {
                 type: 'spanish-english',
                 typeLabel: 'Español → Inglés',
                 question: significado,
-                correctAnswer: respuestaCorrecta,
+                correctAnswer: word.word,
+                correctAnswers: respuestasCorrectas,
+                answerLanguage: 'en-US',
                 meaning: significado,
                 wordId: word.id,
-                options: crearOpciones(respuestaCorrecta, item => item.word)
+                options: crearOpciones(respuestasCorrectas, item => item.word)
             };
         }
 
@@ -216,6 +244,7 @@
                 typeLabel: 'Escucha → Escribe',
                 question: 'Escucha la palabra y escríbela.',
                 correctAnswer: word.word,
+                answerLanguage: 'en-US',
                 meaning: obtenerSignificado(word),
                 wordId: word.id
             };
@@ -233,6 +262,7 @@
                 pronunciationGuide: word.pronunciation_guide || '',
                 correctAnswer: significados[0],
                 correctAnswers: significados,
+                answerLanguage: 'es-ES',
                 meaning: significados.join(', '),
                 wordId: word.id
             };
@@ -244,15 +274,13 @@
 
             if (!significado) return null;
 
-            const palabrasRelacionadas =
-                obtenerPalabrasMismoSignificado(word);
-
             const respuestasCorrectas = [
-                ...new Set(
-                    palabrasRelacionadas.map(item =>
-                        normalizarRespuesta(item.word)
-                    )
-                )
+                ...new Map(
+                    obtenerPalabrasPorSignificado(significado).map(item => [
+                        normalizarRespuesta(item.word),
+                        item.word
+                    ])
+                ).values()
             ];
 
             return {
@@ -261,6 +289,7 @@
                 question: significado,
                 correctAnswer: word.word,
                 correctAnswers: respuestasCorrectas,
+                answerLanguage: 'en-US',
                 meaning: significado,
                 wordId: word.id
             };
@@ -275,6 +304,7 @@
                 typeLabel: 'Completar oración',
                 question: oracionIncompleta,
                 correctAnswer: word.word,
+                answerLanguage: 'en-US',
                 wordId: word.id,
                 options: crearOpciones(word.word, item => item.word)
             };
@@ -622,19 +652,73 @@
         return response.json();
     }
 
+    function programarAutoNext(tiempo = 0) {
+        if (!autoNextEnabled) return;
+
+        if (autoNextTimer) {
+            clearTimeout(autoNextTimer);
+        }
+
+        autoNextTimer = setTimeout(() => {
+            autoNextTimer = null;
+            avanzarSiguiente();
+        }, tiempo);
+    }
+
+    function cancelarFeedbackPendiente() {
+        feedbackCompletionToken++;
+
+        if (feedbackTimer) {
+            clearTimeout(feedbackTimer);
+            feedbackTimer = null;
+        }
+
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+        }
+    }
+
     async function responder(respuesta, button, current) {
         if (answered) return;
 
         answered = true;
 
 
-        const respuestasCorrectas = current.correctAnswers || [current.correctAnswer];
+        const respuestasCorrectas = Array.isArray(current.correctAnswers) && current.correctAnswers.length
+            ? current.correctAnswers
+            : [current.correctAnswer];
+
+        const textoRespuestas = respuestasCorrectas.join(', ');
+        const verboRespuesta = respuestasCorrectas.length > 1 ? 'Son' : 'Es';
+
+        const feedbackToken = ++feedbackCompletionToken;
+
+        const onFeedbackComplete = (exito) => {
+            if (
+                feedbackToken !== feedbackCompletionToken ||
+                !answered
+            ) {
+                return;
+            }
+
+            programarAutoNext(exito ? 0 : 1500);
+        };
+
+        const mostrarFeedback = (esCorrecta, onComplete) => {
+            feedbackTitle.textContent = esCorrecta ? '✅ Muy bien.' : '❌ Incorrecto.';
+            feedbackText.textContent = `${verboRespuesta} ${textoRespuestas}`;
+            return reproducirFeedback(
+                `${esCorrecta ? 'Muy bien' : 'Incorrecto'}. ${verboRespuesta}`,
+                textoRespuestas,
+                current.answerLanguage || 'en-US',
+                onComplete
+            );
+        };
 
         const correcta = respuestasCorrectas.some(
             respuestaCorrecta =>
                 normalizarRespuesta(respuesta) === normalizarRespuesta(respuestaCorrecta)
         );
-        const significado = current.meaning || obtenerSignificado(practice.words.find(word => word.id === current.wordId)) || 'Sin significado disponible';
 
         try {
             await guardarResultado(current, respuesta);
@@ -650,11 +734,12 @@
         }
 
         const botones = options.querySelectorAll('button');
+        const respuestasCorrectasNormalizadas = respuestasCorrectas.map(normalizarRespuesta);
 
         botones.forEach(boton => {
             boton.disabled = true;
 
-            if (boton.textContent === current.correctAnswer) {
+            if (respuestasCorrectasNormalizadas.includes(normalizarRespuesta(boton.textContent))) {
                 boton.classList.add('correct');
             }
         });
@@ -666,78 +751,27 @@
             inputRespuesta.classList.add(correcta ? 'correct' : 'incorrect');
         }
 
-        if (current.type === 'listening') {
-            if (correcta) {
-                feedbackTitle.textContent = '✅ ¡Correcto!';
-                feedbackText.textContent = `¡Muy bien! La respuesta es: ${current.correctAnswer} — ${significado}`;
-                reproducirFeedback(`¡Muy bien! La respuesta es ${current.correctAnswer}`);
-            } else {
-                feedbackTitle.textContent = '❌ Incorrecto';
-                feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${current.correctAnswer} — ${significado}`;
-                reproducirFeedback(`Incorrecto. La respuesta correcta es ${current.correctAnswer}`);
-            }
-        } else if (current.type === 'english-meaning') {
-            const significados = current.correctAnswers || [current.correctAnswer];
-            const todosLosSignificados = significados.join(', ');
-            if (correcta) {
-                feedbackTitle.textContent = '✅ ¡Correcto!';
-                feedbackText.textContent = `¡Muy bien! La respuesta es:  ${todosLosSignificados}`;
-                reproducirFeedback(`¡Muy bien! La respuesta es ${respuesta}`);
-            } else {
-                feedbackTitle.textContent = '❌ Incorrecto';
-                feedbackText.textContent = `Escribiste: ${respuesta} | Correcta: ${todosLosSignificados}`;
-                reproducirFeedback(`Incorrecto. La respuesta correcta es ${todosLosSignificados}`);
-            }
+        let feedbackStarted = false;
 
-        } else if (current.type === 'spanish-word') {
-            const respuestasAceptadas = current.correctAnswers || [
-                current.correctAnswer
-            ];
-
-            const todasLasRespuestas = respuestasAceptadas.join(', ');
-
-            if (correcta) {
-                feedbackTitle.textContent = '✅ ¡Correcto!';
-
-                feedbackText.textContent =
-                    `¡Muy bien! Respuestas válidas: ${todasLasRespuestas}`;
-
-                reproducirFeedback(
-                    `¡Muy bien! Respuestas válidas: ${todasLasRespuestas}`
-                );
-            } else {
-                feedbackTitle.textContent = '❌ Incorrecto';
-
-                feedbackText.textContent =
-                    `Escribiste: ${respuesta} | Respuestas correctas: ${todasLasRespuestas}`;
-
-                reproducirFeedback(
-                    `Incorrecto. Las respuestas correctas son: ${todasLasRespuestas}`
-                );
-            }
+        if (
+            current.type === 'listening' ||
+            current.type === 'english-meaning' ||
+            current.type === 'spanish-word'
+        ) {
+            feedbackStarted = mostrarFeedback(correcta, onFeedbackComplete);
         } else if (correcta) {
             if (button) button.classList.add('correct');
-
-            feedbackTitle.textContent = '✅ ¡Correcto!';
-            feedbackText.textContent = `¡Muy bien! La respuesta es: ${current.correctAnswer}`;
-            reproducirFeedback(`¡Muy bien! La respuesta es ${current.correctAnswer}`);
+            feedbackStarted = mostrarFeedback(true, onFeedbackComplete);
         } else {
             if (button) button.classList.add('incorrect');
-
-            feedbackTitle.textContent = '❌ Incorrecto';
-            feedbackText.textContent = `La respuesta correcta es: ${current.correctAnswer}`;
-            reproducirFeedback(`Incorrecto. La respuesta correcta es ${current.correctAnswer}`);
+            feedbackStarted = mostrarFeedback(false, onFeedbackComplete);
         }
 
         feedback.style.display = 'block';
         nextButton.style.display = 'inline-flex';
 
-        if (autoNextEnabled) {
-            const tiempoAutoNext = practiceSoundsEnabled ? 5000 : 1500;
-
-            autoNextTimer = setTimeout(() => {
-                avanzarSiguiente();
-            }, tiempoAutoNext);
+        if (!feedbackStarted) {
+            programarAutoNext(1500);
         }
     }
 
@@ -748,6 +782,7 @@
         }
 
 
+        cancelarFeedbackPendiente();
         currentQuestionIndex++;
         mostrarPregunta();
     }
@@ -811,6 +846,8 @@
             autoNextTimer = null;
         }
 
+        cancelarFeedbackPendiente();
+
 
         practice.sessionId = crypto.randomUUID();
         currentQuestionIndex = 0;
@@ -846,6 +883,8 @@
             clearTimeout(autoNextTimer);
             autoNextTimer = null;
         }
+
+        cancelarFeedbackPendiente();
 
 
         questions = [];
@@ -936,18 +975,67 @@
 
 
 
-    function reproducirFeedback(texto) {
-        if (!practiceSoundsEnabled || !texto) return;
-
-
-
-        if (typeof window.reproducirPronunciacion === 'function') {
-            setTimeout(() => {
-                if (practiceSoundsEnabled) {
-                    window.reproducirPronunciacion(texto);
-                }
-            }, 150);
+    function reproducirFeedback(
+        prefijo,
+        respuestas,
+        idiomaRespuestas = 'en-US',
+        onComplete = null
+    ) {
+        if (!practiceSoundsEnabled || !prefijo) {
+            return false;
         }
+
+        if (
+            typeof window.reproducirPronunciacionSegmentos !== 'function' ||
+            !window.speechSynthesis ||
+            typeof SpeechSynthesisUtterance === 'undefined'
+        ) {
+            return false;
+        }
+
+        if (feedbackTimer) {
+            clearTimeout(feedbackTimer);
+        }
+
+        feedbackTimer = setTimeout(() => {
+            feedbackTimer = null;
+
+            if (!practiceSoundsEnabled) {
+                if (typeof onComplete === 'function') {
+                    onComplete(false);
+                }
+
+                return;
+            }
+
+            const iniciado =
+                window.reproducirPronunciacionSegmentos(
+                    [
+                        {
+                            texto: prefijo,
+                            idioma: 'es-ES'
+                        },
+                        {
+                            texto: respuestas,
+                            idioma: idiomaRespuestas
+                        }
+                    ],
+                    (exito) => {
+                        if (typeof onComplete === 'function') {
+                            onComplete(exito);
+                        }
+                    }
+                );
+
+            if (
+                !iniciado &&
+                typeof onComplete === 'function'
+            ) {
+                onComplete(false);
+            }
+        }, 150);
+
+        return true;
     }
 
 

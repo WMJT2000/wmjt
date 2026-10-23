@@ -609,6 +609,66 @@
 }
 
 
+.english-study-completed-group {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+/* =========================================================
+   IR A PRACTICAR
+   ========================================================= */
+
+.english-study-practice-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 46px;
+
+    padding: 0 20px;
+
+    box-sizing: border-box;
+
+    border-radius: 10px;
+
+    background: #7c3aed;
+
+    border: 1px solid #7c3aed;
+
+    color: #ffffff;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.english-study-practice-button:hover {
+    background: #6d28d9;
+
+    border-color: #6d28d9;
+
+    transform: translateY(-1px);
+
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.2);
+}
+
+.english-study-practice-button:focus-visible {
+    outline: none;
+
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.25);
+}
+
+
 /* =========================================================
    ESTADO VACÍO
    ========================================================= */
@@ -884,8 +944,16 @@
     }
 
 
+    .english-study-completed-group {
+        flex-direction: column;
+
+        width: 100%;
+    }
+
+
     .english-study-actions button,
-    #study-completed {
+    #study-completed,
+    .english-study-practice-button {
         width: 100%;
 
         min-height: 48px;

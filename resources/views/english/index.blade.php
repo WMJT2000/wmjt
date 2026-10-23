@@ -66,10 +66,32 @@
             </div>
 
 
+            @if ($categories->isNotEmpty())
+                <div class="english-categories-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <path d="m20 20-3.5-3.5"></path>
+                    </svg>
+
+                    <input
+                        type="search"
+                        id="englishCategorySearch"
+                        placeholder="Buscar categoría..."
+                        autocomplete="off"
+                        aria-label="Buscar categoría"
+                    >
+                </div>
+            @endif
+
+
             <div class="english-categories-grid">
 
                 @forelse($categories as $category)
-                    <div class="english-category-card">
+                    <div
+                        class="english-category-card"
+                        data-category-name="{{ $category->name }}"
+                        @if ($loop->iteration > 6) hidden @endif
+                    >
 
                         <div class="english-category-icon">
                             📚
@@ -122,6 +144,19 @@
                 @endforelse
 
             </div>
+
+            <div class="english-categories-search-empty" id="englishCategoriesSearchEmpty" hidden>
+                <strong>No se encontraron categorías.</strong>
+                <span>Prueba con otro término de búsqueda.</span>
+            </div>
+
+            @if ($categories->count() > 6)
+                <div class="english-categories-footer">
+                    <button type="button" class="english-categories-load-more" id="englishCategoriesLoadMore">
+                        Ver más categorías
+                    </button>
+                </div>
+            @endif
 
         </div>
 

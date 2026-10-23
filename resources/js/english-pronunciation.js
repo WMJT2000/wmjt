@@ -1,4 +1,5 @@
 let vozIngles = null;
+let vozEspanol = null;
 
 
 
@@ -11,13 +12,36 @@ function cargarVoz() {
         voices.find(voice =>
             voice.name === 'Google US English' &&
             voice.lang === 'en-US'
+        ) ||
+        voices.find(voice =>
+            voice.lang === 'en-US'
+        ) ||
+        voices.find(voice =>
+            voice.lang.startsWith('en')
         );
 
-        
+    vozEspanol =
+        voices.find(voice =>
+            voice.name === 'Google español' &&
+            voice.lang === 'es-ES'
+        ) ||
+        voices.find(voice =>
+            voice.lang === 'es-ES'
+        ) ||
+        voices.find(voice =>
+            voice.lang.startsWith('es')
+        );
+
+
 
     console.log(
-        '🎙️ Voz seleccionada:',
+        '🎙️ Voz inglés seleccionada:',
         vozIngles
+    );
+
+    console.log(
+        '🎙️ Voz español seleccionada:',
+        vozEspanol
     );
 }
 
@@ -32,16 +56,7 @@ cargarVoz();
 
 
 
-function reproducirPronunciacion(texto) {
-
-    if (
-        !texto ||
-        !texto.trim()
-    ) {
-        return;
-    }
-
-    window.speechSynthesis.cancel();
+function crearUtterance(texto, idioma = 'en-US') {
 
     const utterance =
         new SpeechSynthesisUtterance(
@@ -49,7 +64,7 @@ function reproducirPronunciacion(texto) {
         );
 
     utterance.lang =
-        'en-US';
+        idioma;
 
     utterance.rate =
         window.pronunciationSpeed || 1;
@@ -61,23 +76,134 @@ function reproducirPronunciacion(texto) {
         1;
 
 
-    if (vozIngles) {
+    const voz =
+        idioma.startsWith('es')
+            ? vozEspanol
+            : vozIngles;
+
+
+    if (voz) {
 
         utterance.voice =
-            vozIngles;
+            voz;
 
     }
 
 
+    return utterance;
+}
+
+
+
+function reproducirPronunciacion(texto, idioma = 'en-US') {
+
+    if (
+        !texto ||
+        !texto.trim()
+    ) {
+        return;
+    }
+
+    window.speechSynthesis.cancel();
+
     window.speechSynthesis.speak(
-        utterance
+        crearUtterance(texto, idioma)
     );
+}
+
+
+
+function reproducirSegmentos(segmentos, onComplete) {
+
+    if (!Array.isArray(segmentos)) {
+        return false;
+    }
+
+    const segmentosValidos =
+        segmentos.filter(segmento =>
+            segmento &&
+            segmento.texto &&
+            String(segmento.texto).trim()
+        );
+
+
+    if (segmentosValidos.length === 0) {
+        return false;
+    }
+
+
+    if (
+        !window.speechSynthesis ||
+        typeof SpeechSynthesisUtterance === 'undefined'
+    ) {
+        return false;
+    }
+
+
+    window.speechSynthesis.cancel();
+
+
+    const utterances =
+        segmentosValidos.map(segmento =>
+            crearUtterance(
+                String(segmento.texto),
+                segmento.idioma || 'en-US'
+            )
+        );
+
+
+    let completado = false;
+
+
+    const finalizar = (exito = true) => {
+
+        if (completado) {
+            return;
+        }
+
+        completado = true;
+
+
+        if (typeof onComplete === 'function') {
+            onComplete(exito);
+        }
+
+    };
+
+
+    if (typeof onComplete === 'function') {
+
+        const ultimaUtterance =
+            utterances[utterances.length - 1];
+
+        ultimaUtterance.onend =
+            () => finalizar(true);
+
+        ultimaUtterance.onerror =
+            () => finalizar(false);
+
+    }
+
+
+    utterances.forEach(utterance => {
+
+        window.speechSynthesis.speak(
+            utterance
+        );
+
+    });
+
+
+    return true;
 }
 
 
 
 window.reproducirPronunciacion =
     reproducirPronunciacion;
+
+window.reproducirPronunciacionSegmentos =
+    reproducirSegmentos;
 
 
 

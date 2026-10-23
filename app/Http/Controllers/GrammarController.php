@@ -24,7 +24,7 @@ class GrammarController extends Controller
                     $query->where('status', 1);
                 }
             ])
-            ->orderBy('sort_order')
+            ->inRandomOrder()
             ->get();
 
         return view(

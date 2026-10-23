@@ -238,15 +238,26 @@
                 </button>
 
 
-                <span
-                    id="study-completed"
+                <div
+                    id="study-completed-group"
+                    class="english-study-completed-group"
 
                     @if($currentIndex < $words->count() - 1)
                         style="display: none;"
                     @endif
                 >
-                    🎉 ¡Completado!
-                </span>
+                    <span id="study-completed">
+                        🎉 ¡Completado!
+                    </span>
+
+                    <a
+                        href="{{ route('english.practice', $category) }}"
+                        id="study-practice-button"
+                        class="english-study-practice-button"
+                    >
+                        Ir a practicar
+                    </a>
+                </div>
 
             </div>
 
