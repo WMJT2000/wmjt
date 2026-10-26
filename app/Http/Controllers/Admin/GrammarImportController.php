@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GrammarImportRequest;
 use App\Models\GrammarCategory;
+use App\Models\GrammarExercise;
 use App\Models\GrammarLesson;
 use App\Models\GrammarTopic;
 use App\Services\GrammarImportService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class GrammarImportController extends Controller
 {
@@ -22,7 +24,11 @@ class GrammarImportController extends Controller
     {
         $categories = GrammarCategory::query()
             ->where('status', 1)
-            ->inRandomOrder()
+            ->withCount([
+                'topics',
+                'lessons',
+            ])
+            ->orderBy('id')
             ->get();
 
         return view(
@@ -30,7 +36,6 @@ class GrammarImportController extends Controller
             compact('categories')
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -58,9 +63,8 @@ class GrammarImportController extends Controller
                 'status',
                 1
             )
-            ->orderBy(
-                'sort_order'
-            )
+            ->withCount('lessons')
+            ->orderBy('id')
             ->get([
                 'id',
                 'name',
@@ -73,6 +77,86 @@ class GrammarImportController extends Controller
         ]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | VALIDAR TOPICS POR NOMBRE
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba que los nombres de Topic enviados existan dentro
+    | de la categoría seleccionada.
+    |
+    */
+
+    public function validateTopicsByName(
+        Request $request,
+        GrammarCategory $category
+    ): JsonResponse {
+
+        $validated = $request->validate([
+            'names' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+            'names.*' => [
+                'required',
+                'string',
+                'max:150',
+            ],
+        ]);
+
+        $requestedNames = collect($validated['names'])
+            ->map(
+                fn ($name) => trim((string) $name)
+            )
+            ->filter()
+            ->unique(
+                fn ($name) => mb_strtolower($name)
+            )
+            ->values();
+
+        $topics = GrammarTopic::query()
+            ->where(
+                'category_id',
+                $category->id
+            )
+            ->whereIn(
+                'name',
+                $requestedNames->all()
+            )
+            ->get([
+                'id',
+                'name',
+            ]);
+
+        $foundNames = $topics
+            ->pluck('name')
+            ->map(
+                fn ($name) => mb_strtolower(
+                    trim((string) $name)
+                )
+            )
+            ->all();
+
+        $missing = $requestedNames
+            ->reject(
+                fn ($name) => in_array(
+                    mb_strtolower($name),
+                    $foundNames,
+                    true
+                )
+            )
+            ->values()
+            ->all();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'found' => $topics,
+                'missing' => $missing,
+            ],
+        ]);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -103,12 +187,7 @@ class GrammarImportController extends Controller
 
                 }
             )
-            ->orderBy(
-                'topic_id'
-            )
-            ->orderBy(
-                'sort_order'
-            )
+            ->orderBy('id')
             ->get([
                 'id',
                 'topic_id',
@@ -121,6 +200,48 @@ class GrammarImportController extends Controller
         ]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | LISTAR EXERCISES DE UNA CATEGORÍA
+    |--------------------------------------------------------------------------
+    |
+    | Se utiliza desde JavaScript para llenar el selector
+    | cuando queremos importar:
+    |
+    | - Options
+    |
+    */
+
+    public function exercisesList(
+        GrammarCategory $category
+    ): JsonResponse {
+
+        $exercises = GrammarExercise::query()
+            ->whereHas(
+                'topic',
+                function ($query) use ($category) {
+
+                    $query->where(
+                        'category_id',
+                        $category->id
+                    );
+
+                }
+            )
+            ->with('topic:id,name')
+            ->orderBy('id')
+            ->get([
+                'id',
+                'topic_id',
+                'type',
+                'question',
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $exercises,
+        ]);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -139,12 +260,10 @@ class GrammarImportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-                'La importación se completó correctamente.',
+            'message' => 'La importación se completó correctamente.',
             'data' => $result,
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -165,12 +284,10 @@ class GrammarImportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-                'Los topics se importaron correctamente.',
+            'message' => 'Los topics se importaron correctamente.',
             'data' => $result,
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -191,12 +308,38 @@ class GrammarImportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-                'Las lessons se importaron correctamente.',
+            'message' => 'Las lessons se importaron correctamente.',
             'data' => $result,
         ]);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR LESSONS EN VARIOS TOPICS (POR NOMBRE)
+    |--------------------------------------------------------------------------
+    |
+    | El JSON incluye lecciones con el campo "topic" (o "topic_name").
+    | Cada Topic se busca por nombre dentro de la categoría.
+    |
+    */
+
+    public function lessonsByTopic(
+        GrammarImportRequest $request,
+        GrammarCategory $category,
+        GrammarImportService $importService
+    ): JsonResponse {
+
+        $result = $importService->importLessonsByTopic(
+            $category,
+            $request->validated()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Las lessons se importaron correctamente.',
+            'data' => $result,
+        ]);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -217,12 +360,10 @@ class GrammarImportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-                'La lesson se importó correctamente.',
+            'message' => 'La lesson se importó correctamente.',
             'data' => $result,
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -243,12 +384,10 @@ class GrammarImportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-                'Las reglas se importaron correctamente.',
+            'message' => 'Las reglas se importaron correctamente.',
             'data' => $result,
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -269,8 +408,107 @@ class GrammarImportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' =>
-                'Los ejemplos se importaron correctamente.',
+            'message' => 'Los ejemplos se importaron correctamente.',
+            'data' => $result,
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR EXERCISES
+    |--------------------------------------------------------------------------
+    */
+
+    public function exercises(
+        GrammarImportRequest $request,
+        GrammarTopic $topic,
+        GrammarImportService $importService
+    ): JsonResponse {
+
+        $result = $importService->importExercises(
+            $topic,
+            $request->validated()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Los exercises se importaron correctamente.',
+            'data' => $result,
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR EXERCISES EN VARIOS TOPICS (POR NOMBRE)
+    |--------------------------------------------------------------------------
+    |
+    | Cada exercise del JSON indica el nombre del Topic al que pertenece.
+    | El Topic se busca dentro de la categoría seleccionada.
+    |
+    */
+
+    public function exercisesByTopic(
+        GrammarImportRequest $request,
+        GrammarCategory $category,
+        GrammarImportService $importService
+    ): JsonResponse {
+
+        $result = $importService->importExercisesByTopic(
+            $category,
+            $request->validated()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Los exercises se importaron correctamente.',
+            'data' => $result,
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR UN EXERCISE COMPLETO
+    |--------------------------------------------------------------------------
+    */
+
+    public function exercise(
+        GrammarImportRequest $request,
+        GrammarTopic $topic,
+        GrammarImportService $importService
+    ): JsonResponse {
+
+        $result = $importService->importExercise(
+            $topic,
+            $request->validated()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'El exercise se importó correctamente.',
+            'data' => $result,
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR OPTIONS
+    |--------------------------------------------------------------------------
+    */
+
+    public function options(
+        GrammarImportRequest $request,
+        GrammarExercise $exercise,
+        GrammarImportService $importService
+    ): JsonResponse {
+
+        $result = $importService->importOptions(
+            $exercise,
+            $request->validated()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Las opciones se importaron correctamente.',
             'data' => $result,
         ]);
     }

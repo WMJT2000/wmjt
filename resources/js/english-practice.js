@@ -10,6 +10,7 @@
     let autoNextTimer = null;
     let feedbackCompletionToken = 0;
     let feedbackTimer = null;
+    let retryTimer = null;
     let selectedPracticeMode = null;
     let practiceSoundsEnabled = true;
     let audioContext = null;
@@ -430,6 +431,7 @@
             autoNextTimer = null;
         }
 
+        cancelarReintentoPendiente();
 
         answered = false;
         questionType.style.display = '';
@@ -665,8 +667,17 @@
         }, tiempo);
     }
 
+    function cancelarReintentoPendiente() {
+        if (retryTimer) {
+            clearTimeout(retryTimer);
+            retryTimer = null;
+        }
+    }
+
     function cancelarFeedbackPendiente() {
         feedbackCompletionToken++;
+
+        cancelarReintentoPendiente();
 
         if (feedbackTimer) {
             clearTimeout(feedbackTimer);
@@ -720,20 +731,56 @@
                 normalizarRespuesta(respuesta) === normalizarRespuesta(respuestaCorrecta)
         );
 
-        try {
-            await guardarResultado(current, respuesta);
-        } catch (error) {
-            console.error('ERROR GUARDANDO RESPUESTA:', error);
+        if (!current.resultSaved) {
+            current.resultSaved = true;
+
+            try {
+                await guardarResultado(current, respuesta);
+            } catch (error) {
+                console.error('ERROR GUARDANDO RESPUESTA:', error);
+            }
         }
+
+        const botones = options.querySelectorAll('button');
+        const inputRespuesta = options.querySelector('.english-practice-answer-input');
 
         if (correcta) {
             score++;
             reproducirSonidoCorrecto();
-        } else {
-            reproducirSonidoIncorrecto();
+
+            const respuestasCorrectasNormalizadas = respuestasCorrectas.map(normalizarRespuesta);
+
+            botones.forEach(boton => {
+                boton.disabled = true;
+
+                if (respuestasCorrectasNormalizadas.includes(normalizarRespuesta(boton.textContent))) {
+                    boton.classList.add('correct');
+                }
+            });
+
+            if (inputRespuesta) {
+                inputRespuesta.disabled = true;
+                inputRespuesta.classList.add('correct');
+            }
+
+            if (button) button.classList.add('correct');
+
+            const feedbackStarted = mostrarFeedback(true, onFeedbackComplete);
+
+            feedback.style.display = 'block';
+            nextButton.style.display = 'inline-flex';
+
+            if (!feedbackStarted) {
+                programarAutoNext(1500);
+            }
+
+            return;
         }
 
-        const botones = options.querySelectorAll('button');
+        reproducirSonidoIncorrecto();
+
+        cancelarReintentoPendiente();
+
         const respuestasCorrectasNormalizadas = respuestasCorrectas.map(normalizarRespuesta);
 
         botones.forEach(boton => {
@@ -744,35 +791,56 @@
             }
         });
 
-        const inputRespuesta = options.querySelector('.english-practice-answer-input');
-
         if (inputRespuesta) {
             inputRespuesta.disabled = true;
-            inputRespuesta.classList.add(correcta ? 'correct' : 'incorrect');
+            inputRespuesta.classList.add('incorrect');
         }
 
-        let feedbackStarted = false;
+        if (button) button.classList.add('incorrect');
 
-        if (
+        const esPreguntaEscrita =
             current.type === 'listening' ||
             current.type === 'english-meaning' ||
-            current.type === 'spanish-word'
-        ) {
-            feedbackStarted = mostrarFeedback(correcta, onFeedbackComplete);
-        } else if (correcta) {
-            if (button) button.classList.add('correct');
-            feedbackStarted = mostrarFeedback(true, onFeedbackComplete);
-        } else {
-            if (button) button.classList.add('incorrect');
-            feedbackStarted = mostrarFeedback(false, onFeedbackComplete);
-        }
+            current.type === 'spanish-word';
+
+        const feedbackStarted = mostrarFeedback(
+            false,
+            esPreguntaEscrita ? null : onFeedbackComplete
+        );
 
         feedback.style.display = 'block';
-        nextButton.style.display = 'inline-flex';
 
-        if (!feedbackStarted) {
-            programarAutoNext(1500);
+        if (!esPreguntaEscrita) {
+            nextButton.style.display = 'inline-flex';
+
+            if (!feedbackStarted) {
+                programarAutoNext(1500);
+            }
+
+            return;
         }
+
+        nextButton.style.display = 'none';
+
+        retryTimer = setTimeout(() => {
+            retryTimer = null;
+
+            if (current !== questions[currentQuestionIndex]) return;
+
+            botones.forEach(boton => {
+                boton.disabled = false;
+                boton.classList.remove('incorrect');
+            });
+
+            if (inputRespuesta) {
+                inputRespuesta.disabled = false;
+                inputRespuesta.classList.remove('incorrect');
+                inputRespuesta.value = '';
+                inputRespuesta.focus();
+            }
+
+            answered = false;
+        }, 900);
     }
 
     function avanzarSiguiente() {

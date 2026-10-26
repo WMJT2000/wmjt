@@ -1,28 +1,28 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\KnowledgeController;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Admin\EnglishImportController;
+use App\Http\Controllers\Admin\GrammarImportController;
 use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\TechnologyController;
 use App\Http\Controllers\ConceptController;
-use App\Http\Controllers\ManagementController;
-use App\Http\Controllers\KnowledgeManagementController;
+use App\Http\Controllers\EnglishCategoryController;
 use App\Http\Controllers\EnglishLearningController;
 use App\Http\Controllers\EnglishManagementController;
-use App\Http\Controllers\EnglishCategoryController;
-use App\Http\Controllers\EnglishWordController;
 use App\Http\Controllers\EnglishMeaningController;
+use App\Http\Controllers\EnglishWordController;
+use App\Http\Controllers\GrammarController;
+use App\Http\Controllers\KnowledgeController;
+use App\Http\Controllers\KnowledgeManagementController;
+use App\Http\Controllers\ManagementController;
 use App\Http\Controllers\ManualController;
+use App\Http\Controllers\ManualExecutionController;
 use App\Http\Controllers\ManualSectionController;
 use App\Http\Controllers\ManualStepController;
-use App\Http\Controllers\ManualExecutionController;
-use App\Http\Controllers\WordController;
 use App\Http\Controllers\PlanificacionController;
-use App\Http\Controllers\GrammarController;
-use App\Http\Controllers\Admin\GrammarImportController;
-use App\Http\Controllers\Admin\EnglishImportController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TechnologyController;
+use App\Http\Controllers\WordController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/logout-test', function () {
     Auth::logout();
@@ -40,177 +40,252 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->name('inicio');
 
-
 // Aprendizaje de inglés
 // Aprendizaje de inglés
 Route::middleware('auth')->group(function () {
 
+    Route::prefix('admin/english')->middleware(['auth'])->group(function () {
 
+        Route::get('/import-word', [EnglishImportController::class, 'index'])
+            ->name('admin.english.import-word');
 
-Route::prefix('admin/english')->middleware(['auth'])->group(function () {
+        Route::get('/categories/{category}/words', [EnglishImportController::class, 'getWords'])
+            ->name('admin.english.categories.words');
 
-    Route::get('/import-word', [EnglishImportController::class, 'index'])
-        ->name('admin.english.import-word');
+        Route::post('/import', [EnglishImportController::class, 'importComplete'])
+            ->name('admin.english.import');
 
-    Route::get('/categories/{category}/words', [EnglishImportController::class, 'getWords'])
-        ->name('admin.english.categories.words');
+        Route::post('/categories/{category}/words/import', [EnglishImportController::class, 'importWords'])
+            ->name('admin.english.categories.words.import');
 
-    Route::post('/import', [EnglishImportController::class, 'importComplete'])
-        ->name('admin.english.import');
+        Route::post('/categories/{category}/word/import', [EnglishImportController::class, 'importWord'])
+            ->name('admin.english.categories.word.import');
 
-    Route::post('/categories/{category}/words/import', [EnglishImportController::class, 'importWords'])
-        ->name('admin.english.categories.words.import');
+        Route::post('/words/{word}/meanings/import', [EnglishImportController::class, 'importMeanings'])
+            ->name('admin.english.words.meanings.import');
+    });
 
-    Route::post('/categories/{category}/word/import', [EnglishImportController::class, 'importWord'])
-        ->name('admin.english.categories.word.import');
+    Route::prefix('admin/grammar')->group(function () {
 
-    Route::post('/words/{word}/meanings/import', [EnglishImportController::class, 'importMeanings'])
-        ->name('admin.english.words.meanings.import');
-});
+        /*
+        |--------------------------------------------------------------------------
+        | PANTALLA DE IMPORTACIÓN
+        |--------------------------------------------------------------------------
+        */
 
-Route::prefix('admin/grammar')->group(function () {
+        Route::get('/import', [
+            GrammarImportController::class,
+            'index',
+        ])->name('admin.grammar.import');
 
-    /*
-    |--------------------------------------------------------------------------
-    | PANTALLA DE IMPORTACIÓN
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | DATOS PARA SELECTORES
+        |--------------------------------------------------------------------------
+        */
 
-    Route::get('/import', [
-        GrammarImportController::class,
-        'index'
-    ])->name('admin.grammar.import');
+        Route::get('/categories/{category}/topics', [
+            GrammarImportController::class,
+            'topicsList',
+        ])->name('admin.grammar.categories.topics');
 
+        Route::post('/categories/{category}/topics/validate', [
+            GrammarImportController::class,
+            'validateTopicsByName',
+        ])->name('admin.grammar.topics.validate');
 
-    /*
-    |--------------------------------------------------------------------------
-    | DATOS PARA SELECTORES
-    |--------------------------------------------------------------------------
-    */
+        Route::get('/categories/{category}/lessons', [
+            GrammarImportController::class,
+            'lessonsList',
+        ])->name('admin.grammar.categories.lessons');
 
-    Route::get('/categories/{category}/topics', [
-        GrammarImportController::class,
-        'topicsList'
-    ])->name('admin.grammar.categories.topics');
+        Route::get('/categories/{category}/exercises', [
+            GrammarImportController::class,
+            'exercisesList',
+        ])->name('admin.grammar.categories.exercises');
 
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTACIÓN COMPLETA
+        |--------------------------------------------------------------------------
+        |
+        | Crea:
+        | Category
+        | └── Topics
+        |     └── Lessons
+        |         ├── Rules
+        |         └── Examples
+        |
+        */
 
-    Route::get('/categories/{category}/lessons', [
-        GrammarImportController::class,
-        'lessonsList'
-    ])->name('admin.grammar.categories.lessons');
+        Route::post('/import', [
+            GrammarImportController::class,
+            'store',
+        ])->name('admin.grammar.import.store');
 
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR TOPICS EN UNA CATEGORÍA
+        |--------------------------------------------------------------------------
+        */
 
-    /*
-    |--------------------------------------------------------------------------
-    | IMPORTACIÓN COMPLETA
-    |--------------------------------------------------------------------------
-    |
-    | Crea:
-    | Category
-    | └── Topics
-    |     └── Lessons
-    |         ├── Rules
-    |         └── Examples
-    |
-    */
+        Route::post('/categories/{category}/topics/import', [
+            GrammarImportController::class,
+            'topics',
+        ])->name('admin.grammar.topics.import');
 
-    Route::post('/import', [
-        GrammarImportController::class,
-        'store'
-    ])->name('admin.grammar.import.store');
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR LESSONS EN UN TOPIC
+        |--------------------------------------------------------------------------
+        */
 
+        Route::post('/topics/{topic}/lessons/import', [
+            GrammarImportController::class,
+            'lessons',
+        ])->name('admin.grammar.lessons.import');
 
-    /*
-    |--------------------------------------------------------------------------
-    | IMPORTAR TOPICS EN UNA CATEGORÍA
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR LESSONS EN VARIOS TOPICS (POR NOMBRE)
+        |--------------------------------------------------------------------------
+        |
+        | Cada lesson del JSON indica el nombre del Topic al que pertenece.
+        | El Topic se busca dentro de la categoría seleccionada.
+        |
+        */
 
-    Route::post('/categories/{category}/topics/import', [
-        GrammarImportController::class,
-        'topics'
-    ])->name('admin.grammar.topics.import');
+        Route::post('/categories/{category}/lessons/by-topic/import', [
+            GrammarImportController::class,
+            'lessonsByTopic',
+        ])->name('admin.grammar.lessons.by-topic.import');
 
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR UNA LESSON COMPLETA
+        |--------------------------------------------------------------------------
+        |
+        | El JSON contiene:
+        | lesson
+        | rules
+        | examples
+        |
+        */
 
-    /*
-    |--------------------------------------------------------------------------
-    | IMPORTAR LESSONS EN UN TOPIC
-    |--------------------------------------------------------------------------
-    */
+        Route::post('/topics/{topic}/lesson/import', [
+            GrammarImportController::class,
+            'lesson',
+        ])->name('admin.grammar.lesson.import');
 
-    Route::post('/topics/{topic}/lessons/import', [
-        GrammarImportController::class,
-        'lessons'
-    ])->name('admin.grammar.lessons.import');
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR RULES EN UNA LESSON
+        |--------------------------------------------------------------------------
+        */
 
+        Route::post('/lessons/{lesson}/rules/import', [
+            GrammarImportController::class,
+            'rules',
+        ])->name('admin.grammar.rules.import');
 
-    /*
-    |--------------------------------------------------------------------------
-    | IMPORTAR UNA LESSON COMPLETA
-    |--------------------------------------------------------------------------
-    |
-    | El JSON contiene:
-    | lesson
-    | rules
-    | examples
-    |
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR EXAMPLES EN UNA LESSON
+        |--------------------------------------------------------------------------
+        */
 
-    Route::post('/topics/{topic}/lesson/import', [
-        GrammarImportController::class,
-        'lesson'
-    ])->name('admin.grammar.lesson.import');
+        Route::post('/lessons/{lesson}/examples/import', [
+            GrammarImportController::class,
+            'examples',
+        ])->name('admin.grammar.examples.import');
 
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR EXERCISES EN UN TOPIC
+        |--------------------------------------------------------------------------
+        */
 
-    /*
-    |--------------------------------------------------------------------------
-    | IMPORTAR RULES EN UNA LESSON
-    |--------------------------------------------------------------------------
-    */
+        Route::post('/topics/{topic}/exercises/import', [
+            GrammarImportController::class,
+            'exercises',
+        ])->name('admin.grammar.exercises.import');
 
-    Route::post('/lessons/{lesson}/rules/import', [
-        GrammarImportController::class,
-        'rules'
-    ])->name('admin.grammar.rules.import');
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR EXERCISES EN VARIOS TOPICS (POR NOMBRE)
+        |--------------------------------------------------------------------------
+        |
+        | Cada exercise del JSON indica el nombre del Topic al que pertenece.
+        | El Topic se busca dentro de la categoría seleccionada.
+        |
+        */
 
+        Route::post('/categories/{category}/exercises/by-topic/import', [
+            GrammarImportController::class,
+            'exercisesByTopic',
+        ])->name('admin.grammar.exercises.by-topic.import');
 
-    /*
-    |--------------------------------------------------------------------------
-    | IMPORTAR EXAMPLES EN UNA LESSON
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR UN EXERCISE COMPLETO EN UN TOPIC
+        |--------------------------------------------------------------------------
+        */
 
-    Route::post('/lessons/{lesson}/examples/import', [
-        GrammarImportController::class,
-        'examples'
-    ])->name('admin.grammar.examples.import');
+        Route::post('/topics/{topic}/exercise/import', [
+            GrammarImportController::class,
+            'exercise',
+        ])->name('admin.grammar.exercise.import');
 
-});
+        /*
+        |--------------------------------------------------------------------------
+        | IMPORTAR OPTIONS EN UN EXERCISE
+        |--------------------------------------------------------------------------
+        */
 
+        Route::post('/exercises/{exercise}/options/import', [
+            GrammarImportController::class,
+            'options',
+        ])->name('admin.grammar.options.import');
+
+    });
 
     Route::prefix('grammar')->group(function () {
 
         Route::get('/', [
             GrammarController::class,
-            'index'
+            'index',
         ])->name('grammar.index');
 
         Route::get('/category/{id}', [
             GrammarController::class,
-            'category'
+            'category',
         ])->name('grammar.category');
 
         Route::get('/topic/{id}', [
             GrammarController::class,
-            'topic'
+            'topic',
         ])->name('grammar.topic');
 
         Route::get('/topic/{id}/lesson', [
             GrammarController::class,
-            'lesson'
+            'lesson',
         ])->name('grammar.lesson');
-    });
 
+        Route::get('/category/{id}/practice', [
+            GrammarController::class,
+            'practice',
+        ])->name('grammar.practice');
+
+        Route::post('/category/{id}/practice/start', [
+            GrammarController::class,
+            'practiceStart',
+        ])->name('grammar.practice.start');
+
+        Route::post('/category/{id}/practice/check', [
+            GrammarController::class,
+            'practiceCheck',
+        ])->name('grammar.practice.check');
+    });
 
     // ==========================================================
     // PLANIFICACIONES
@@ -230,7 +305,6 @@ Route::prefix('admin/grammar')->group(function () {
 
     Route::delete('/planificaciones/{id}', [PlanificacionController::class, 'destroy'])
         ->name('planificaciones.destroy');
-
 
     // ==========================================================
     // API - PLANIFICACIONES
@@ -255,17 +329,12 @@ Route::prefix('admin/grammar')->group(function () {
     Route::get('/api/plantillas', [PlanificacionController::class, 'apiPlantillas'])
         ->name('plantillas.api.index');
 
-
     // ==========================================================
     // CONVERTIR PLANIFICACIÓN EN PLANTILLA
     // ==========================================================
 
     Route::put('/api/planificaciones/{id}/plantilla', [PlanificacionController::class, 'convertirEnPlantilla'])
         ->name('planificaciones.convertir.plantilla');
-
-
-
-
 
     Route::get('/word/crear', [WordController::class, 'crear'])
         ->name('word.crear');
@@ -278,17 +347,15 @@ Route::prefix('admin/grammar')->group(function () {
         [WordController::class, 'generarMultiples']
     )->name('planificaciones.generarMultiples');
 
-
-
-
-
-
     // ==========================================================
     // INGLÉS
     // ==========================================================
 
     Route::get('/english', [EnglishLearningController::class, 'index'])
         ->name('english.index');
+
+    Route::get('/english/keep-order', [EnglishLearningController::class, 'keepIndexOrder'])
+        ->name('english.index.keep-order');
 
     Route::get('/english/statistics', [EnglishLearningController::class, 'statistics'])
         ->name('english.statistics');
@@ -324,7 +391,6 @@ Route::prefix('admin/grammar')->group(function () {
     )->name('english.study');
 });
 
-
 // ==========================================================
 // DASHBOARD PRINCIPAL
 // ==========================================================
@@ -334,14 +400,12 @@ Route::get('/home', [KnowledgeController::class, 'home'])
     ->middleware(['auth', 'verified'])
     ->name('home');
 
-
 // Dashboard de Breeze
 // Si alguna parte de Breeze intenta entrar a /dashboard,
 // lo enviamos a nuestro dashboard /home
 Route::get('/dashboard', function () {
     return redirect()->route('home');
 })->middleware(['auth', 'verified'])->name('dashboard');
-
 
 // ==========================================================
 // PERFIL
@@ -358,7 +422,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 });
-
 
 // ==========================================================
 // CONOCIMIENTO
@@ -390,7 +453,6 @@ Route::middleware('auth')->group(function () {
     )->name('knowledge.search');
 });
 
-
 // ==========================================================
 // GESTIÓN
 // ==========================================================
@@ -401,20 +463,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/gestion', [ManagementController::class, 'index'])
         ->name('gestion.index');
 
-
     // Gestión del conocimiento técnico
     Route::get(
         '/gestion/conocimiento',
         [KnowledgeManagementController::class, 'index']
     )->name('gestion.knowledge.index');
 
-
     // Gestión de inglés
     Route::get(
         '/gestion/ingles',
         [EnglishManagementController::class, 'index']
     )->name('gestion.english.index');
-
 
     // Categorías de inglés
     Route::get(
@@ -425,10 +484,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/gestion/english/categories/{id}/words', [EnglishCategoryController::class, 'words'])
         ->name('english.categories.words');
 
-
     Route::get('/gestion/english/words/{id}/meanings', [EnglishWordController::class, 'meanings'])
         ->name('english.words.meanings');
-
 
     // Palabras de inglés
     Route::get(
@@ -436,20 +493,17 @@ Route::middleware('auth')->group(function () {
         [EnglishWordController::class, 'page']
     )->name('english.words.index');
 
-
     // Significados de inglés
     Route::get(
         '/gestion/english/meanings',
         [EnglishMeaningController::class, 'page']
     )->name('english.meanings.index');
 
-
     // Tecnologías
     Route::get(
         '/gestion/technologies',
         [TechnologyController::class, 'page']
     )->name('technologies.index');
-
 
     // Categorías
     Route::get(
@@ -461,7 +515,6 @@ Route::middleware('auth')->group(function () {
         '/gestion/technologies/{technologyId}/categories',
         [CategoryController::class, 'categories']
     )->name('technologies.categories');
-
 
     // Conceptos
     Route::get(
@@ -479,10 +532,6 @@ Route::middleware('auth')->group(function () {
         [PlanificacionController::class, 'index']
     )->name('gestion.planificacion.index');
 
-
-
-
-
     // ==========================================================
     // MANUALES
     // ==========================================================
@@ -497,7 +546,6 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/manuals/{id}', [ManualController::class, 'destroy']);
 
-
     Route::get(
         '/manuals/{id}/sections',
         [ManualController::class, 'sections']
@@ -508,42 +556,35 @@ Route::middleware('auth')->group(function () {
         [ManualController::class, 'full']
     );
 
-
     Route::get(
         '/gestion/manuals',
         [ManualController::class, 'page']
     )->name('gestion.manuals');
-
 
     Route::get(
         '/gestion/manuals/{manualId}/sections',
         [ManualSectionController::class, 'page']
     )->name('gestion.manual-sections');
 
-
     Route::get(
         '/gestion/manuals/{manualId}/sections/{sectionId}/steps',
         [ManualStepController::class, 'page']
     )->name('gestion.manual-steps');
-
 
     Route::get(
         '/manuals',
         [ManualExecutionController::class, 'index']
     )->name('manuals.index');
 
-
     Route::get(
         '/manuals/{manualId}/execute',
         [ManualExecutionController::class, 'page']
     )->name('manuals.execution');
 
-
     Route::post(
         '/manual-executions/{executionId}/steps/{stepId}/notes',
         [ManualExecutionController::class, 'saveStepNote']
     );
-
 
     Route::get(
         '/mis-manuales',
@@ -551,9 +592,8 @@ Route::middleware('auth')->group(function () {
     )->name('manuals.my');
 });
 
-
 // ==========================================================
 // RUTAS DE LARAVEL BREEZE
 // ==========================================================
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

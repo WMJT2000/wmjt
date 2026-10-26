@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class GrammarCategory extends Model
 {
@@ -23,5 +24,17 @@ class GrammarCategory extends Model
             GrammarTopic::class,
             'category_id'
         )->orderBy('sort_order');
+    }
+
+    public function lessons(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            GrammarLesson::class,
+            GrammarTopic::class,
+            'category_id',
+            'topic_id',
+            'id',
+            'id'
+        );
     }
 }

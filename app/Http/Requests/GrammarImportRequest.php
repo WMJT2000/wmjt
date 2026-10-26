@@ -11,10 +11,9 @@ class GrammarImportRequest extends FormRequest
         return true;
     }
 
-
     public function rules(): array
     {
-        return [
+        $rules = [
 
             /*
             |--------------------------------------------------------------------------
@@ -24,36 +23,35 @@ class GrammarImportRequest extends FormRequest
 
             'category' => [
                 'sometimes',
-                'array'
+                'array',
             ],
 
             'category.name' => [
                 'required_with:category',
                 'string',
-                'max:150'
+                'max:150',
             ],
 
             'category.description' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'category.level' => [
                 'required_with:category',
                 'string',
-                'max:10'
+                'max:10',
             ],
 
             'category.sort_order' => [
                 'required_with:category',
-                'integer'
+                'integer',
             ],
 
             'category.status' => [
                 'required_with:category',
-                'boolean'
+                'boolean',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -64,36 +62,35 @@ class GrammarImportRequest extends FormRequest
             'topics' => [
                 'sometimes',
                 'array',
-                'min:1'
+                'min:1',
             ],
 
             'topics.*.name' => [
                 'required_with:topics',
                 'string',
-                'max:150'
+                'max:150',
             ],
 
             'topics.*.description' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.level' => [
                 'required_with:topics',
                 'string',
-                'max:10'
+                'max:10',
             ],
 
             'topics.*.sort_order' => [
                 'required_with:topics',
-                'integer'
+                'integer',
             ],
 
             'topics.*.status' => [
                 'required_with:topics',
-                'boolean'
+                'boolean',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -103,60 +100,59 @@ class GrammarImportRequest extends FormRequest
 
             'topics.*.lessons' => [
                 'nullable',
-                'array'
+                'array',
             ],
 
             'topics.*.lessons.*.title' => [
                 'required',
                 'string',
-                'max:200'
+                'max:200',
             ],
 
             'topics.*.lessons.*.introduction' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.uses' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.affirmative_structure' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.negative_structure' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.question_structure' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.short_answers' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.common_mistakes' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.summary' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.sort_order' => [
                 'required',
-                'integer'
+                'integer',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -166,30 +162,29 @@ class GrammarImportRequest extends FormRequest
 
             'topics.*.lessons.*.rules' => [
                 'nullable',
-                'array'
+                'array',
             ],
 
             'topics.*.lessons.*.rules.*.title' => [
                 'required',
                 'string',
-                'max:200'
+                'max:200',
             ],
 
             'topics.*.lessons.*.rules.*.explanation' => [
                 'required',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.rules.*.examples' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.rules.*.sort_order' => [
                 'required',
-                'integer'
+                'integer',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -199,35 +194,119 @@ class GrammarImportRequest extends FormRequest
 
             'topics.*.lessons.*.examples' => [
                 'nullable',
-                'array'
+                'array',
             ],
 
             'topics.*.lessons.*.examples.*.type' => [
                 'required',
                 'string',
-                'max:50'
+                'max:50',
             ],
 
             'topics.*.lessons.*.examples.*.english' => [
                 'required',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.examples.*.spanish' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.examples.*.explanation' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'topics.*.lessons.*.examples.*.sort_order' => [
                 'required',
-                'integer'
+                'integer',
             ],
 
+            /*
+            |--------------------------------------------------------------------------
+            | EXERCISES DENTRO DE TOPICS
+            |--------------------------------------------------------------------------
+            */
+
+            'topics.*.exercises' => [
+                'nullable',
+                'array',
+            ],
+
+            'topics.*.exercises.*.type' => [
+                'required',
+                'string',
+                'max:50',
+            ],
+
+            'topics.*.exercises.*.question' => [
+                'required',
+                'string',
+            ],
+
+            'topics.*.exercises.*.instruction' => [
+                'nullable',
+                'string',
+            ],
+
+            'topics.*.exercises.*.correct_answer' => [
+                'nullable',
+                'string',
+            ],
+
+            'topics.*.exercises.*.explanation' => [
+                'nullable',
+                'string',
+            ],
+
+            'topics.*.exercises.*.difficulty' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'topics.*.exercises.*.points' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'topics.*.exercises.*.sort_order' => [
+                'nullable',
+                'integer',
+            ],
+
+            'topics.*.exercises.*.status' => [
+                'nullable',
+                'boolean',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | OPTIONS DENTRO DE EXERCISES DENTRO DE TOPICS
+            |--------------------------------------------------------------------------
+            */
+
+            'topics.*.exercises.*.options' => [
+                'nullable',
+                'array',
+            ],
+
+            'topics.*.exercises.*.options.*.option_text' => [
+                'required',
+                'string',
+            ],
+
+            'topics.*.exercises.*.options.*.is_correct' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'topics.*.exercises.*.options.*.sort_order' => [
+                'nullable',
+                'integer',
+            ],
 
             /*
             |--------------------------------------------------------------------------
@@ -244,60 +323,71 @@ class GrammarImportRequest extends FormRequest
             'lessons' => [
                 'sometimes',
                 'array',
-                'min:1'
+                'min:1',
             ],
 
             'lessons.*.title' => [
                 'required_with:lessons',
                 'string',
-                'max:200'
+                'max:200',
+            ],
+
+            'lessons.*.topic' => [
+                'nullable',
+                'string',
+                'max:150',
+            ],
+
+            'lessons.*.topic_name' => [
+                'nullable',
+                'string',
+                'max:150',
             ],
 
             'lessons.*.introduction' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.uses' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.affirmative_structure' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.negative_structure' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.question_structure' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.short_answers' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.common_mistakes' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.summary' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.sort_order' => [
                 'required_with:lessons',
-                'integer'
+                'integer',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -307,30 +397,29 @@ class GrammarImportRequest extends FormRequest
 
             'lessons.*.rules' => [
                 'nullable',
-                'array'
+                'array',
             ],
 
             'lessons.*.rules.*.title' => [
                 'required',
                 'string',
-                'max:200'
+                'max:200',
             ],
 
             'lessons.*.rules.*.explanation' => [
                 'required',
-                'string'
+                'string',
             ],
 
             'lessons.*.rules.*.examples' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.rules.*.sort_order' => [
                 'required',
-                'integer'
+                'integer',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -340,35 +429,34 @@ class GrammarImportRequest extends FormRequest
 
             'lessons.*.examples' => [
                 'nullable',
-                'array'
+                'array',
             ],
 
             'lessons.*.examples.*.type' => [
                 'required',
                 'string',
-                'max:50'
+                'max:50',
             ],
 
             'lessons.*.examples.*.english' => [
                 'required',
-                'string'
+                'string',
             ],
 
             'lessons.*.examples.*.spanish' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.examples.*.explanation' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lessons.*.examples.*.sort_order' => [
                 'required',
-                'integer'
+                'integer',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -384,60 +472,59 @@ class GrammarImportRequest extends FormRequest
 
             'lesson' => [
                 'sometimes',
-                'array'
+                'array',
             ],
 
             'lesson.title' => [
                 'required_with:lesson',
                 'string',
-                'max:200'
+                'max:200',
             ],
 
             'lesson.introduction' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.uses' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.affirmative_structure' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.negative_structure' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.question_structure' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.short_answers' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.common_mistakes' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.summary' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.sort_order' => [
                 'required_with:lesson',
-                'integer'
+                'integer',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -447,30 +534,29 @@ class GrammarImportRequest extends FormRequest
 
             'lesson.rules' => [
                 'nullable',
-                'array'
+                'array',
             ],
 
             'lesson.rules.*.title' => [
                 'required',
                 'string',
-                'max:200'
+                'max:200',
             ],
 
             'lesson.rules.*.explanation' => [
                 'required',
-                'string'
+                'string',
             ],
 
             'lesson.rules.*.examples' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.rules.*.sort_order' => [
                 'required',
-                'integer'
+                'integer',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -480,35 +566,34 @@ class GrammarImportRequest extends FormRequest
 
             'lesson.examples' => [
                 'nullable',
-                'array'
+                'array',
             ],
 
             'lesson.examples.*.type' => [
                 'required',
                 'string',
-                'max:50'
+                'max:50',
             ],
 
             'lesson.examples.*.english' => [
                 'required',
-                'string'
+                'string',
             ],
 
             'lesson.examples.*.spanish' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.examples.*.explanation' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'lesson.examples.*.sort_order' => [
                 'required',
-                'integer'
+                'integer',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -519,30 +604,29 @@ class GrammarImportRequest extends FormRequest
             'rules' => [
                 'sometimes',
                 'array',
-                'min:1'
+                'min:1',
             ],
 
             'rules.*.title' => [
                 'required_with:rules',
                 'string',
-                'max:200'
+                'max:200',
             ],
 
             'rules.*.explanation' => [
                 'required_with:rules',
-                'string'
+                'string',
             ],
 
             'rules.*.examples' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'rules.*.sort_order' => [
                 'required_with:rules',
-                'integer'
+                'integer',
             ],
-
 
             /*
             |--------------------------------------------------------------------------
@@ -553,35 +637,400 @@ class GrammarImportRequest extends FormRequest
             'examples' => [
                 'sometimes',
                 'array',
-                'min:1'
+                'min:1',
             ],
 
             'examples.*.type' => [
                 'required_with:examples',
                 'string',
-                'max:50'
+                'max:50',
             ],
 
             'examples.*.english' => [
                 'required_with:examples',
-                'string'
+                'string',
             ],
 
             'examples.*.spanish' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'examples.*.explanation' => [
                 'nullable',
-                'string'
+                'string',
             ],
 
             'examples.*.sort_order' => [
                 'required_with:examples',
-                'integer'
+                'integer',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | EXERCISES POR SEPARADO
+            |--------------------------------------------------------------------------
+            */
+
+            'exercises' => [
+                'sometimes',
+                'array',
+                'min:1',
+            ],
+
+            'exercises.*.type' => [
+                'required_with:exercises',
+                'string',
+                'max:50',
+            ],
+
+            'exercises.*.question' => [
+                'required_with:exercises',
+                'string',
+            ],
+
+            'exercises.*.topic' => [
+                'nullable',
+                'string',
+                'max:150',
+            ],
+
+            'exercises.*.topic_name' => [
+                'nullable',
+                'string',
+                'max:150',
+            ],
+
+            'exercises.*.instruction' => [
+                'nullable',
+                'string',
+            ],
+
+            'exercises.*.correct_answer' => [
+                'nullable',
+                'string',
+            ],
+
+            'exercises.*.explanation' => [
+                'nullable',
+                'string',
+            ],
+
+            'exercises.*.difficulty' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'exercises.*.points' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'exercises.*.sort_order' => [
+                'nullable',
+                'integer',
+            ],
+
+            'exercises.*.status' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'exercises.*.options' => [
+                'nullable',
+                'array',
+            ],
+
+            'exercises.*.options.*.option_text' => [
+                'required',
+                'string',
+            ],
+
+            'exercises.*.options.*.is_correct' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'exercises.*.options.*.sort_order' => [
+                'nullable',
+                'integer',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | UN EXERCISE COMPLETO
+            |--------------------------------------------------------------------------
+            */
+
+            'exercise' => [
+                'sometimes',
+                'array',
+            ],
+
+            'exercise.type' => [
+                'required_with:exercise',
+                'string',
+                'max:50',
+            ],
+
+            'exercise.question' => [
+                'required_with:exercise',
+                'string',
+            ],
+
+            'exercise.instruction' => [
+                'nullable',
+                'string',
+            ],
+
+            'exercise.correct_answer' => [
+                'nullable',
+                'string',
+            ],
+
+            'exercise.explanation' => [
+                'nullable',
+                'string',
+            ],
+
+            'exercise.difficulty' => [
+                'nullable',
+                'string',
+                'max:20',
+            ],
+
+            'exercise.points' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'exercise.sort_order' => [
+                'nullable',
+                'integer',
+            ],
+
+            'exercise.status' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'exercise.options' => [
+                'nullable',
+                'array',
+            ],
+
+            'exercise.options.*.option_text' => [
+                'required',
+                'string',
+            ],
+
+            'exercise.options.*.is_correct' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'exercise.options.*.sort_order' => [
+                'nullable',
+                'integer',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | OPTIONS POR SEPARADO
+            |--------------------------------------------------------------------------
+            */
+
+            'options' => [
+                'sometimes',
+                'array',
+                'min:1',
+            ],
+
+            'options.*.option_text' => [
+                'required_with:options',
+                'string',
+            ],
+
+            'options.*.is_correct' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'options.*.sort_order' => [
+                'nullable',
+                'integer',
             ],
 
         ];
+
+        return array_merge(
+            $rules,
+            $this->multipleCategoriesRules(
+                $rules
+            )
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTACIÓN DE VARIAS CATEGORÍAS
+    |--------------------------------------------------------------------------
+    |
+    | Cada categoría acepta:
+    |
+    | {
+    |     "category": { ... },
+    |     "topics": []
+    | }
+    |
+    | o los datos de la categoría directamente:
+    |
+    | {
+    |     "name": "...",
+    |     "level": "...",
+    |     "sort_order": 1,
+    |     "status": 1,
+    |     "topics": []
+    | }
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    private function multipleCategoriesRules(
+        array $baseRules
+    ): array {
+
+        $rules = [
+
+            'categories' => [
+                'sometimes',
+                'array',
+                'min:1',
+            ],
+
+            'categories.*' => [
+                'array',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | CATEGORÍA ANIDADA
+            |--------------------------------------------------------------------------
+            */
+
+            'categories.*.category' => [
+                'sometimes',
+                'array',
+            ],
+
+            'categories.*.category.name' => [
+                'required_with:categories.*.category',
+                'string',
+                'max:150',
+            ],
+
+            'categories.*.category.description' => [
+                'nullable',
+                'string',
+            ],
+
+            'categories.*.category.level' => [
+                'required_with:categories.*.category',
+                'string',
+                'max:10',
+            ],
+
+            'categories.*.category.sort_order' => [
+                'required_with:categories.*.category',
+                'integer',
+            ],
+
+            'categories.*.category.status' => [
+                'required_with:categories.*.category',
+                'boolean',
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | CATEGORÍA DIRECTA
+            |--------------------------------------------------------------------------
+            */
+
+            'categories.*.name' => [
+                'required_without:categories.*.category',
+                'string',
+                'max:150',
+            ],
+
+            'categories.*.description' => [
+                'nullable',
+                'string',
+            ],
+
+            'categories.*.level' => [
+                'required_without:categories.*.category',
+                'string',
+                'max:10',
+            ],
+
+            'categories.*.sort_order' => [
+                'required_without:categories.*.category',
+                'integer',
+            ],
+
+            'categories.*.status' => [
+                'required_without:categories.*.category',
+                'boolean',
+            ],
+
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOPICS DENTRO DE CADA CATEGORÍA
+        |--------------------------------------------------------------------------
+        */
+
+        foreach (
+            $baseRules as $key => $value
+        ) {
+
+            if (
+                $key === 'topics' ||
+                str_starts_with(
+                    $key,
+                    'topics.'
+                )
+            ) {
+
+                $rules[
+                    'categories.*.'.$key
+                ] = array_map(
+                    function ($rule) {
+
+                        if (
+                            ! is_string($rule)
+                        ) {
+
+                            return $rule;
+
+                        }
+
+                        return str_replace(
+                            'required_with:topics',
+                            'required_with:categories.*.topics',
+                            $rule
+                        );
+                    },
+                    $value
+                );
+
+            }
+        }
+
+        return $rules;
     }
 }

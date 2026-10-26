@@ -6,19 +6,38 @@ use App\Models\EnglishCategory;
 use App\Models\EnglishPracticeResult;
 use App\Models\EnglishPracticeSession;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 
 class EnglishLearningController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $categories = EnglishCategory::with('words')
-            ->withCount('words')
-            ->inRandomOrder()
-            ->get();
-        
+        $keepOrder = $request->session()->pull('english_keep_category_order', false);
+        $orderedIds = $request->session()->get('english_category_order', []);
+
+        $categoriesQuery = EnglishCategory::with('words')
+            ->withCount('words');
+
+        if ($keepOrder && !empty($orderedIds)) {
+            $categories = $categoriesQuery->get()
+                ->sortBy(function ($category) use ($orderedIds) {
+                    $position = array_search($category->id, $orderedIds);
+
+                    return $position === false ? PHP_INT_MAX : $position;
+                })
+                ->values();
+        } else {
+            $categories = $categoriesQuery->inRandomOrder()->get();
+
+            $request->session()->put(
+                'english_category_order',
+                $categories->pluck('id')->all()
+            );
+        }
+
         $progressByCategory = [];
 
         foreach ($categories as $category) {
@@ -173,6 +192,13 @@ class EnglishLearningController extends Controller
             'latestPractices',
             'wordMasteryByCategory'
         ));
+    }
+
+    public function keepIndexOrder(Request $request): RedirectResponse
+    {
+        $request->session()->put('english_keep_category_order', true);
+
+        return redirect()->route('english.index');
     }
 
 

@@ -136,6 +136,44 @@
 
 
 {{-- =====================================================
+     PRÁCTICA DE LA CATEGORÍA
+     ===================================================== --}}
+
+<section class="grammar-topic-start grammar-category-practice-cta">
+
+    <div class="grammar-topic-start-content">
+
+        <span class="grammar-start-label">
+
+            PRÁCTICA DE GRAMÁTICA
+
+        </span>
+
+
+        <h2>Pon a prueba lo aprendido</h2>
+
+
+        <p>
+            Resuelve ejercicios de selección múltiple, completar espacios,
+            ordenar palabras o relacionar conceptos de todos los temas
+            de esta categoría.
+        </p>
+
+    </div>
+
+
+    <a
+        href="{{ route('grammar.practice', $category->id) }}"
+        class="grammar-start-button"
+    >
+        <span>Practicar</span>
+        <strong>→</strong>
+    </a>
+
+</section>
+
+
+{{-- =====================================================
      ENCABEZADO DE TEMAS
      ===================================================== --}}
 

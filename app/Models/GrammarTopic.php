@@ -34,4 +34,12 @@ class GrammarTopic extends Model
             'topic_id'
         )->orderBy('sort_order');
     }
+
+    public function exercises(): HasMany
+    {
+        return $this->hasMany(
+            GrammarExercise::class,
+            'topic_id'
+        )->orderBy('sort_order');
+    }
 }
