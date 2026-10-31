@@ -6528,6 +6528,204 @@ function showOptionsPreview()
 
 /*
 |--------------------------------------------------------------------------
+| Prevención de importaciones duplicadas
+|--------------------------------------------------------------------------
+|
+| El archivo puede llamarse igual, pero si su contenido (interpretado
+| como JSON) es exactamente el mismo que ya se importó antes en el
+| mismo destino, no se vuelve a enviar para evitar duplicidad.
+|
+*/
+
+const IMPORT_HISTORY_PREFIX =
+    'grammar-import-history:';
+
+const IMPORT_HISTORY_LIMIT = 50;
+
+
+function sortObjectKeys(value)
+{
+    if (Array.isArray(value)) {
+
+        return value.map(
+            sortObjectKeys
+        );
+
+    }
+
+
+    if (
+        value &&
+        typeof value === 'object'
+    ) {
+
+        return Object.keys(value)
+            .sort()
+            .reduce(
+                function (sorted, key) {
+
+                    sorted[key] =
+                        sortObjectKeys(
+                            value[key]
+                        );
+
+                    return sorted;
+
+                },
+                {}
+            );
+
+    }
+
+
+    return value;
+}
+
+
+function buildContentFingerprint(data)
+{
+    const canonical =
+        JSON.stringify(
+            sortObjectKeys(data)
+        );
+
+
+    let hash = 2166136261;
+
+
+    for (
+        let index = 0;
+        index < canonical.length;
+        index++
+    ) {
+
+        hash ^=
+            canonical.charCodeAt(
+                index
+            );
+
+        hash =
+            Math.imul(
+                hash,
+                16777619
+            );
+
+    }
+
+
+    return (
+        `${canonical.length}:` +
+        (hash >>> 0).toString(16)
+    );
+}
+
+
+function getImportHistory(storageKey)
+{
+    try {
+
+        const stored =
+            window.localStorage.getItem(
+                storageKey
+            );
+
+        const parsed =
+            stored
+                ? JSON.parse(stored)
+                : [];
+
+        return Array.isArray(parsed)
+            ? parsed
+            : [];
+
+    } catch (error) {
+
+        return [];
+
+    }
+}
+
+
+function hasImportedContent(
+    storageKey,
+    fingerprint
+)
+{
+    return getImportHistory(
+        storageKey
+    ).some(
+        function (entry) {
+
+            return (
+                entry &&
+                entry.fingerprint ===
+                    fingerprint
+            );
+
+        }
+    );
+}
+
+
+function rememberImportedContent(
+    storageKey,
+    fingerprint
+)
+{
+    const history =
+        getImportHistory(
+            storageKey
+        ).filter(
+            function (entry) {
+
+                return (
+                    entry &&
+                    entry.fingerprint !==
+                        fingerprint
+                );
+
+            }
+        );
+
+
+    history.push({
+        fingerprint:
+            fingerprint,
+        importedAt:
+            new Date().toISOString()
+    });
+
+
+    while (
+        history.length >
+        IMPORT_HISTORY_LIMIT
+    ) {
+
+        history.shift();
+
+    }
+
+
+    try {
+
+        window.localStorage.setItem(
+            storageKey,
+            JSON.stringify(history)
+        );
+
+    } catch (error) {
+
+        /*
+        | Si el almacenamiento no está disponible
+        | la importación continúa sin registro.
+        */
+
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | IMPORTAR
 |--------------------------------------------------------------------------
 */
@@ -6839,6 +7037,47 @@ if (importBtn) {
 
                 /*
                 |--------------------------------------------------------------------------
+                | PREVENIR DUPLICIDAD
+                |--------------------------------------------------------------------------
+                |
+                | Se compara el contenido actual con el que ya
+                | se importó antes en este mismo destino.
+                |--------------------------------------------------------------------------
+                */
+
+                const fingerprint =
+                    buildContentFingerprint(
+                        grammarData
+                    );
+
+
+                const historyKey =
+                    IMPORT_HISTORY_PREFIX +
+                    url;
+
+
+                if (
+                    hasImportedContent(
+                        historyKey,
+                        fingerprint
+                    )
+                ) {
+
+                    preview.innerHTML = `
+                        <p class="error">
+                            Este contenido ya fue importado anteriormente
+                            en este mismo destino. No se volvió a importar
+                            para evitar duplicidad.
+                        </p>
+                    `;
+
+                    return;
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
                 | FETCH
                 |--------------------------------------------------------------------------
                 */
@@ -6888,6 +7127,18 @@ if (importBtn) {
                     );
 
                 }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | REGISTRAR CONTENIDO IMPORTADO
+                |--------------------------------------------------------------------------
+                */
+
+                rememberImportedContent(
+                    historyKey,
+                    fingerprint
+                );
 
 
                 /*
