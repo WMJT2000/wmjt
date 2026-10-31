@@ -63,13 +63,46 @@ class GrammarImportController extends Controller
                 'status',
                 1
             )
-            ->withCount('lessons')
+            ->withCount([
+                'lessons',
+                'exercises',
+            ])
             ->orderBy('id')
             ->get([
                 'id',
                 'name',
                 'level',
             ]);
+
+        $exerciseTypeCounts = GrammarExercise::query()
+            ->whereIn(
+                'topic_id',
+                $topics->pluck('id')
+            )
+            ->selectRaw(
+                'topic_id, type, COUNT(*) as total'
+            )
+            ->groupBy(
+                'topic_id',
+                'type'
+            )
+            ->get()
+            ->groupBy('topic_id');
+
+        $topics->each(
+            function (GrammarTopic $topic) use ($exerciseTypeCounts) {
+
+                $topic->exercise_types =
+                    $exerciseTypeCounts
+                        ->get($topic->id, collect())
+                        ->mapWithKeys(
+                            fn ($row) => [
+                                (string) $row->type => (int) $row->total,
+                            ]
+                        )
+                        ->all();
+            }
+        );
 
         return response()->json([
             'success' => true,

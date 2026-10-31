@@ -19,6 +19,12 @@ const categorySelect =
 const toggleEmptyCategoriesBtn =
     document.getElementById('toggleEmptyCategoriesBtn');
 
+const toggleExerciseTypesBtn =
+    document.getElementById('toggleExerciseTypesBtn');
+
+const exerciseTypesPanel =
+    document.getElementById('exerciseTypesPanel');
+
 const importType =
     document.getElementById('importType');
 
@@ -1338,6 +1344,285 @@ let showEmptyTopics = true;
 let showCategoriesWithoutLessons = false;
 
 
+/*
+|--------------------------------------------------------------------------
+| Tipos de ejercicios por Topic
+|--------------------------------------------------------------------------
+*/
+
+const EXERCISE_TYPE_LABELS = {
+    multiple_choice: 'Opción múltiple',
+    fill_in_the_blank: 'Completar espacios',
+    word_order: 'Ordenar palabras',
+    matching: 'Relacionar'
+};
+
+let showExerciseTypes = false;
+
+
+function resetExerciseTypesPanel()
+{
+    showExerciseTypes = false;
+
+    if (exerciseTypesPanel) {
+
+        exerciseTypesPanel.style.display = 'none';
+
+        exerciseTypesPanel.innerHTML = '';
+
+    }
+
+
+    if (toggleExerciseTypesBtn) {
+
+        toggleExerciseTypesBtn.classList.remove('active');
+
+        toggleExerciseTypesBtn.setAttribute(
+            'aria-pressed',
+            'false'
+        );
+
+        toggleExerciseTypesBtn.textContent =
+            'Ver tipos de ejercicios por Topic';
+
+        toggleExerciseTypesBtn.disabled =
+            !selectedCategoryId;
+
+    }
+}
+
+
+function updateExerciseTypesButton()
+{
+    if (!toggleExerciseTypesBtn) {
+
+        return;
+
+    }
+
+
+    toggleExerciseTypesBtn.classList.toggle(
+        'active',
+        showExerciseTypes
+    );
+
+    toggleExerciseTypesBtn.setAttribute(
+        'aria-pressed',
+        showExerciseTypes
+            ? 'true'
+            : 'false'
+    );
+
+    toggleExerciseTypesBtn.textContent =
+        showExerciseTypes
+            ? 'Ocultar ejercicios por Topic'
+            : 'Ver tipos de ejercicios por Topic';
+}
+
+
+function getExerciseTypes(counts)
+{
+    const knownTypes =
+        Object.keys(EXERCISE_TYPE_LABELS);
+
+
+    const extraTypes =
+        Object.keys(counts).filter(
+            type => !knownTypes.includes(type)
+        );
+
+
+    return [...knownTypes, ...extraTypes].filter(
+        type => Number(counts[type] ?? 0) > 0
+    );
+}
+
+
+function renderExerciseTypesPanel(topics)
+{
+    if (!exerciseTypesPanel) {
+
+        return;
+
+    }
+
+
+    exerciseTypesPanel.style.display = 'block';
+
+
+    if (!topics.length) {
+
+        exerciseTypesPanel.innerHTML = `
+            <p class="preview-empty">
+                Esta categoría no tiene Topics.
+            </p>
+        `;
+
+        return;
+
+    }
+
+
+    const rows = topics.map(
+        function (topic) {
+
+            const counts =
+                topic.exercise_types ?? {};
+
+            const types =
+                getExerciseTypes(counts);
+
+            const total = types.reduce(
+                (sum, type) =>
+                    sum + Number(counts[type] ?? 0),
+                0
+            );
+
+
+            const typesHtml = types.length
+                ? types.map(
+                    function (type) {
+
+                        return `
+                            <span class="exercise-type-badge">
+                                ${escapeHtml(EXERCISE_TYPE_LABELS[type] ?? type)}
+                                <strong>${Number(counts[type] ?? 0)}</strong>
+                            </span>
+                        `;
+
+                    }
+                ).join('')
+                : '<span class="preview-empty">Sin ejercicios</span>';
+
+
+            return `
+                <tr>
+                    <td>${escapeHtml(topic.name)}</td>
+                    <td class="exercise-types-badges">${typesHtml}</td>
+                    <td class="exercise-types-total">${total}</td>
+                </tr>
+            `;
+
+        }
+    ).join('');
+
+
+    exerciseTypesPanel.innerHTML = `
+        <table class="exercise-types-table">
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Tipos de ejercicios</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    `;
+}
+
+
+async function loadExerciseTypes()
+{
+    if (!selectedCategoryId) {
+
+        return;
+
+    }
+
+
+    exerciseTypesPanel.style.display = 'block';
+
+    exerciseTypesPanel.innerHTML = `
+        <p class="preview-empty">
+            Cargando ejercicios...
+        </p>
+    `;
+
+
+    try {
+
+        const response = await fetch(
+            `/admin/grammar/categories/${selectedCategoryId}/topics`,
+            {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }
+        );
+
+
+        const result =
+            await parseJsonResponse(response);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.message ??
+                'No se pudieron cargar los ejercicios.'
+            );
+
+        }
+
+
+        renderExerciseTypesPanel(
+            Array.isArray(result.data)
+                ? result.data
+                : []
+        );
+
+    } catch (error) {
+
+        exerciseTypesPanel.innerHTML = `
+            <p class="error">
+                ${escapeHtml(error.message)}
+            </p>
+        `;
+
+    }
+}
+
+
+if (toggleExerciseTypesBtn) {
+
+    toggleExerciseTypesBtn.addEventListener(
+        'click',
+        function () {
+
+            if (!selectedCategoryId) {
+
+                return;
+
+            }
+
+
+            showExerciseTypes =
+                !showExerciseTypes;
+
+
+            updateExerciseTypesButton();
+
+
+            if (showExerciseTypes) {
+
+                loadExerciseTypes();
+
+            } else if (exerciseTypesPanel) {
+
+                exerciseTypesPanel.style.display =
+                    'none';
+
+            }
+
+        }
+    );
+
+}
+
+
 function updateEmptyCategoriesButton()
 {
     if (!toggleEmptyCategoriesBtn) {
@@ -1692,6 +1977,8 @@ if (categorySelect) {
 
 
             resetImportState();
+
+            resetExerciseTypesPanel();
 
 
             /*

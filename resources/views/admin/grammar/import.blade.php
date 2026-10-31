@@ -62,6 +62,33 @@
     </div>
 
 
+    {{-- TIPOS DE EJERCICIOS POR TOPIC --}}
+
+    <div class="form-group">
+
+        <label>
+            Ejercicios por Topic
+        </label>
+
+        <button
+            type="button"
+            id="toggleExerciseTypesBtn"
+            class="btn-toggle-empty"
+            aria-pressed="false"
+            disabled
+        >
+            Ver tipos de ejercicios por Topic
+        </button>
+
+        <div
+            id="exerciseTypesPanel"
+            class="exercise-types-panel"
+            style="display: none;"
+        ></div>
+
+    </div>
+
+
     {{-- TIPO DE IMPORTACIÓN --}}
 
     <div class="form-group">
