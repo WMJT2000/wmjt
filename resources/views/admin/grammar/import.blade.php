@@ -119,6 +119,10 @@
                 Lessons en varios Topics (por nombre)
             </option>
 
+            <option value="lessons_by_category_topic">
+                Lessons en varios Topics de varias Categorías (por nombre)
+            </option>
+
             <option value="lesson">
                 Una Lesson
             </option>
@@ -296,6 +300,10 @@
 
                         <option value="lessons_by_topic">
                             Lessons en varios Topics (por nombre)
+                        </option>
+
+                        <option value="lessons_by_category_topic">
+                            Lessons en varios Topics de varias Categorías (por nombre)
                         </option>
 
                         <option value="lesson">

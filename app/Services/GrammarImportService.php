@@ -596,6 +596,262 @@ class GrammarImportService
 
     /*
     |--------------------------------------------------------------------------
+    | IMPORTAR LESSONS EN VARIOS TOPICS DE VARIAS CATEGORÍAS (POR NOMBRE)
+    |--------------------------------------------------------------------------
+    |
+    | JSON:
+    |
+    | {
+    |     "lessons": [
+    |         {
+    |             "category": "Nombre de la Categoría",
+    |             "topic": "Nombre del Topic",
+    |             "title": "...",
+    |             "rules": [],
+    |             "examples": []
+    |         }
+    |     ]
+    | }
+    |
+    | También acepta "category_name" y "topic_name".
+    | La Categoría y el Topic se buscan por nombre en toda la base de datos.
+    |
+    |--------------------------------------------------------------------------
+    */
+
+    public function importLessonsByCategoryAndTopic(
+        array $data
+    ): array {
+
+        return DB::transaction(function () use (
+            $data
+        ) {
+
+            $lessonsCount = 0;
+            $rulesCount = 0;
+            $examplesCount = 0;
+
+            $categoriesCache = [];
+            $topicsCache = [];
+            $categoryResults = [];
+
+            foreach (
+                $data['lessons'] as $index => $lessonData
+            ) {
+
+                $categoryName = trim(
+                    (string) (
+                        $lessonData['category'] ??
+                        $lessonData['category_name'] ??
+                        ''
+                    )
+                );
+
+                $topicName = trim(
+                    (string) (
+                        $lessonData['topic'] ??
+                        $lessonData['topic_name'] ??
+                        ''
+                    )
+                );
+
+                if ($categoryName === '') {
+
+                    throw ValidationException::withMessages([
+                        "lessons.{$index}.category" => 'Indica el nombre de la Categoría para esta lesson.',
+                    ]);
+                }
+
+                if ($topicName === '') {
+
+                    throw ValidationException::withMessages([
+                        "lessons.{$index}.topic" => 'Indica el nombre del Topic para esta lesson.',
+                    ]);
+                }
+
+                $categoryKey =
+                    mb_strtolower($categoryName);
+
+                if (
+                    ! isset($categoriesCache[$categoryKey])
+                ) {
+
+                    $categoryMatches = GrammarCategory::query()
+                        ->where(
+                            'name',
+                            $categoryName
+                        )
+                        ->limit(2)
+                        ->get();
+
+                    if ($categoryMatches->isEmpty()) {
+
+                        throw ValidationException::withMessages([
+                            "lessons.{$index}.category" => "No existe una Categoría llamada \"{$categoryName}\".",
+                        ]);
+                    }
+
+                    if ($categoryMatches->count() > 1) {
+
+                        throw ValidationException::withMessages([
+                            "lessons.{$index}.category" => "Hay más de una Categoría llamada \"{$categoryName}\". Indica un nombre único.",
+                        ]);
+                    }
+
+                    $category = $categoryMatches->first();
+
+                    $categoriesCache[$categoryKey] = $category;
+                }
+
+                $category =
+                    $categoriesCache[$categoryKey];
+
+                $topicKey =
+                    $category->id.'|'.mb_strtolower($topicName);
+
+                if (
+                    ! isset($topicsCache[$topicKey])
+                ) {
+
+                    $topicMatches = GrammarTopic::query()
+                        ->where(
+                            'category_id',
+                            $category->id
+                        )
+                        ->where(
+                            'name',
+                            $topicName
+                        )
+                        ->limit(2)
+                        ->get();
+
+                    if ($topicMatches->isEmpty()) {
+
+                        throw ValidationException::withMessages([
+                            "lessons.{$index}.topic" => "No existe un Topic llamado \"{$topicName}\" en la categoría \"{$category->name}\".",
+                        ]);
+                    }
+
+                    if ($topicMatches->count() > 1) {
+
+                        throw ValidationException::withMessages([
+                            "lessons.{$index}.topic" => "Hay más de un Topic llamado \"{$topicName}\" en la categoría \"{$category->name}\".",
+                        ]);
+                    }
+
+                    $topic = $topicMatches->first();
+
+                    $topicsCache[$topicKey] = $topic;
+                }
+
+                $topic =
+                    $topicsCache[$topicKey];
+
+                $result = $this->createLessonComplete(
+                    $topic,
+                    $lessonData
+                );
+
+                $lessonsCount += $result['lessons'];
+                $rulesCount += $result['rules'];
+                $examplesCount += $result['examples'];
+
+                if (
+                    ! isset($categoryResults[$category->id])
+                ) {
+
+                    $categoryResults[$category->id] = [
+                        'category_id' => $category->id,
+                        'category' => $category->name,
+                        'topics' => 0,
+                        'lessons' => 0,
+                        'rules' => 0,
+                        'examples' => 0,
+                        'topic_list' => [],
+                    ];
+                }
+
+                if (
+                    ! isset(
+                        $categoryResults[$category->id]['topic_list'][$topic->id]
+                    )
+                ) {
+
+                    $categoryResults[$category->id]['topics']++;
+
+                    $categoryResults[$category->id]['topic_list'][$topic->id] = [
+                        'topic_id' => $topic->id,
+                        'topic' => $topic->name,
+                        'lessons' => 0,
+                        'rules' => 0,
+                        'examples' => 0,
+                    ];
+                }
+
+                $categoryResults[$category->id]['lessons'] += $result['lessons'];
+                $categoryResults[$category->id]['rules'] += $result['rules'];
+                $categoryResults[$category->id]['examples'] += $result['examples'];
+
+                $categoryResults[$category->id]['topic_list'][$topic->id]['lessons'] += $result['lessons'];
+                $categoryResults[$category->id]['topic_list'][$topic->id]['rules'] += $result['rules'];
+                $categoryResults[$category->id]['topic_list'][$topic->id]['examples'] += $result['examples'];
+            }
+
+            $categoryList = array_values(
+                array_map(
+                    function ($categoryResult) {
+
+                        $categoryResult['topic_list'] = array_values(
+                            $categoryResult['topic_list']
+                        );
+
+                        return $categoryResult;
+                    },
+                    $categoryResults
+                )
+            );
+
+            $topicList = [];
+
+            foreach ($categoryList as $categoryResult) {
+
+                foreach ($categoryResult['topic_list'] as $topicResult) {
+
+                    $topicList[] = [
+                        'category' => $categoryResult['category'],
+                        'topic_id' => $topicResult['topic_id'],
+                        'topic' => $topicResult['topic'],
+                        'lessons' => $topicResult['lessons'],
+                        'rules' => $topicResult['rules'],
+                        'examples' => $topicResult['examples'],
+                    ];
+                }
+            }
+
+            $topicsCount = count($topicList);
+
+            return [
+
+                'categories' => count($categoryList),
+
+                'category_list' => $categoryList,
+
+                'topic_list' => $topicList,
+
+                'topics' => $topicsCount,
+
+                'lessons' => $lessonsCount,
+
+                'rules' => $rulesCount,
+
+                'examples' => $examplesCount,
+
+            ];
+        });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | IMPORTAR UNA LESSON COMPLETA
     |--------------------------------------------------------------------------
     |

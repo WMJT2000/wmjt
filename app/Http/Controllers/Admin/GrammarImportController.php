@@ -193,6 +193,140 @@ class GrammarImportController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | VALIDAR CATEGORÍAS Y TOPICS POR NOMBRE
+    |--------------------------------------------------------------------------
+    |
+    | Comprueba que cada par Categoría/Topic exista en la base de datos.
+    | Se usa al importar lessons en varios Topics de varias categorías.
+    |
+    */
+
+    public function validateLessonsCategoriesAndTopics(
+        Request $request
+    ): JsonResponse {
+
+        $validated = $request->validate([
+            'items' => [
+                'required',
+                'array',
+                'min:1',
+            ],
+            'items.*.category' => [
+                'required',
+                'string',
+                'max:150',
+            ],
+            'items.*.topic' => [
+                'required',
+                'string',
+                'max:150',
+            ],
+        ]);
+
+        $items = collect($validated['items'])
+            ->map(
+                fn ($item) => [
+                    'category' => trim((string) $item['category']),
+                    'topic' => trim((string) $item['topic']),
+                ]
+            )
+            ->filter(
+                fn ($item) => $item['category'] !== '' &&
+                    $item['topic'] !== ''
+            )
+            ->values();
+
+        $categoryNames = $items
+            ->pluck('category')
+            ->unique(
+                fn ($name) => mb_strtolower($name)
+            )
+            ->values();
+
+        $categories = GrammarCategory::query()
+            ->whereIn(
+                'name',
+                $categoryNames->all()
+            )
+            ->get([
+                'id',
+                'name',
+            ]);
+
+        $categoriesByName = $categories->groupBy(
+            fn ($category) => mb_strtolower(
+                trim((string) $category->name)
+            )
+        );
+
+        $missingCategories = [];
+        $ambiguousCategories = [];
+        $missingTopics = [];
+
+        foreach ($items as $item) {
+
+            $categoryKey =
+                mb_strtolower($item['category']);
+
+            $matches = $categoriesByName->get(
+                $categoryKey,
+                collect()
+            );
+
+            if ($matches->isEmpty()) {
+
+                $missingCategories[$categoryKey] =
+                    $item['category'];
+
+                continue;
+            }
+
+            if ($matches->count() > 1) {
+
+                $ambiguousCategories[$categoryKey] =
+                    $item['category'];
+
+                continue;
+            }
+
+            $category = $matches->first();
+
+            $exists = GrammarTopic::query()
+                ->where(
+                    'category_id',
+                    $category->id
+                )
+                ->where(
+                    'name',
+                    $item['topic']
+                )
+                ->exists();
+
+            if (! $exists) {
+
+                $missingTopics[] = [
+                    'category' => $item['category'],
+                    'topic' => $item['topic'],
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'missing_categories' => array_values(
+                    $missingCategories
+                ),
+                'ambiguous_categories' => array_values(
+                    $ambiguousCategories
+                ),
+                'missing_topics' => $missingTopics,
+            ],
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | LISTAR LESSONS DE UNA CATEGORÍA
     |--------------------------------------------------------------------------
     |
@@ -364,6 +498,32 @@ class GrammarImportController extends Controller
 
         $result = $importService->importLessonsByTopic(
             $category,
+            $request->validated()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Las lessons se importaron correctamente.',
+            'data' => $result,
+        ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMPORTAR LESSONS EN VARIOS TOPICS DE VARIAS CATEGORÍAS (POR NOMBRE)
+    |--------------------------------------------------------------------------
+    |
+    | Cada lesson incluye "category" y "topic". Ambos se resuelven por
+    | nombre en toda la base de datos.
+    |
+    */
+
+    public function lessonsByCategoryAndTopic(
+        GrammarImportRequest $request,
+        GrammarImportService $importService
+    ): JsonResponse {
+
+        $result = $importService->importLessonsByCategoryAndTopic(
             $request->validated()
         );
 

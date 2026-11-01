@@ -162,6 +162,26 @@ Route::middleware('auth')->group(function () {
 
         /*
         |--------------------------------------------------------------------------
+        | IMPORTAR LESSONS EN VARIOS TOPICS DE VARIAS CATEGORÍAS (POR NOMBRE)
+        |--------------------------------------------------------------------------
+        |
+        | Cada lesson del JSON indica el nombre de la Categoría y del Topic.
+        | Ambos se buscan por nombre en toda la base de datos.
+        |
+        */
+
+        Route::post('/lessons/by-category-topic/validate', [
+            GrammarImportController::class,
+            'validateLessonsCategoriesAndTopics',
+        ])->name('admin.grammar.lessons.by-category-topic.validate');
+
+        Route::post('/lessons/by-category-topic/import', [
+            GrammarImportController::class,
+            'lessonsByCategoryAndTopic',
+        ])->name('admin.grammar.lessons.by-category-topic.import');
+
+        /*
+        |--------------------------------------------------------------------------
         | IMPORTAR UNA LESSON COMPLETA
         |--------------------------------------------------------------------------
         |

@@ -491,6 +491,25 @@ function buildLessonsByTopicImportFormat(selection)
 }
 
 
+function buildLessonsByCategoryTopicImportFormat(selection)
+{
+    return {
+        lessons: [
+            {
+                category: 'Nombre de la primera Categoría existente',
+                topic: 'Nombre del primer Topic existente',
+                ...buildLessonFormat(selection)
+            },
+            {
+                category: 'Nombre de la segunda Categoría existente',
+                topic: 'Nombre del segundo Topic existente',
+                ...buildLessonFormat(selection)
+            }
+        ]
+    };
+}
+
+
 function buildLessonImportFormat(selection)
 {
     return {
@@ -584,6 +603,7 @@ function getFormatSelection()
             type === 'topics' ||
             type === 'lessons' ||
             type === 'lessons_by_topic' ||
+            type === 'lessons_by_category_topic' ||
             type === 'lesson'
         )
             ? formatIncludeRules.checked
@@ -596,6 +616,7 @@ function getFormatSelection()
             type === 'topics' ||
             type === 'lessons' ||
             type === 'lessons_by_topic' ||
+            type === 'lessons_by_category_topic' ||
             type === 'lesson'
         )
             ? formatIncludeExamples.checked
@@ -691,6 +712,7 @@ function updateFormatOptions()
         type === 'topics' ||
         type === 'lessons' ||
         type === 'lessons_by_topic' ||
+        type === 'lessons_by_category_topic' ||
         type === 'lesson';
 
     const showExercises =
@@ -923,6 +945,13 @@ function renderFormatPreview()
 
         format =
             buildLessonsByTopicImportFormat(
+                selection
+            );
+
+    } else if (selection.type === 'lessons_by_category_topic') {
+
+        format =
+            buildLessonsByCategoryTopicImportFormat(
                 selection
             );
 
@@ -2371,6 +2400,31 @@ if (importType) {
 
             /*
             |--------------------------------------------------------------------------
+            | LESSONS EN VARIOS TOPICS DE VARIAS CATEGORÍAS (POR NOMBRE)
+            |--------------------------------------------------------------------------
+            |
+            | No necesita categoría seleccionada. La Categoría y el Topic
+            | se resuelven por nombre desde el JSON.
+            |
+            */
+
+            if (
+                type === 'lessons_by_category_topic'
+            ) {
+
+                fileInput.disabled =
+                    false;
+
+                validateBtn.disabled =
+                    false;
+
+                return;
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
             | LESSONS
             | LESSON
             |--------------------------------------------------------------------------
@@ -3056,6 +3110,28 @@ if (validateBtn) {
                     await validateLessonsTopicsExist();
 
                     showLessonsByTopicPreview();
+
+                    importBtn.style.display =
+                        'inline-block';
+
+                    return;
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | LESSONS EN VARIOS TOPICS DE VARIAS CATEGORÍAS (POR NOMBRE)
+                |--------------------------------------------------------------------------
+                */
+
+                if (type === 'lessons_by_category_topic') {
+
+                    validateLessonsByCategoryTopic();
+
+                    await validateLessonsCategoriesTopicsExist();
+
+                    showLessonsByCategoryTopicPreview();
 
                     importBtn.style.display =
                         'inline-block';
@@ -3940,6 +4016,227 @@ function validateLessonsByTopic()
 
         }
     );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Validar Lessons en varios Topics de varias Categorías
+|--------------------------------------------------------------------------
+|
+| Cada lesson debe incluir "category" (o "category_name") y
+| "topic" (o "topic_name").
+|
+*/
+
+function validateLessonsByCategoryTopic()
+{
+    validateLessons();
+
+
+    grammarData.lessons.forEach(
+        (lesson, index) => {
+
+            const categoryName =
+                String(
+                    lesson.category ??
+                    lesson.category_name ??
+                    ''
+                ).trim();
+
+            const topicName =
+                String(
+                    lesson.topic ??
+                    lesson.topic_name ??
+                    ''
+                ).trim();
+
+
+            if (!categoryName) {
+
+                throw new Error(
+                    `La Lesson ${index + 1} necesita "category" o "category_name" con el nombre de la Categoría.`
+                );
+
+            }
+
+
+            if (!topicName) {
+
+                throw new Error(
+                    `La Lesson ${index + 1} necesita "topic" o "topic_name" con el nombre del Topic.`
+                );
+
+            }
+
+        }
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Validar Categorías y Topics existentes en la base de datos
+|--------------------------------------------------------------------------
+*/
+
+async function validateLessonsCategoriesTopicsExist()
+{
+    const items = [];
+    const seen = new Set();
+
+
+    grammarData.lessons.forEach(
+        lesson => {
+
+            const categoryName =
+                String(
+                    lesson.category ??
+                    lesson.category_name ??
+                    ''
+                ).trim();
+
+            const topicName =
+                String(
+                    lesson.topic ??
+                    lesson.topic_name ??
+                    ''
+                ).trim();
+
+            const key =
+                `${categoryName.toLowerCase()}|${topicName.toLowerCase()}`;
+
+
+            if (
+                categoryName !== '' &&
+                topicName !== '' &&
+                !seen.has(key)
+            ) {
+
+                seen.add(key);
+
+                items.push({
+                    category: categoryName,
+                    topic: topicName
+                });
+
+            }
+
+        }
+    );
+
+
+    if (items.length === 0) {
+
+        throw new Error(
+            'El JSON no contiene pares de Categoría y Topic.'
+        );
+
+    }
+
+
+    const csrfElement =
+        document.querySelector(
+            'meta[name="csrf-token"]'
+        );
+
+
+    if (!csrfElement) {
+
+        throw new Error(
+            'No se encontró el token CSRF.'
+        );
+
+    }
+
+
+    const response =
+        await fetch(
+            '/admin/grammar/lessons/by-category-topic/validate',
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type':
+                        'application/json',
+
+                    'Accept':
+                        'application/json',
+
+                    'X-CSRF-TOKEN':
+                        csrfElement.getAttribute(
+                            'content'
+                        )
+                },
+
+                body:
+                    JSON.stringify({
+                        items: items
+                    })
+            }
+        );
+
+
+    const result =
+        await parseJsonResponse(
+            response
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            result.message ??
+            'No se pudieron validar las Categorías y Topics.'
+        );
+
+    }
+
+
+    const missingCategories =
+        result.data?.missing_categories ?? [];
+
+    const ambiguousCategories =
+        result.data?.ambiguous_categories ?? [];
+
+    const missingTopics =
+        result.data?.missing_topics ?? [];
+
+
+    if (missingCategories.length > 0) {
+
+        throw new Error(
+            `No existen estas Categorías: ${missingCategories.join(', ')}.`
+        );
+
+    }
+
+
+    if (ambiguousCategories.length > 0) {
+
+        throw new Error(
+            `Hay más de una Categoría con estos nombres: ${ambiguousCategories.join(', ')}.`
+        );
+
+    }
+
+
+    if (missingTopics.length > 0) {
+
+        const list =
+            missingTopics
+                .map(
+                    item =>
+                        `"${item.topic}" en "${item.category}"`
+                )
+                .join(', ');
+
+
+        throw new Error(
+            `No existen estos Topics: ${list}.`
+        );
+
+    }
 }
 
 
@@ -6164,6 +6461,236 @@ function showLessonsByTopicPreview()
 
 /*
 |--------------------------------------------------------------------------
+| Preview Lessons en varios Topics de varias Categorías
+|--------------------------------------------------------------------------
+*/
+
+function showLessonsByCategoryTopicPreview()
+{
+    const lessons =
+        grammarData.lessons;
+
+    const categories = new Map();
+
+    let rules = 0;
+    let examples = 0;
+
+
+    lessons.forEach(
+        lesson => {
+
+            const categoryName =
+                String(
+                    lesson.category ??
+                    lesson.category_name ??
+                    ''
+                ).trim();
+
+            const topicName =
+                String(
+                    lesson.topic ??
+                    lesson.topic_name ??
+                    ''
+                ).trim();
+
+            const categoryKey =
+                categoryName.toLowerCase();
+
+
+            if (!categories.has(categoryKey)) {
+
+                categories.set(
+                    categoryKey,
+                    {
+                        name: categoryName,
+                        topics: new Map()
+                    }
+                );
+
+            }
+
+
+            const category =
+                categories.get(categoryKey);
+
+            const topicKey =
+                topicName.toLowerCase();
+
+
+            if (!category.topics.has(topicKey)) {
+
+                category.topics.set(
+                    topicKey,
+                    {
+                        name: topicName,
+                        lessons: []
+                    }
+                );
+
+            }
+
+
+            category
+                .topics
+                .get(topicKey)
+                .lessons
+                .push(lesson);
+
+
+            rules +=
+                (
+                    lesson.rules ?? []
+                ).length;
+
+
+            examples +=
+                (
+                    lesson.examples ?? []
+                ).length;
+
+        }
+    );
+
+
+    let topicsCount = 0;
+
+
+    const categoriesHtml =
+        Array.from(categories.values())
+            .map(
+                (category, categoryIndex) => {
+
+                    const topicsHtml =
+                        Array.from(category.topics.values())
+                            .map(
+                                (topic, topicIndex) => {
+
+                                    topicsCount++;
+
+
+                                    return `
+                                        <details class="preview-topic" open>
+
+                                            <summary>
+
+                                                <span class="preview-node-title">
+
+                                                    <span class="preview-node-number">
+                                                        ${topicIndex + 1}
+                                                    </span>
+
+                                                    ${escapeHtml(topic.name)}
+
+                                                </span>
+
+
+                                                <span class="preview-node-counts">
+                                                    ${topic.lessons.length} lessons
+                                                </span>
+
+                                            </summary>
+
+
+                                            <div class="preview-node-body">
+
+                                                ${topic.lessons
+                                                    .map(
+                                                        (lesson, lessonIndex) =>
+                                                            renderLessonPreview(
+                                                                lesson,
+                                                                lessonIndex
+                                                            )
+                                                    )
+                                                    .join('')}
+
+                                            </div>
+
+                                        </details>
+                                    `;
+
+                                }
+                            )
+
+                            .join('');
+
+
+                    return `
+                        <details
+                            class="preview-category"
+                            open
+                        >
+
+                            <summary>
+
+                                <span class="preview-node-title">
+
+                                    <span class="preview-node-number">
+                                        ${categoryIndex + 1}
+                                    </span>
+
+                                    ${escapeHtml(category.name)}
+
+                                </span>
+
+
+                                <span class="preview-node-counts">
+                                    ${category.topics.size} topics
+                                </span>
+
+                            </summary>
+
+
+                            <div class="preview-node-body">
+
+                                ${topicsHtml}
+
+                            </div>
+
+                        </details>
+                    `;
+
+                }
+            )
+
+            .join('');
+
+
+    const intro =
+        `${categories.size} Categorías y ${topicsCount} Topics encontrados. Se importarán las lessons en ellos.`;
+
+
+    preview.innerHTML = buildPreviewBox({
+        title: 'JSON válido',
+        intro: intro,
+        stats: [
+            {
+                label: 'Categorías',
+                value: categories.size
+            },
+            {
+                label: 'Topics',
+                value: topicsCount
+            },
+            {
+                label: 'Lessons',
+                value: lessons.length
+            },
+            {
+                label: 'Rules',
+                value: rules
+            },
+            {
+                label: 'Examples',
+                value: examples
+            }
+        ],
+        treeHtml: categoriesHtml
+    });
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | Preview Lesson
 |--------------------------------------------------------------------------
 */
@@ -6838,6 +7365,20 @@ if (importBtn) {
 
                     url =
                         `/admin/grammar/categories/${selectedCategoryId}/lessons/by-topic/import`;
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | LESSONS EN VARIOS TOPICS DE VARIAS CATEGORÍAS (POR NOMBRE)
+                |--------------------------------------------------------------------------
+                */
+
+                else if (type === 'lessons_by_category_topic') {
+
+                    url =
+                        '/admin/grammar/lessons/by-category-topic/import';
 
                 }
 

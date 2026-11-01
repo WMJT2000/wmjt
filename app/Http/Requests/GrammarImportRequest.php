@@ -344,6 +344,18 @@ class GrammarImportRequest extends FormRequest
                 'max:150',
             ],
 
+            'lessons.*.category' => [
+                'nullable',
+                'string',
+                'max:150',
+            ],
+
+            'lessons.*.category_name' => [
+                'nullable',
+                'string',
+                'max:150',
+            ],
+
             'lessons.*.introduction' => [
                 'nullable',
                 'string',
