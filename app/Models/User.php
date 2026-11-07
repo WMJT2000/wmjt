@@ -4,11 +4,10 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Planificacion;
 
 class User extends Authenticatable
 {
@@ -48,5 +47,25 @@ class User extends Authenticatable
     public function planificaciones(): HasMany
     {
         return $this->hasMany(Planificacion::class);
+    }
+
+    public function grupos(): HasMany
+    {
+        return $this->hasMany(Grupo::class);
+    }
+
+    public function estudiantes(): HasMany
+    {
+        return $this->hasMany(Estudiante::class);
+    }
+
+    public function evaluaciones(): HasMany
+    {
+        return $this->hasMany(Evaluacion::class);
+    }
+
+    public function evaluacionesAplicadas(): HasMany
+    {
+        return $this->hasMany(EvaluacionAplicacion::class, 'evaluador_id');
     }
 }

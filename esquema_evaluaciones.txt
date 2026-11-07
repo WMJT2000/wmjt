@@ -1,0 +1,182 @@
+-- ============================================================
+-- ESQUEMA DE EVALUACIONES
+-- Motor: MySQL 8 / InnoDB / utf8mb4
+-- Requiere que la tabla `users` ya exista.
+-- Orden de creación respetando las llaves foráneas.
+-- Nota: `evaluaciones.grupo_id` quedó en desuso. El grupo se toma
+-- del estudiante al momento de aplicar la evaluación.
+-- ============================================================
+
+
+-- ============================================================
+-- 1. GRUPOS
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `grupos` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `nombre` VARCHAR(255) NOT NULL,
+    `activo` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `grupos_user_id_nombre_unique` (`user_id`, `nombre`),
+    CONSTRAINT `grupos_user_id_foreign`
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+        ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- 2. ESTUDIANTES
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `estudiantes` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `grupo_id` BIGINT UNSIGNED NULL,
+    `nombres` VARCHAR(255) NOT NULL,
+    `apellidos` VARCHAR(255) NOT NULL,
+    `codigo` VARCHAR(50) NULL,
+    `activo` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `estudiantes_user_id_codigo_unique` (`user_id`, `codigo`),
+    KEY `estudiantes_user_id_grupo_id_activo_index` (`user_id`, `grupo_id`, `activo`),
+    KEY `estudiantes_apellidos_nombres_index` (`apellidos`, `nombres`),
+    CONSTRAINT `estudiantes_user_id_foreign`
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+        ON DELETE RESTRICT,
+    CONSTRAINT `estudiantes_grupo_id_foreign`
+        FOREIGN KEY (`grupo_id`) REFERENCES `grupos` (`id`)
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- 3. EVALUACIONES (definición general, sin estudiante)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `evaluaciones` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `nombre` VARCHAR(255) NOT NULL,
+    `tipo_evaluacion` VARCHAR(255) NOT NULL,
+    `proyecto` VARCHAR(255) NULL,
+    `docente` VARCHAR(255) NULL,
+    `grupo_id` BIGINT UNSIGNED NULL,
+    `fecha_inicio` DATE NOT NULL,
+    `fecha_fin` DATE NOT NULL,
+    `estado` ENUM('borrador', 'activa', 'archivada') NOT NULL DEFAULT 'borrador',
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    `deleted_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `evaluaciones_user_id_estado_index` (`user_id`, `estado`),
+    KEY `evaluaciones_grupo_id_index` (`grupo_id`),
+    KEY `evaluaciones_fecha_inicio_index` (`fecha_inicio`),
+    CONSTRAINT `evaluaciones_user_id_foreign`
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+        ON DELETE RESTRICT,
+    CONSTRAINT `evaluaciones_grupo_id_foreign`
+        FOREIGN KEY (`grupo_id`) REFERENCES `grupos` (`id`)
+        ON DELETE SET NULL,
+    CONSTRAINT `evaluaciones_fechas_check`
+        CHECK (`fecha_fin` >= `fecha_inicio`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- 4. ÁREAS DE LA EVALUACIÓN
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `evaluacion_areas` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `evaluacion_id` BIGINT UNSIGNED NOT NULL,
+    `nombre` VARCHAR(255) NOT NULL,
+    `orden` INT UNSIGNED NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `evaluacion_areas_evaluacion_id_orden_index` (`evaluacion_id`, `orden`),
+    CONSTRAINT `evaluacion_areas_evaluacion_id_foreign`
+        FOREIGN KEY (`evaluacion_id`) REFERENCES `evaluaciones` (`id`)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- 5. SUBÁREAS DE LA EVALUACIÓN
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `evaluacion_subareas` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `evaluacion_area_id` BIGINT UNSIGNED NOT NULL,
+    `nombre` VARCHAR(255) NOT NULL,
+    `orden` INT UNSIGNED NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `evaluacion_subareas_area_id_orden_index` (`evaluacion_area_id`, `orden`),
+    CONSTRAINT `evaluacion_subareas_area_id_foreign`
+        FOREIGN KEY (`evaluacion_area_id`) REFERENCES `evaluacion_areas` (`id`)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- 6. APLICACIONES DE LA EVALUACIÓN (estudiante evaluado)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `evaluacion_aplicaciones` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `evaluacion_id` BIGINT UNSIGNED NOT NULL,
+    `estudiante_id` BIGINT UNSIGNED NOT NULL,
+    `evaluador_id` BIGINT UNSIGNED NULL,
+    `intento` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    `estado` ENUM('en_progreso', 'completada', 'anulada') NOT NULL DEFAULT 'en_progreso',
+    `fecha_evaluacion` DATE NOT NULL,
+    `iniciada_en` DATETIME NULL,
+    `completada_en` DATETIME NULL,
+    `observaciones` TEXT NULL,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `evaluacion_aplicaciones_evaluacion_estudiante_intento_unique`
+        (`evaluacion_id`, `estudiante_id`, `intento`),
+    KEY `evaluacion_aplicaciones_evaluacion_id_estado_index` (`evaluacion_id`, `estado`),
+    KEY `evaluacion_aplicaciones_estudiante_id_estado_index` (`estudiante_id`, `estado`),
+    KEY `evaluacion_aplicaciones_evaluador_id_index` (`evaluador_id`),
+    CONSTRAINT `evaluacion_aplicaciones_evaluacion_id_foreign`
+        FOREIGN KEY (`evaluacion_id`) REFERENCES `evaluaciones` (`id`)
+        ON DELETE RESTRICT,
+    CONSTRAINT `evaluacion_aplicaciones_estudiante_id_foreign`
+        FOREIGN KEY (`estudiante_id`) REFERENCES `estudiantes` (`id`)
+        ON DELETE RESTRICT,
+    CONSTRAINT `evaluacion_aplicaciones_evaluador_id_foreign`
+        FOREIGN KEY (`evaluador_id`) REFERENCES `users` (`id`)
+        ON DELETE SET NULL,
+    CONSTRAINT `evaluacion_aplicaciones_intento_check`
+        CHECK (`intento` >= 1)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- 7. RESULTADOS POR SUBÁREA
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `evaluacion_resultados` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `evaluacion_aplicacion_id` BIGINT UNSIGNED NOT NULL,
+    `evaluacion_subarea_id` BIGINT UNSIGNED NOT NULL,
+    `valoracion` ENUM('excelente', 'en_proceso', 'debilitado', 'nulo') NOT NULL,
+    `observacion` VARCHAR(255) NULL,
+    `created_at` TIMESTAMP NULL DEFAULT NULL,
+    `updated_at` TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `evaluacion_resultados_aplicacion_subarea_unique`
+        (`evaluacion_aplicacion_id`, `evaluacion_subarea_id`),
+    KEY `evaluacion_resultados_subarea_id_valoracion_index`
+        (`evaluacion_subarea_id`, `valoracion`),
+    CONSTRAINT `evaluacion_resultados_aplicacion_id_foreign`
+        FOREIGN KEY (`evaluacion_aplicacion_id`) REFERENCES `evaluacion_aplicaciones` (`id`)
+        ON DELETE CASCADE,
+    CONSTRAINT `evaluacion_resultados_subarea_id_foreign`
+        FOREIGN KEY (`evaluacion_subarea_id`) REFERENCES `evaluacion_subareas` (`id`)
+        ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

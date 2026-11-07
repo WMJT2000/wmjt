@@ -9,7 +9,11 @@ use App\Http\Controllers\EnglishLearningController;
 use App\Http\Controllers\EnglishManagementController;
 use App\Http\Controllers\EnglishMeaningController;
 use App\Http\Controllers\EnglishWordController;
+use App\Http\Controllers\EstudianteController;
+use App\Http\Controllers\EvaluacionAplicacionController;
+use App\Http\Controllers\EvaluacionController;
 use App\Http\Controllers\GrammarController;
+use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\KnowledgeController;
 use App\Http\Controllers\KnowledgeManagementController;
 use App\Http\Controllers\ManagementController;
@@ -366,6 +370,122 @@ Route::middleware('auth')->group(function () {
         '/planificaciones/generar-multiples',
         [WordController::class, 'generarMultiples']
     )->name('planificaciones.generarMultiples');
+
+    // ==========================================================
+    // EVALUACIONES
+    // ==========================================================
+
+    Route::prefix('gestion/evaluaciones')
+        ->name('evaluaciones.')
+        ->group(function () {
+
+            Route::get('/', [EvaluacionController::class, 'index'])
+                ->name('index');
+
+            Route::get('/crear', [EvaluacionController::class, 'create'])
+                ->name('create');
+
+            Route::post('/', [EvaluacionController::class, 'store'])
+                ->name('store');
+
+            Route::get('/{evaluacion}', [EvaluacionController::class, 'show'])
+                ->whereNumber('evaluacion')
+                ->name('show');
+
+            Route::patch(
+                '/{evaluacion}/archivar',
+                [EvaluacionController::class, 'archivar']
+            )
+                ->whereNumber('evaluacion')
+                ->name('archivar');
+
+            Route::get(
+                '/{evaluacion}/aplicar',
+                [EvaluacionAplicacionController::class, 'create']
+            )
+                ->whereNumber('evaluacion')
+                ->name('aplicaciones.create');
+
+            Route::post(
+                '/{evaluacion}/aplicaciones',
+                [EvaluacionAplicacionController::class, 'store']
+            )
+                ->whereNumber('evaluacion')
+                ->name('aplicaciones.store');
+
+            Route::get(
+                '/{evaluacion}/aplicaciones/{aplicacion}',
+                [EvaluacionAplicacionController::class, 'edit']
+            )
+                ->whereNumber('evaluacion')
+                ->whereNumber('aplicacion')
+                ->name('aplicaciones.edit');
+
+            Route::put(
+                '/{evaluacion}/aplicaciones/{aplicacion}',
+                [EvaluacionAplicacionController::class, 'update']
+            )
+                ->whereNumber('evaluacion')
+                ->whereNumber('aplicacion')
+                ->name('aplicaciones.update');
+
+            Route::get(
+                '/{evaluacion}/aplicaciones/{aplicacion}/word',
+                [EvaluacionAplicacionController::class, 'word']
+            )
+                ->whereNumber('evaluacion')
+                ->whereNumber('aplicacion')
+                ->name('aplicaciones.word');
+
+            Route::get(
+                '/{evaluacion}/aplicaciones/word-todas',
+                [EvaluacionAplicacionController::class, 'wordTodas']
+            )
+                ->whereNumber('evaluacion')
+                ->name('aplicaciones.word-todas');
+        });
+
+    // ==========================================================
+    // ESTUDIANTES Y GRUPOS
+    // ==========================================================
+
+    Route::prefix('gestion/estudiantes')
+        ->name('estudiantes.')
+        ->group(function () {
+
+            Route::get('/', [EstudianteController::class, 'index'])
+                ->name('index');
+
+            Route::post('/', [EstudianteController::class, 'store'])
+                ->name('store');
+
+            Route::put('/{estudiante}', [EstudianteController::class, 'update'])
+                ->whereNumber('estudiante')
+                ->name('update');
+
+            Route::delete('/{estudiante}', [EstudianteController::class, 'destroy'])
+                ->whereNumber('estudiante')
+                ->name('destroy');
+        });
+
+    Route::prefix('gestion/grupos')
+        ->name('grupos.')
+        ->group(function () {
+
+            Route::get('/', [GrupoController::class, 'index'])
+                ->name('index');
+
+            Route::post('/', [GrupoController::class, 'store'])
+                ->name('store');
+
+            Route::put('/{grupo}', [GrupoController::class, 'update'])
+                ->whereNumber('grupo')
+                ->name('update');
+
+            Route::delete('/{grupo}', [GrupoController::class, 'destroy'])
+                ->whereNumber('grupo')
+                ->name('destroy');
+        });
 
     // ==========================================================
     // INGLÉS
