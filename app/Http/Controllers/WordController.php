@@ -1353,7 +1353,7 @@ class WordController extends Controller
                 continue;
             }
 
-            $runReferencia = $run->cloneNode(true);
+            $runReferencia = $run;
 
             foreach ($textos as $texto) {
                 $run->removeChild($texto);
@@ -1599,7 +1599,11 @@ class WordController extends Controller
                 }
             }
 
-            $parrafo->insertBefore($run, $runReferencia);
+            if ($runReferencia->parentNode === $parrafo) {
+                $parrafo->insertBefore($run, $runReferencia);
+            } else {
+                $parrafo->appendChild($run);
+            }
         };
 
         $posicionActual = 0;
@@ -1764,9 +1768,12 @@ class WordController extends Controller
 
         $nombreDescarga = $nombreBase . '.docx';
         $archivosTemporales = [];
+        $planificacionActual = null;
 
         try {
             foreach ($planificacionesOrdenadas as $planificacion) {
+                $planificacionActual = $planificacion;
+
                 $archivoTemporal =
                     $tempDir .
                     '/planificacion_' .
@@ -1818,7 +1825,9 @@ class WordController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al generar las planificaciones.',
-                'error' => $e->getMessage(),
+                'error' => get_class($e) . ': ' . $e->getMessage()
+                    . ' @ ' . $e->getFile() . ':' . $e->getLine(),
+                'planificacion_id' => $planificacionActual?->id,
             ], 500);
         }
     }

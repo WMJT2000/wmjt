@@ -1807,6 +1807,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // VALIDAR SELECCIÓN
                 // ==================================
 
+                console.log(
+                    '[Word] Modo manual:',
+                    radioSeleccionManual?.checked,
+                    '| Modo fechas:',
+                    radioSeleccionFechas?.checked
+                );
+
+                console.log(
+                    '[Word] IDs seleccionados:',
+                    ids
+                );
+
+
                 if (ids.length === 0) {
 
                     alert(
@@ -1835,6 +1848,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                             ?.getAttribute(
                                 'content'
                             );
+
+
+                    console.log(
+                        '[Word] CSRF token presente:',
+                        Boolean(csrfToken)
+                    );
+
+                    console.log(
+                        '[Word] POST /planificaciones/generar-multiples payload:',
+                        { planificaciones: ids }
+                    );
+
+
+                    const inicioPeticion =
+                        Date.now();
 
 
                     const response =
@@ -1868,7 +1896,61 @@ document.addEventListener('DOMContentLoaded', async () => {
                         );
 
 
+                    const duracionPeticion =
+                        Date.now() - inicioPeticion;
+
+
+                    console.log(
+                        '[Word] Respuesta recibida en',
+                        duracionPeticion,
+                        'ms'
+                    );
+
+                    console.log(
+                        '[Word] Status:',
+                        response.status,
+                        response.statusText,
+                        '| ok:',
+                        response.ok
+                    );
+
+                    console.log(
+                        '[Word] Content-Type:',
+                        response.headers.get(
+                            'Content-Type'
+                        )
+                    );
+
+                    console.log(
+                        '[Word] Content-Disposition:',
+                        response.headers.get(
+                            'Content-Disposition'
+                        )
+                    );
+
+
                     if (!response.ok) {
+
+                        try {
+
+                            const cuerpoError =
+                                await response
+                                    .clone()
+                                    .text();
+
+                            console.error(
+                                '[Word] Cuerpo de la respuesta de error:',
+                                cuerpoError
+                            );
+
+                        } catch (e) {
+
+                            console.error(
+                                '[Word] No se pudo leer el cuerpo de la respuesta de error:',
+                                e
+                            );
+
+                        }
 
                         let mensaje =
                             'No se pudo generar el documento Word.';
@@ -1900,6 +1982,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const blob =
                         await response.blob();
+
+
+                    console.log(
+                        '[Word] Blob recibido. Tipo:',
+                        blob.type,
+                        '| Tamaño:',
+                        blob.size,
+                        'bytes'
+                    );
 
 
                     // ==================================
@@ -1980,8 +2071,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } catch (error) {
 
                     console.error(
-                        'Error generando Word:',
+                        '[Word] Error generando Word:',
                         error
+                    );
+
+                    console.error(
+                        '[Word] Stack:',
+                        error?.stack
                     );
 
 
