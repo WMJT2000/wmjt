@@ -1390,6 +1390,13 @@ body.evaluacion-modal-open {
     gap: 8px;
 }
 
+/* Ocultar correctamente el bloque de observación */
+.evaluacion-observacion[hidden] {
+    display: none !important;
+}
+[data-observacion-contenedor][hidden] {
+    display: none !important;
+}
 .evaluacion-observacion-toggle {
     align-self: flex-start;
 

@@ -268,43 +268,59 @@ function configurarPaginacionAreas() {
     actualizarVista();
 }
 
+
 function configurarObservaciones() {
     document.querySelectorAll('[data-observacion-toggle]').forEach((boton) => {
-        const contenedor = boton.parentElement
-            ? boton.parentElement.querySelector(
-                  '[data-observacion-contenedor]'
-              )
-            : null;
+        const bloque = boton.closest('.evaluacion-observacion');
+
+        const contenedor = bloque?.querySelector(
+            '[data-observacion-contenedor]'
+        );
+
         const texto = boton.querySelector(
             '[data-observacion-toggle-texto]'
         );
 
-        if (!contenedor) {
+        if (!contenedor || boton.dataset.configurado === 'true') {
             return;
         }
 
+        boton.dataset.configurado = 'true';
+
+        // Aplicar el estado inicial al cargar la página.
+        if (contenedor.hasAttribute('hidden')) {
+            contenedor.style.setProperty('display', 'none', 'important');
+        } else {
+            contenedor.style.removeProperty('display');
+        }
+
         boton.addEventListener('click', () => {
-            const expandido = !contenedor.hidden;
-            const input = contenedor.querySelector('input');
-            const tieneValor = input ? input.value.trim() !== '' : false;
+            const mostrar =
+                contenedor.style.display === 'none' ||
+                contenedor.hasAttribute('hidden');
 
-            contenedor.hidden = expandido;
+            if (mostrar) {
+                // Mostrar el campo.
+                contenedor.removeAttribute('hidden');
+                contenedor.style.removeProperty('display');
 
-            boton.setAttribute(
-                'aria-expanded',
-                expandido ? 'false' : 'true'
-            );
+                boton.setAttribute('aria-expanded', 'true');
 
-            if (texto) {
-                texto.textContent = expandido
-                    ? tieneValor
-                        ? '✎ Editar observación'
-                        : '+ Agregar observación'
-                    : '− Ocultar observación';
-            }
+                if (texto) {
+                    texto.textContent = '− Ocultar observación';
+                }
 
-            if (!expandido && input) {
-                input.focus();
+                contenedor.querySelector('input, textarea')?.focus();
+            } else {
+                // Ocultar el campo.
+                contenedor.setAttribute('hidden', '');
+                contenedor.style.setProperty('display', 'none', 'important');
+
+                boton.setAttribute('aria-expanded', 'false');
+
+                if (texto) {
+                    texto.textContent = '+ Agregar observación';
+                }
             }
         });
     });

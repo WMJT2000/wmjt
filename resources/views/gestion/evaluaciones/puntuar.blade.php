@@ -192,47 +192,41 @@
 
                             </div>
 
-                            <div class="evaluacion-observacion">
+                        <div class="evaluacion-observacion">
 
-                                <button
-                                    type="button"
-                                    class="evaluacion-observacion-toggle"
-                                    data-observacion-toggle
-                                    aria-expanded="{{ isset($tieneObservacion) && $tieneObservacion ? 'true' : 'false' }}"
-                                    @if (isset($completada) && $completada) disabled @endif
-                                >
-                                    <span data-observacion-toggle-texto>
-                                        {{ $tieneObservacion ? '− Ocultar observación' : '+ Agregar observación' }}
-                                    </span>
-                                </button>
+    <button
+        type="button"
+        class="evaluacion-observacion-toggle"
+        data-observacion-toggle
+        aria-expanded="{{ $tieneObservacion ? 'true' : 'false' }}"
+        @disabled($completada)
+    >
+        <span data-observacion-toggle-texto>
+            {{ $tieneObservacion ? '− Ocultar observación' : '+ Agregar observación' }}
+        </span>
+    </button>
 
-                                <div
-                                    class="evaluacion-field"
-                                    data-observacion-contenedor
-                                    @if (isset($tieneObservacion) && $tieneObservacion) 
-                                        style="display: block;"
-                                    @else 
-                                        hidden
-                                    @endif
-                                >
+    <div
+        class="evaluacion-field"
+        data-observacion-contenedor
+        @if (!$tieneObservacion) hidden @endif
+    >
+        <label for="observacion-{{ $subarea->id }}">
+            Observación
+        </label>
 
-                                    <label for="observacion-{{ $subarea->id }}">
-                                        Observación
-                                    </label>
+        <input
+            type="text"
+            id="observacion-{{ $subarea->id }}"
+            name="resultados[{{ $subarea->id }}][observacion]"
+            value="{{ $observacionActual }}"
+            maxlength="255"
+            placeholder="Opcional"
+            @disabled($completada)
+        >
+    </div>
 
-                                    <input
-                                        type="text"
-                                        id="observacion-{{ $subarea->id }}"
-                                        name="resultados[{{ $subarea->id }}][observacion]"
-                                        value="{{ $observacionActual }}"
-                                        maxlength="255"
-                                        placeholder="Opcional"
-                                        @if (isset($completada) && $completada) disabled @endif
-                                    >
-
-                                </div>
-
-                            </div>
+</div>
 
                         </article>
 
