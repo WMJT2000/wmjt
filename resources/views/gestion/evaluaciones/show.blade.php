@@ -29,6 +29,15 @@
                 ← Evaluaciones
             </a>
 
+            @if ($evaluacion->puedeEditarse())
+                <a
+                    href="{{ route('evaluaciones.edit', $evaluacion) }}"
+                    class="evaluacion-btn evaluacion-btn-secondary"
+                >
+                    Editar
+                </a>
+            @endif
+
             @if ($evaluacion->aplicaciones->contains('estado', 'completada'))
                 <form
                     action="{{ route('evaluaciones.aplicaciones.word-todas', $evaluacion) }}"
@@ -60,6 +69,36 @@
                     </button>
                 </form>
             @endif
+
+            <form
+                action="{{ route('evaluaciones.word-muestra', $evaluacion) }}"
+                method="GET"
+                class="evaluacion-plantilla-form"
+            >
+                <label for="plantilla-word-muestra">
+                    Plantilla
+                </label>
+
+                <select
+                    id="plantilla-word-muestra"
+                    name="plantilla"
+                >
+                    <option value="vertical">
+                        Word vertical
+                    </option>
+
+                    <option value="horizontal">
+                        Word horizontal
+                    </option>
+                </select>
+
+                <button
+                    type="submit"
+                    class="evaluacion-btn evaluacion-btn-secondary"
+                >
+                    ↓ Word de muestra
+                </button>
+            </form>
 
             @if ($evaluacion->estado === 'activa')
                 <a

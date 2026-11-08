@@ -62,11 +62,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    function crearSubarea(valor = '') {
+    function crearSubarea(valor = '', id = null, tieneResultados = false) {
 
         const fila = document.createElement('div');
         fila.className = 'evaluacion-subarea';
         fila.dataset.subarea = '';
+        fila.dataset.tieneResultados = tieneResultados ? '1' : '0';
+
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.dataset.subareaId = '';
+        idInput.value = id !== null && id !== undefined ? String(id) : '';
 
         const campo = document.createElement('div');
         campo.className = 'evaluacion-subarea-campo';
@@ -92,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
         eliminar.title = 'Eliminar subárea';
         eliminar.textContent = '×';
 
+        fila.appendChild(idInput);
         fila.appendChild(campo);
         fila.appendChild(eliminar);
 
@@ -99,11 +106,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    function crearArea(nombre = '', subareasIniciales = []) {
+    function crearArea(nombre = '', subareasIniciales = [], id = null) {
 
         const bloque = document.createElement('div');
         bloque.className = 'evaluacion-area';
         bloque.dataset.area = '';
+
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.dataset.areaId = '';
+        idInput.value = id !== null && id !== undefined ? String(id) : '';
 
         const header = document.createElement('div');
         header.className = 'evaluacion-area-header';
@@ -140,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
         agregarSubarea.dataset.agregarSubarea = '';
         agregarSubarea.textContent = '+ Agregar subárea';
 
+        bloque.appendChild(idInput);
         bloque.appendChild(header);
         bloque.appendChild(subareas);
         bloque.appendChild(agregarSubarea);
@@ -156,7 +169,21 @@ document.addEventListener('DOMContentLoaded', function () {
                         ? subarea.nombre
                         : '');
 
-                subareas.appendChild(crearSubarea(nombreSubarea));
+                const idSubarea = subarea && typeof subarea === 'object'
+                    && subarea.id !== undefined && subarea.id !== null
+                    ? subarea.id
+                    : null;
+
+                const tieneResultados = subarea && typeof subarea === 'object'
+                    && (
+                        subarea.tiene_resultados === true
+                        || subarea.tiene_resultados === 1
+                        || subarea.tiene_resultados === '1'
+                    );
+
+                subareas.appendChild(
+                    crearSubarea(nombreSubarea, idSubarea, tieneResultados)
+                );
             });
         } else {
             subareas.appendChild(crearSubarea());
@@ -172,6 +199,14 @@ document.addEventListener('DOMContentLoaded', function () {
             .querySelectorAll('[data-area]')
             .forEach(function (area, indiceArea) {
 
+                const areaIdInput =
+                    area.querySelector('[data-area-id]');
+
+                if (areaIdInput) {
+                    areaIdInput.name =
+                        'areas[' + indiceArea + '][id]';
+                }
+
                 const areaInput =
                     area.querySelector('[data-area-nombre]');
 
@@ -183,6 +218,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 area
                     .querySelectorAll('[data-subarea]')
                     .forEach(function (subarea, indiceSubarea) {
+
+                        const subareaIdInput =
+                            subarea.querySelector('[data-subarea-id]');
+
+                        if (subareaIdInput) {
+                            subareaIdInput.name =
+                                'areas[' + indiceArea + ']' +
+                                '[subareas][' + indiceSubarea + '][id]';
+                        }
 
                         const subareaInput =
                             subarea.querySelector('[data-subarea-nombre]');
@@ -362,7 +406,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         areas.forEach(function (area) {
             areasContainer.appendChild(
-                crearArea(area.nombre, area.subareas)
+                crearArea(area.nombre, area.subareas, area.id ?? null)
             );
         });
 
@@ -402,6 +446,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const areas = leerAreasJson();
 
             if (reemplazar) {
+                const hayPuntuadas = areasContainer.querySelector(
+                    '[data-subarea][data-tiene-resultados="1"]'
+                );
+
+                if (hayPuntuadas && !window.confirm(
+                    'Al reemplazar las áreas se eliminarán las subáreas actuales y también sus puntuaciones registradas. ¿Continuar?'
+                )) {
+                    return;
+                }
+
                 areasContainer.innerHTML = '';
             } else {
                 limpiarAreasVacias();
@@ -442,7 +496,15 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        if (!window.confirm('¿Borrar todas las áreas y subáreas?')) {
+        const hayPuntuadas = areasContainer.querySelector(
+            '[data-subarea][data-tiene-resultados="1"]'
+        );
+
+        const mensaje = hayPuntuadas
+            ? '¿Borrar todas las áreas y subáreas? También se eliminarán las puntuaciones de las subáreas ya puntuadas.'
+            : '¿Borrar todas las áreas y subáreas?';
+
+        if (!window.confirm(mensaje)) {
             return;
         }
 
@@ -575,6 +637,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (totalSubareas <= 1) {
                 alert('Debe haber al menos una subárea.');
+                return;
+            }
+
+            if (fila.dataset.tieneResultados === '1' && !window.confirm(
+                'Esta subárea ya tiene puntuaciones registradas. Si la eliminas, también se eliminarán sus puntuaciones. ¿Continuar?'
+            )) {
                 return;
             }
 
@@ -972,7 +1040,10 @@ document.addEventListener('DOMContentLoaded', function () {
             areasContainer.appendChild(
                 crearArea(
                     area && area.nombre ? area.nombre : '',
-                    area && Array.isArray(area.subareas) ? area.subareas : []
+                    area && Array.isArray(area.subareas) ? area.subareas : [],
+                    area && area.id !== undefined && area.id !== null
+                        ? area.id
+                        : null
                 )
             );
         });

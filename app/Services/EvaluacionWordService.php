@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Evaluacion;
 use App\Models\EvaluacionAplicacion;
 use DOMDocument;
 use DOMElement;
@@ -32,8 +33,45 @@ class EvaluacionWordService
             'resultados',
         ]);
 
-        $evaluacion = $aplicacion->evaluacion;
+        return $this->generarDocumento(
+            $aplicacion->evaluacion,
+            $codigo,
+            $aplicacion->resultados->keyBy('evaluacion_subarea_id'),
+            [
+                'name_student' => $aplicacion->estudiante->nombre_completo,
+                'name_grupo' => $aplicacion->estudiante->grupo?->nombre ?? '',
+                'recomendaciones' => $aplicacion->recomendaciones ?? '',
+            ]
+        );
+    }
 
+    /**
+     * Genera un Word de muestra (sin puntuaciones) para una evaluación.
+     */
+    public function generarMuestra(
+        Evaluacion $evaluacion,
+        string $codigo = 'vertical'
+    ): string {
+        $evaluacion->loadMissing('areas.subareas');
+
+        return $this->generarDocumento(
+            $evaluacion,
+            $codigo,
+            collect(),
+            [
+                'name_student' => '',
+                'name_grupo' => '',
+                'recomendaciones' => '',
+            ]
+        );
+    }
+
+    private function generarDocumento(
+        Evaluacion $evaluacion,
+        string $codigo,
+        Collection $resultados,
+        array $datosEstudiante
+    ): string {
         $tmpDir = storage_path('app/tmp');
 
         if (! is_dir($tmpDir)) {
@@ -130,8 +168,6 @@ class EvaluacionWordService
                 throw new \Exception('No se pudo ubicar la tabla de áreas en el Word.');
             }
 
-            $resultados = $aplicacion->resultados->keyBy('evaluacion_subarea_id');
-
             foreach ($evaluacion->areas as $area) {
                 $filaAreaNueva = $this->clonarFila($filaArea);
                 $this->establecerTextoPrimeraCelda($filaAreaNueva, $area->nombre);
@@ -168,14 +204,22 @@ class EvaluacionWordService
             $template = new TemplateProcessor($temporal);
 
             $template->setValue('type_evaluation', $evaluacion->tipo_evaluacion);
-            $template->setValue('name_student', $aplicacion->estudiante->nombre_completo);
-            $template->setValue('name_grupo', $aplicacion->estudiante->grupo?->nombre ?? '');
+            $template->setValue('name_student', $datosEstudiante['name_student']);
+            $template->setValue('name_grupo', $datosEstudiante['name_grupo']);
             $template->setValue('name_teacher', $evaluacion->docente ?? '');
             $template->setValue(
                 'date',
                 $this->formatearPeriodo($evaluacion->fecha_inicio, $evaluacion->fecha_fin)
             );
             $template->setValue('name_proyect', $evaluacion->proyecto ?? '');
+            $template->setValue(
+                'recomendaciones',
+                htmlspecialchars(
+                    (string) ($datosEstudiante['recomendaciones'] ?? ''),
+                    ENT_QUOTES | ENT_XML1,
+                    'UTF-8'
+                )
+            );
 
             $template->saveAs($archivoFinal);
 

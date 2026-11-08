@@ -20,6 +20,7 @@ class EvaluacionAplicacion extends Model
         'iniciada_en',
         'completada_en',
         'observaciones',
+        'recomendaciones',
     ];
 
     protected $casts = [

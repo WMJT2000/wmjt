@@ -133,6 +133,7 @@ class EvaluacionAplicacionController extends Controller
             'resultados.*.valoracion' => 'nullable|in:excelente,en_proceso,debilitado,nulo',
             'resultados.*.observacion' => 'nullable|string|max:255',
             'observaciones' => 'nullable|string',
+            'recomendaciones' => 'nullable|string|max:2000',
         ]);
 
         $subareas = $evaluacion->areas
@@ -142,6 +143,18 @@ class EvaluacionAplicacionController extends Controller
             ->keyBy('id');
 
         $resultados = $datos['resultados'] ?? [];
+
+        $recomendacionesEnviadas = array_key_exists('recomendaciones', $datos);
+
+        if ($recomendacionesEnviadas
+            && trim((string) ($datos['recomendaciones'] ?? '')) !== ''
+            && $this->subareasSinValoracion($subareas, $resultados) !== []) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'recomendaciones' => 'Solo puedes ingresar recomendaciones cuando todas las subáreas estén puntuadas.',
+                ]);
+        }
 
         if ($datos['accion'] === 'finalizar') {
             foreach ($subareas as $subarea) {
@@ -184,16 +197,25 @@ class EvaluacionAplicacionController extends Controller
                 );
             }
 
+            $datosAplicacion = [
+                'observaciones' => $datos['observaciones'] ?? null,
+            ];
+
+            if (array_key_exists('recomendaciones', $datos)) {
+                $recomendaciones = trim((string) ($datos['recomendaciones'] ?? ''));
+
+                $datosAplicacion['recomendaciones'] = $recomendaciones === ''
+                    ? null
+                    : $recomendaciones;
+            }
+
             if ($datos['accion'] === 'finalizar') {
-                $aplicacion->update([
+                $aplicacion->update(array_merge($datosAplicacion, [
                     'estado' => 'completada',
                     'completada_en' => now(),
-                    'observaciones' => $datos['observaciones'] ?? null,
-                ]);
+                ]));
             } else {
-                $aplicacion->update([
-                    'observaciones' => $datos['observaciones'] ?? null,
-                ]);
+                $aplicacion->update($datosAplicacion);
             }
         });
 
@@ -207,6 +229,74 @@ class EvaluacionAplicacionController extends Controller
                 [$evaluacion->id, $aplicacion->id]
             )
             ->with('status', $mensaje);
+    }
+
+    public function actualizarRecomendaciones(
+        Request $request,
+        int $evaluacionId,
+        int $aplicacionId
+    ) {
+        $evaluacion = Auth::user()
+            ->evaluaciones()
+            ->with('areas.subareas')
+            ->findOrFail($evaluacionId);
+
+        $aplicacion = $evaluacion->aplicaciones()
+            ->findOrFail($aplicacionId);
+
+        $datos = $request->validate([
+            'recomendaciones' => 'nullable|string|max:2000',
+        ]);
+
+        $subareas = $evaluacion->areas
+            ->flatMap(function ($area) {
+                return $area->subareas;
+            })
+            ->keyBy('id');
+
+        if ($subareas->isNotEmpty()) {
+            $puntuadas = $aplicacion->resultados()
+                ->whereIn('evaluacion_subarea_id', $subareas->keys())
+                ->whereNotNull('valoracion')
+                ->where('valoracion', '<>', '')
+                ->count();
+
+            if ($puntuadas < $subareas->count()) {
+                return back()
+                    ->withErrors([
+                        'recomendaciones' => 'Solo puedes ingresar recomendaciones cuando todas las subáreas estén puntuadas.',
+                    ]);
+            }
+        }
+
+        $recomendaciones = trim((string) ($datos['recomendaciones'] ?? ''));
+
+        $aplicacion->update([
+            'recomendaciones' => $recomendaciones === '' ? null : $recomendaciones,
+        ]);
+
+        return redirect()
+            ->route(
+                'evaluaciones.aplicaciones.edit',
+                [$evaluacion->id, $aplicacion->id]
+            )
+            ->with('status', 'Recomendaciones actualizadas correctamente.');
+    }
+
+    /**
+     * @param  \Illuminate\Support\Collection  $subareas
+     * @return array<int, mixed>
+     */
+    private function subareasSinValoracion($subareas, array $resultados): array
+    {
+        return $subareas
+            ->filter(function ($subarea) use ($resultados) {
+                $valoracion = $resultados[$subarea->id]['valoracion'] ?? null;
+
+                return $valoracion === null || $valoracion === '';
+            })
+            ->values()
+            ->all();
     }
 
     public function word(

@@ -388,6 +388,18 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [EvaluacionController::class, 'store'])
                 ->name('store');
 
+            Route::get('/{evaluacion}/editar', [EvaluacionController::class, 'edit'])
+                ->whereNumber('evaluacion')
+                ->name('edit');
+
+            Route::get('/{evaluacion}/word-muestra', [EvaluacionController::class, 'wordMuestra'])
+                ->whereNumber('evaluacion')
+                ->name('word-muestra');
+
+            Route::put('/{evaluacion}', [EvaluacionController::class, 'update'])
+                ->whereNumber('evaluacion')
+                ->name('update');
+
             Route::get('/{evaluacion}', [EvaluacionController::class, 'show'])
                 ->whereNumber('evaluacion')
                 ->name('show');
@@ -428,6 +440,14 @@ Route::middleware('auth')->group(function () {
                 ->whereNumber('evaluacion')
                 ->whereNumber('aplicacion')
                 ->name('aplicaciones.update');
+
+            Route::put(
+                '/{evaluacion}/aplicaciones/{aplicacion}/recomendaciones',
+                [EvaluacionAplicacionController::class, 'actualizarRecomendaciones']
+            )
+                ->whereNumber('evaluacion')
+                ->whereNumber('aplicacion')
+                ->name('aplicaciones.recomendaciones');
 
             Route::get(
                 '/{evaluacion}/aplicaciones/{aplicacion}/word',

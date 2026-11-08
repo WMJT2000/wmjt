@@ -128,6 +128,15 @@
                             Ver detalle
                         </a>
 
+                        @if ($evaluacion->puedeEditarse())
+                            <a
+                                href="{{ route('evaluaciones.edit', $evaluacion) }}"
+                                class="evaluacion-btn evaluacion-btn-secondary"
+                            >
+                                Editar
+                            </a>
+                        @endif
+
                         @if ($evaluacion->estado === 'activa')
                             <a
                                 href="{{ route('evaluaciones.aplicaciones.create', $evaluacion) }}"

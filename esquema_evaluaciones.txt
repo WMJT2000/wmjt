@@ -135,6 +135,7 @@ CREATE TABLE IF NOT EXISTS `evaluacion_aplicaciones` (
     `iniciada_en` DATETIME NULL,
     `completada_en` DATETIME NULL,
     `observaciones` TEXT NULL,
+    `recomendaciones` TEXT NULL,
     `created_at` TIMESTAMP NULL DEFAULT NULL,
     `updated_at` TIMESTAMP NULL DEFAULT NULL,
     PRIMARY KEY (`id`),

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Nueva evaluación')
+@section('title', $evaluacion ? 'Editar evaluación' : 'Nueva evaluación')
 
 @section('content')
 
@@ -11,7 +11,7 @@
         <div>
 
             <h1>
-                Nueva evaluación
+                {{ $evaluacion ? 'Editar evaluación' : 'Nueva evaluación' }}
             </h1>
 
             <p>
@@ -19,7 +19,7 @@
             </p>
 
             <a
-                href="{{ route('evaluaciones.index') }}"
+                href="{{ $evaluacion ? route('evaluaciones.show', $evaluacion) : route('evaluaciones.index') }}"
                 class="btn-primary"
             >
                 ← Volver
@@ -30,7 +30,7 @@
     </div>
 
 
-    <script type="application/json" id="areasIniciales">@json(old('areas', []))</script>
+    <script type="application/json" id="areasIniciales">@json(old('areas', $areasIniciales))</script>
 
 
     @if (isset($errors) && $errors->any())
@@ -46,14 +46,29 @@
     @endif
 
 
+    @if ($evaluacion && $evaluacion->tienePuntuaciones())
+        <div class="evaluacion-alert evaluacion-alert-warning">
+            Esta evaluación ya tiene puntuaciones registradas. Puedes editar los
+            datos, renombrar o agregar áreas y subáreas. Si agregas subáreas, las
+            evaluaciones completadas volverán a “En progreso” para puntuarlas.
+            Si eliminas una subárea puntuada, también se eliminarán sus
+            puntuaciones.
+        </div>
+    @endif
+
+
     <form
-        action="{{ route('evaluaciones.store') }}"
+        action="{{ $evaluacion ? route('evaluaciones.update', $evaluacion) : route('evaluaciones.store') }}"
         method="POST"
         id="evaluacionForm"
         class="evaluacion-form"
     >
 
         @csrf
+
+        @if ($evaluacion)
+            @method('PUT')
+        @endif
 
         <section class="evaluacion-datos">
 
@@ -73,7 +88,7 @@
                         type="text"
                         id="nombre"
                         name="nombre"
-                        value="{{ old('nombre') }}"
+                        value="{{ old('nombre', $evaluacion?->nombre) }}"
                         placeholder="Ej. Evaluación de destrezas del primer periodo"
                         maxlength="255"
                         required
@@ -92,7 +107,7 @@
                         type="text"
                         id="tipo_evaluacion"
                         name="tipo_evaluacion"
-                        value="{{ old('tipo_evaluacion') }}"
+                        value="{{ old('tipo_evaluacion', $evaluacion?->tipo_evaluacion) }}"
                         placeholder="Ej. Evaluación de Destrezas"
                         maxlength="255"
                         required
@@ -111,7 +126,7 @@
                         type="text"
                         id="docente"
                         name="docente"
-                        value="{{ old('docente', 'Tnlg. Juliana Coyago') }}"
+                        value="{{ old('docente', $evaluacion ? $evaluacion->docente : 'Tnlg. Juliana Coyago') }}"
                         maxlength="255"
                     >
 
@@ -130,7 +145,7 @@
                             type="date"
                             id="fecha_inicio"
                             name="fecha_inicio"
-                            value="{{ old('fecha_inicio') }}"
+                            value="{{ old('fecha_inicio', $evaluacion?->fecha_inicio?->format('Y-m-d')) }}"
                             required
                         >
 
@@ -142,7 +157,7 @@
                             type="date"
                             id="fecha_fin"
                             name="fecha_fin"
-                            value="{{ old('fecha_fin') }}"
+                            value="{{ old('fecha_fin', $evaluacion?->fecha_fin?->format('Y-m-d')) }}"
                             required
                         >
 
@@ -161,7 +176,7 @@
                         type="text"
                         id="proyecto"
                         name="proyecto"
-                        value="{{ old('proyecto') }}"
+                        value="{{ old('proyecto', $evaluacion?->proyecto) }}"
                         maxlength="255"
                     >
 
@@ -303,7 +318,7 @@
                     ✓
                 </span>
 
-                Guardar evaluación
+                Guardar {{ $evaluacion ? 'cambios' : 'evaluación' }}
 
             </button>
 
@@ -357,7 +372,6 @@
                     id="temasIaInput"
                     name="temasIa"
                     placeholder="Ej. familia, hogar, emociones"
-                    maxlength="500"
                     rows="4"
                     style="padding: 12px 16px; font-size: 15px; resize: vertical;"
                 ></textarea>

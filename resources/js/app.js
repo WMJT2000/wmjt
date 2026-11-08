@@ -57,6 +57,7 @@ import './manual-execution.js';
 import './planificaciones.js';
 import './planificacion-crear.js';
 import './evaluacion-crear.js';
+import './evaluacion-puntuar.js';
 import './english-pronunciation.js';
 import './grammar-lesson.js';
 import './grammar-practice.js';
