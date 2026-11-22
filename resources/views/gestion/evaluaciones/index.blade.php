@@ -30,6 +30,13 @@
             </a>
 
             <a
+                href="{{ route('evaluaciones.actividades.index') }}"
+                class="evaluacion-btn evaluacion-btn-secondary"
+            >
+                Actividades
+            </a>
+
+            <a
                 href="{{ route('evaluaciones.create') }}"
                 class="btn-primary"
             >

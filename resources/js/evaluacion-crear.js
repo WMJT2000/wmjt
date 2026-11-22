@@ -771,7 +771,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function generarPrompt(nombreProyecto, temas, limites) {
         const temasLista = temas
-            .split(',')
+            .split(/[,\n]+/)
             .map(function (t) {
                 return t.trim();
             })
@@ -899,6 +899,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            const fechaInicioInput =
+                document.getElementById('fecha_inicio');
+            const fechaFinInput =
+                document.getElementById('fecha_fin');
+            const fechaInicio = fechaInicioInput
+                ? fechaInicioInput.value
+                : '';
+            const fechaFin = fechaFinInput ? fechaFinInput.value : '';
+
+            if (fechaInicio === '' || fechaFin === '') {
+                if (areasImportMessage) {
+                    areasImportMessage.textContent =
+                        'Primero indica el rango de fechas de la evaluación.';
+                    areasImportMessage.className =
+                        'evaluacion-import-message evaluacion-import-message-error';
+                    areasImportMessage.hidden = false;
+                }
+                return;
+            }
+
+            if (fechaFin < fechaInicio) {
+                if (areasImportMessage) {
+                    areasImportMessage.textContent =
+                        'La fecha final no puede ser menor que la fecha inicial.';
+                    areasImportMessage.className =
+                        'evaluacion-import-message evaluacion-import-message-error';
+                    areasImportMessage.hidden = false;
+                }
+                return;
+            }
+
             if (temasIaInput) {
                 temasIaInput.value = '';
             }
@@ -908,6 +939,68 @@ document.addEventListener('DOMContentLoaded', function () {
             if (temasIaInput) {
                 temasIaInput.focus();
             }
+
+            const urlPorFechas =
+                btnGenerarPromptIa.dataset.urlPorFechas || '';
+
+            if (urlPorFechas === '') {
+                return;
+            }
+
+            mostrarMensajeTemas(
+                'Cargando actividades del rango de fechas...',
+                'info'
+            );
+
+            fetch(
+                urlPorFechas +
+                    '?inicio=' +
+                    encodeURIComponent(fechaInicio) +
+                    '&fin=' +
+                    encodeURIComponent(fechaFin),
+                {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        Accept: 'application/json',
+                    },
+                }
+            )
+                .then(function (response) {
+                    if (! response.ok) {
+                        throw new Error(
+                            'No se pudieron cargar las actividades.'
+                        );
+                    }
+                    return response.json();
+                })
+                .then(function (data) {
+                    const temas = Array.isArray(data.temas)
+                        ? data.temas
+                        : [];
+
+                    if (temas.length > 0) {
+                        if (temasIaInput) {
+                            temasIaInput.value = temas.join('\n');
+                        }
+                        mostrarMensajeTemas(
+                            'Se cargaron ' +
+                                temas.length +
+                                ' tema(s) del rango. Puedes editarlos.',
+                            'success'
+                        );
+                    } else {
+                        mostrarMensajeTemas(
+                            'No hay actividades en ese rango de fechas. Escribe los temas manualmente.',
+                            'info'
+                        );
+                    }
+                })
+                .catch(function () {
+                    mostrarMensajeTemas(
+                        'No se pudieron cargar las actividades. Escribe los temas manualmente.',
+                        'error'
+                    );
+                });
         });
     }
 

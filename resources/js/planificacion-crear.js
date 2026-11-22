@@ -540,6 +540,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     <textarea
                         name="${prefijo}[${actividadIndex}][subactividades][${numero - 1}][destreza]"
                         rows="3"
+                        style="height: 80px; min-height: 80px; resize: none;"
                         placeholder="Escribe la destreza..."
                     ></textarea>
 
@@ -581,6 +582,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     <textarea
                         name="${prefijo}[${actividadIndex}][subactividades][${numero - 1}][recursos]"
                         rows="3"
+                        style="height: 80px; min-height: 80px; resize: none;"
                         placeholder="Recursos necesarios..."
                     ></textarea>
 
@@ -596,6 +598,7 @@ document.addEventListener('DOMContentLoaded', async function () {
                     <textarea
                         name="${prefijo}[${actividadIndex}][subactividades][${numero - 1}][indicadores_logro]"
                         rows="3"
+                        style="height: 80px; min-height: 80px; resize: none;"
                         placeholder="Indicadores de logro..."
                     ></textarea>
 
@@ -1298,7 +1301,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                     <textarea
                         name="${prefijo}[${numero - 1}][ambito]"
-                        rows="4"
+                        rows="3"
+                        style="height: 80px; min-height: 80px; resize: none;"
                         placeholder="Escribe el ámbito..."
                     ></textarea>
 
@@ -1313,6 +1317,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                     <textarea
                         name="${prefijo}[${numero - 1}][destreza]"
+                        rows="3"
+                        style="height: 80px; min-height: 80px; resize: none;"
                         placeholder="Escribe la destreza..."
                     ></textarea>
 
@@ -1353,6 +1359,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                     <textarea
                         name="${prefijo}[${numero - 1}][recursos]"
+                        rows="3"
+                        style="height: 80px; min-height: 80px; resize: none;"
                         placeholder="Recursos necesarios..."
                     ></textarea>
 
@@ -1367,6 +1375,8 @@ document.addEventListener('DOMContentLoaded', async function () {
 
                     <textarea
                         name="${prefijo}[${numero - 1}][indicadores_logro]"
+                        rows="3"
+                        style="height: 80px; min-height: 80px; resize: none;"
                         placeholder="Indicadores de logro..."
                     ></textarea>
 

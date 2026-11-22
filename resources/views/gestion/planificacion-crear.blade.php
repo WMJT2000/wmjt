@@ -238,6 +238,8 @@
                             <textarea
                                 name="2_descripcion_general_experiencia"
                                 class="planning-input"
+                                rows="2"
+                                style="height: 64px; min-height: 64px; resize: none;"
                                 required></textarea>
 
                         </div>
@@ -335,10 +337,12 @@
                                 Elemento integrador
                             </label>
 
-                            <textarea
+                            <input
+                                type="text"
                                 name="8_elemento_integrador"
                                 class="planning-input"
-                                required></textarea>
+                                style="height: 45px; min-height: 45px;"
+                                required>
 
                         </div>
 

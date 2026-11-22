@@ -178,6 +178,7 @@
                         name="proyecto"
                         value="{{ old('proyecto', $evaluacion?->proyecto) }}"
                         maxlength="255"
+                        required
                     >
 
                 </div>
@@ -266,6 +267,7 @@
                         type="button"
                         id="btnGenerarPromptIa"
                         class="evaluacion-btn"
+                        data-url-por-fechas="{{ route('evaluaciones.actividades.por-fechas') }}"
                     >
                         Generar prompt para IA
                     </button>
@@ -357,10 +359,19 @@
             </div>
 
             <p class="evaluacion-muted">
-                Escribe los temas separados por comas. Ejemplo:
+                Escribe un tema por línea (también puedes separarlos por comas).
+                Ejemplo:
                 <br>
                 <strong>familia, hogar, emociones, cuerpo, naturaleza</strong>
             </p>
+
+            <small class="evaluacion-import-help">
+                Al abrir este modal se cargan automáticamente las actividades
+                del rango de fechas. Cada línea indica «Área: ...» y reúne las
+                actividades de esa área, ordenadas por título y con sus
+                descripciones. Así sabes siempre a qué área pertenece cada
+                información. Puedes editarlas o agregar más.
+            </small>
 
             <div class="evaluacion-field">
 
@@ -371,9 +382,9 @@
                 <textarea
                     id="temasIaInput"
                     name="temasIa"
-                    placeholder="Ej. familia, hogar, emociones"
-                    rows="4"
-                    style="padding: 12px 16px; font-size: 15px; resize: vertical;"
+                    placeholder="Un tema por línea. Ej.: familia, hogar, emociones"
+                    rows="6"
+                    style="padding: 12px 16px; font-size: 15px; resize: vertical; line-height: 1.6;"
                 ></textarea>
 
                 <small class="evaluacion-import-help">

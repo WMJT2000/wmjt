@@ -252,6 +252,66 @@
                     </a>
 
 
+                    {{-- ACTIVIDADES DE ÁREAS --}}
+
+                    <a
+                        href="{{ route('evaluaciones.actividades.index') }}"
+                        class="management-card"
+                    >
+
+                        <div class="management-icon">
+                            🗂️
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Actividades de evaluación
+                            </strong>
+
+                            <span>
+                                Administra las actividades de cada área evaluada
+                            </span>
+
+                        </div>
+
+                        <b>
+                            →
+                        </b>
+
+                    </a>
+
+
+                    {{-- ÁREAS DE EVALUACIÓN --}}
+
+                    <a
+                        href="{{ route('ev-areas.index') }}"
+                        class="management-card"
+                    >
+
+                        <div class="management-icon">
+                            🧩
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                Áreas de evaluación
+                            </strong>
+
+                            <span>
+                                Catálogo de áreas usadas por las actividades
+                            </span>
+
+                        </div>
+
+                        <b>
+                            →
+                        </b>
+
+                    </a>
+
+
                     <a
                         href="{{ route('estudiantes.index') }}"
                         class="management-card"

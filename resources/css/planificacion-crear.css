@@ -3268,6 +3268,27 @@ select.planning-input {
 
 
 /* ============================================================
+   ALTURA SEGÚN NÚMERO DE LÍNEAS (rows)
+
+   El min-height general (110px / 85px / 84px) impedía que el
+   atributo rows se viera reflejado. Al anularlo en estos campos,
+   el navegador usa rows para mostrar exactamente ese número de
+   líneas, en cualquier breakpoint.
+============================================================ */
+
+textarea.planning-input[rows="2"] {
+    min-height:
+        0;
+}
+
+.activity-field textarea[rows="3"],
+.subactivity-card-body .activity-field textarea[rows="3"] {
+    min-height:
+        0;
+}
+
+
+/* ============================================================
    ACCESIBILIDAD
 ============================================================ */
 

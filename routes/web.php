@@ -11,7 +11,9 @@ use App\Http\Controllers\EnglishMeaningController;
 use App\Http\Controllers\EnglishWordController;
 use App\Http\Controllers\EstudianteController;
 use App\Http\Controllers\EvaluacionAplicacionController;
+use App\Http\Controllers\EvaluacionAreaActividadController;
 use App\Http\Controllers\EvaluacionController;
+use App\Http\Controllers\EvAreaController;
 use App\Http\Controllers\GrammarController;
 use App\Http\Controllers\GrupoController;
 use App\Http\Controllers\KnowledgeController;
@@ -385,6 +387,42 @@ Route::middleware('auth')->group(function () {
             Route::get('/crear', [EvaluacionController::class, 'create'])
                 ->name('create');
 
+            // ==========================================================
+            // ACTIVIDADES DE ÁREAS
+            // ==========================================================
+
+            Route::get(
+                '/actividades/por-fechas',
+                [EvaluacionAreaActividadController::class, 'porFechas']
+            )
+                ->name('actividades.por-fechas');
+
+            Route::get(
+                '/actividades',
+                [EvaluacionAreaActividadController::class, 'index']
+            )
+                ->name('actividades.index');
+
+            Route::post(
+                '/actividades',
+                [EvaluacionAreaActividadController::class, 'store']
+            )
+                ->name('actividades.store');
+
+            Route::put(
+                '/actividades/{actividad}',
+                [EvaluacionAreaActividadController::class, 'update']
+            )
+                ->whereNumber('actividad')
+                ->name('actividades.update');
+
+            Route::delete(
+                '/actividades/{actividad}',
+                [EvaluacionAreaActividadController::class, 'destroy']
+            )
+                ->whereNumber('actividad')
+                ->name('actividades.destroy');
+
             Route::post('/', [EvaluacionController::class, 'store'])
                 ->name('store');
 
@@ -504,6 +542,29 @@ Route::middleware('auth')->group(function () {
 
             Route::delete('/{grupo}', [GrupoController::class, 'destroy'])
                 ->whereNumber('grupo')
+                ->name('destroy');
+        });
+
+    // ==========================================================
+    // ÁREAS DE EVALUACIÓN
+    // ==========================================================
+
+    Route::prefix('gestion/ev-areas')
+        ->name('ev-areas.')
+        ->group(function () {
+
+            Route::get('/', [EvAreaController::class, 'index'])
+                ->name('index');
+
+            Route::post('/', [EvAreaController::class, 'store'])
+                ->name('store');
+
+            Route::put('/{evArea}', [EvAreaController::class, 'update'])
+                ->whereNumber('evArea')
+                ->name('update');
+
+            Route::delete('/{evArea}', [EvAreaController::class, 'destroy'])
+                ->whereNumber('evArea')
                 ->name('destroy');
         });
 

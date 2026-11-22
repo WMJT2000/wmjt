@@ -64,6 +64,11 @@ class User extends Authenticatable
         return $this->hasMany(Evaluacion::class);
     }
 
+    public function evAreas(): HasMany
+    {
+        return $this->hasMany(EvArea::class);
+    }
+
     public function evaluacionesAplicadas(): HasMany
     {
         return $this->hasMany(EvaluacionAplicacion::class, 'evaluador_id');

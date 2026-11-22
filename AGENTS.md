@@ -1,7 +1,7 @@
 # AGENTS.md
 
 ## Stack
-- Laravel 10 / PHP 8.1 / MySQL, Blade + vanilla JS (no SPA), Vite 5.
+- Laravel 10 / PHP 8.1 / MySQL, Breeze 1.29 auth, Blade + vanilla JS (no SPA), Vite 5. Word export via `phpoffice/phpword`; browser Gemini Live via `@google/genai`.
 - UI copy and many identifiers are Spanish; tables/models mix Spanish and English. Match surrounding naming.
 
 ## Setup
@@ -9,9 +9,11 @@
 - `.env` exists locally but is gitignored and contains live credentials. Never print or commit it.
 - `.env.example` is stale: it omits `GEMINI_API_KEY` (server TTS) and `VITE_GEMINI_API_KEY` (browser Gemini Live). Add both when recreating `.env`.
 - `php artisan storage:link` is needed for images written to the `public` disk (e.g. Word activity images). `public/build` is generated; do not edit it.
+- Word generation needs gitignored `storage/app/plantillas/*.docx` (all of `storage/app` is ignored except `public/`): `planificacion.docx` for `WordController`, `evaluacion.docx` / `evaluacion_horizontal.docx` for `EvaluacionWordService`. It also needs `storage/app/tmp` writable — both services redirect PHP/PHPWord temp files there.
 
 ## Database (important)
-- Only stock migrations exist (`users`, password resets, failed jobs, Sanctum tokens). All app tables (`planificaciones`, `english_*`, `grammar_*`, `manuals`, `technologies`, `categories`, etc.) live only in the existing MySQL DB; there is no schema dump or seeder.
+- Most app tables exist only in the live MySQL DB; there is no full schema dump or seeder. `database/migrations` holds the stock tables plus one guarded additive migration (`2026_11_08_...add_recomendaciones_to_evaluacion_aplicaciones_table.php`).
+- `esquema_evaluaciones.txt` (tracked, repo root) is the hand-maintained SQL for the evaluaciones tables — apply manually, it is not a migration. It notes `evaluaciones.grupo_id` is unused: the grupo comes from the estudiante at application time.
 - Never run `migrate:fresh`, `migrate:refresh`, `db:wipe`, or `RefreshDatabase` tests against the `.env` DB: they will drop tables the app needs.
 - To change schema, add real migrations when explicitly asked; do not assume a fresh DB can rebuild the app.
 
@@ -31,6 +33,7 @@
 
 ## Domain map
 - Knowledge: technologies > categories > concepts.
-- English: categories > words > meanings, plus practice sessions/results and grammar categories > topics > lessons > rules/examples. Bulk JSON imports live in `app/Http/Controllers/Admin` and `GrammarImportService`.
+- English: categories > words > meanings, plus practice sessions/results and grammar categories > topics > lessons > rules/examples/exercises/options. Bulk JSON imports live in `app/Http/Controllers/Admin` and `GrammarImportService`.
 - Manuals: manuals > sections > steps, with executions and per-step progress.
-- Planificaciones: user-owned lesson plans/templates. Word export is in `WordController` and needs the untracked `storage/app/plantillas/planificacion.docx`; `/word/crear` references a missing `resources/views/word/crear.blade.php`, so only `/word/generar` is usable.
+- Planificaciones: user-owned lesson plans/templates. Word export in `WordController` (`/word/generar`, `generarMultiples`); `/word/crear` points at the missing `resources/views/word/crear.blade.php`, so only `/word/generar` is usable.
+- Evaluaciones (newest domain): `evaluaciones` > areas > subareas; `estudiantes` belong to `grupos`; each `evaluacion_aplicaciones` row is per estudiante/intento and holds `evaluacion_resultados` per subarea. Routes live under `/gestion/evaluaciones` in `routes/web.php`; Word export is in `EvaluacionWordService` with `?plantilla=vertical|horizontal` (defaults to vertical).

@@ -230,7 +230,7 @@ class EvaluacionController extends Controller
         return $request->validate([
             'nombre' => 'required|string|max:255',
             'tipo_evaluacion' => 'required|string|max:255',
-            'proyecto' => 'nullable|string|max:255',
+            'proyecto' => 'required|string|max:255',
             'docente' => 'nullable|string|max:255',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
