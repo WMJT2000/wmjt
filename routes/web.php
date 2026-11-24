@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\EnglishImportController;
 use App\Http\Controllers\Admin\GrammarImportController;
+use App\Http\Controllers\Admin\PlanificacionImportController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ConceptController;
 use App\Http\Controllers\EnglishCategoryController;
@@ -361,6 +362,41 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/api/planificaciones/{id}/plantilla', [PlanificacionController::class, 'convertirEnPlantilla'])
         ->name('planificaciones.convertir.plantilla');
+
+    // ==========================================================
+    // IMPORTACIÓN DE PLANIFICACIONES
+    // ==========================================================
+
+    Route::get(
+        '/gestion/planificaciones/importar',
+        [PlanificacionImportController::class, 'index']
+    )->name('gestion.planificacion.import.index');
+
+    Route::post(
+        '/gestion/planificaciones/importar',
+        [PlanificacionImportController::class, 'store']
+    )->name('gestion.planificacion.import.store');
+
+    Route::get(
+        '/gestion/planificaciones/importar/actividades/{planificacion}',
+        [PlanificacionImportController::class, 'actividadesList']
+    )
+        ->whereNumber('planificacion')
+        ->name('gestion.planificacion.import.actividades.list');
+
+    Route::post(
+        '/gestion/planificaciones/{planificacion}/actividades/import',
+        [PlanificacionImportController::class, 'actividades']
+    )
+        ->whereNumber('planificacion')
+        ->name('gestion.planificacion.import.actividades');
+
+    Route::post(
+        '/gestion/actividades/{actividad}/subactividades/import',
+        [PlanificacionImportController::class, 'subactividades']
+    )
+        ->whereNumber('actividad')
+        ->name('gestion.planificacion.import.subactividades');
 
     Route::get('/word/crear', [WordController::class, 'crear'])
         ->name('word.crear');

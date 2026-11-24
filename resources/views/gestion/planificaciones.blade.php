@@ -36,6 +36,18 @@ HEADER
     <div class="gestion-header-actions">
 
         {{-- ================================================
+        IMPORTAR PLANIFICACIONES
+        ================================================= --}}
+
+        <a
+            href="{{ route('gestion.planificacion.import.index') }}"
+            class="btn-primary"
+        >
+            Importar planificaciones
+        </a>
+
+
+        {{-- ================================================
         GENERAR WORD
         ================================================= --}}
 

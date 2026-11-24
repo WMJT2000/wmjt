@@ -33,6 +33,7 @@ import '../css/grammar-lesson.css';
 import '../css/grammar-practice.css';
 import '../css/admin/grammar-import.css';
 import '../css/admin/english-import.css';
+import '../css/admin/planificacion-import.css';
 // JavaScript
 
 import './form.js';
@@ -63,6 +64,7 @@ import './grammar-lesson.js';
 import './grammar-practice.js';
 import './admin/grammar-import.js';
 import './admin/english-import.js';
+import './admin/planificacion-import.js';
 
 
 
