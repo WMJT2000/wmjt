@@ -1701,6 +1701,17 @@ class WordController extends Controller
             ->get()
             ->keyBy('id');
 
+        /*
+        |--------------------------------------------------------------------------
+        | ORDEN DE LAS PLANIFICACIONES EN EL WORD
+        |--------------------------------------------------------------------------
+        |
+        | Se conserva el orden de los IDs recibidos, que es el mismo en que
+        | se muestran las planificaciones en la tabla. El switch de la vista
+        | permite ordenar la tabla por fecha antes de seleccionarlas.
+        |
+        */
+
         $planificacionesOrdenadas = collect($ids)
             ->map(function ($id) use ($planificaciones) {
                 return $planificaciones->get($id);

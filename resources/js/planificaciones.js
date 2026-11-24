@@ -101,6 +101,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const contadorPlanificacionesFechas =
         document.getElementById('contadorPlanificacionesFechas');
 
+    // Switch del encabezado: ordenar la tabla por fecha
+    const ordenarPorFechaTabla =
+        document.getElementById('ordenarPorFechaTabla');
+
+    const direccionOrdenFecha =
+        document.getElementById('direccionOrdenFecha');
+
 
     // ==========================================
     // TABLA PLANIFICACIONES
@@ -208,6 +215,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // CARGAR PLANIFICACIONES
     // ==========================================
 
+    let planificacionesOriginales = [];
+
     try {
 
         const response = await fetch(
@@ -234,8 +243,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         }
 
+        planificacionesOriginales =
+            Array.isArray(result.data)
+                ? result.data
+                : [];
+
         tabla.establecerDatos(
-            result.data
+            planificacionesOriginales
         );
 
     } catch (error) {
@@ -250,6 +264,85 @@ document.addEventListener('DOMContentLoaded', async () => {
             Error cargando planificaciones.
         </div>
     `;
+
+    }
+
+
+    // ==========================================
+    // ORDENAR LA TABLA POR FECHA
+    // ==========================================
+
+    function aplicarOrdenTabla() {
+
+        const porFecha =
+            ordenarPorFechaTabla
+                ? ordenarPorFechaTabla.checked
+                : false;
+
+        if (direccionOrdenFecha) {
+            direccionOrdenFecha.disabled = !porFecha;
+        }
+
+        const datos = porFecha
+            ? [...planificacionesOriginales].sort(
+                (a, b) => {
+
+                    const sinFechaA = !a.fecha;
+                    const sinFechaB = !b.fecha;
+
+                    // Las que no tienen fecha siempre van al final
+                    if (sinFechaA !== sinFechaB) {
+                        return sinFechaA ? 1 : -1;
+                    }
+
+                    if (sinFechaA && sinFechaB) {
+                        return Number(a.id) - Number(b.id);
+                    }
+
+                    let comparacion = 0;
+
+                    if (a.fecha < b.fecha) {
+                        comparacion = -1;
+                    } else if (a.fecha > b.fecha) {
+                        comparacion = 1;
+                    }
+
+                    if (comparacion !== 0) {
+                        const descendente =
+                            direccionOrdenFecha &&
+                            direccionOrdenFecha.value === 'desc';
+
+                        return descendente
+                            ? -comparacion
+                            : comparacion;
+                    }
+
+                    return Number(a.id) - Number(b.id);
+
+                }
+            )
+            : planificacionesOriginales;
+
+        tabla.establecerDatos(datos);
+
+    }
+
+
+    if (ordenarPorFechaTabla) {
+
+        ordenarPorFechaTabla.addEventListener(
+            'change',
+            aplicarOrdenTabla
+        );
+
+    }
+
+    if (direccionOrdenFecha) {
+
+        direccionOrdenFecha.addEventListener(
+            'change',
+            aplicarOrdenTabla
+        );
 
     }
 

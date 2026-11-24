@@ -36,6 +36,51 @@ HEADER
     <div class="gestion-header-actions">
 
         {{-- ================================================
+        ORDENAR TABLA POR FECHA
+        ================================================= --}}
+
+        <div class="tabla-orden-fecha">
+
+            <label
+                class="tabla-orden-switch"
+                for="ordenarPorFechaTabla"
+                title="Activar para ordenar de la fecha más antigua a la más actual"
+            >
+
+                <input
+                    type="checkbox"
+                    id="ordenarPorFechaTabla"
+                >
+
+                <span class="tabla-orden-slider"></span>
+
+            </label>
+
+            <span class="tabla-orden-label">
+                Ordenar por fecha
+            </span>
+
+            <select
+                id="direccionOrdenFecha"
+                class="tabla-orden-direccion"
+                aria-label="Dirección del orden por fecha"
+                disabled
+            >
+
+                <option value="asc">
+                    Ascendente
+                </option>
+
+                <option value="desc">
+                    Descendente
+                </option>
+
+            </select>
+
+        </div>
+
+
+        {{-- ================================================
         IMPORTAR PLANIFICACIONES
         ================================================= --}}
 
